@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Image from "next/image";
 
@@ -12,7 +12,16 @@ import MobileFilterBar from "@/components/shared/dashboard/mobile-filter";
 
 const VALID_TABS = ["personal", "group"];
 
+
 export default function DashboardShell({ children }) {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <DashboardShellInner>{children}</DashboardShellInner>
+    </Suspense>
+  );
+}
+
+function DashboardShellInner({ children }) {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
 
