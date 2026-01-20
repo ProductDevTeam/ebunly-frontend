@@ -60,7 +60,7 @@ export default function ProductDetailClient({ product }) {
 
   return (
     <div className="min-h-screen bg-gray-50 font-sans">
-      {/* Headerr */}
+      {/* Header */}
       <header className="sticky top-0 z-50 bg-white border-b border-gray-200">
         {/* <div className="flex items-center justify-between px-4 py-3">
           <button

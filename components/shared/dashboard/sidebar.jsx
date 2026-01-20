@@ -39,20 +39,32 @@ export default function Sidebar({ isOpen, setIsOpen }) {
   const isActive = (href) =>
     pathname === href || pathname.startsWith(href + "/");
 
-  // Replace icons with your image paths in public folder
+  // Menu items with both active and inactive icon states
   const menuItems = [
-    { iconSrc: "/icons/home.svg", label: "Home", href: "/home" },
-    { iconSrc: "/icons/shop.svg", label: "Discover", href: "/discover" },
     {
-      iconSrc: "/icons/bag.svg",
+      icon: "/icons/home.svg",
+      iconActive: "/icons/home-active.svg",
+      label: "Home",
+      href: "/home",
+    },
+    {
+      icon: "/icons/shop.svg",
+      iconActive: "/icons/shop-active.svg",
+      label: "Discover",
+      href: "/discover",
+    },
+    {
+      icon: "/icons/bag.svg",
+      iconActive: "/icons/bag-active.svg",
       label: "Cart",
       href: "/cart",
       badge: cartItemCount,
     },
     {
-      iconSrc: "/icons/basket.svg",
-      label: "Craft Basket",
-      href: "/craft-basket",
+      icon: "/icons/basket.svg",
+      iconActive: "/icons/basket-active.svg",
+      label: "For You",
+      href: "/profile",
     },
   ];
 
@@ -63,8 +75,8 @@ export default function Sidebar({ isOpen, setIsOpen }) {
   return (
     <>
       {/* Desktop Sidebar */}
-      <aside className="hidden lg:flex lg:static inset-y-0 left-0 z-50 w-72 pt-20 bg-white  font-sans flex-col">
-        <nav className="flex-1 overflow-y-auto pl-16 ">
+      <aside className="hidden lg:flex lg:static inset-y-0 left-0 z-50 w-72 pt-20 bg-white font-sans flex-col">
+        <nav className="flex-1 overflow-y-auto pl-16">
           <ul className="space-y-1">
             {menuItems.map((item) => {
               const active = isActive(item.href);
@@ -80,7 +92,7 @@ export default function Sidebar({ isOpen, setIsOpen }) {
                   >
                     <div className="w-6 h-6 relative">
                       <Image
-                        src={item.iconSrc}
+                        src={active ? item.iconActive : item.icon}
                         alt={item.label}
                         fill
                         className="object-contain"
@@ -158,7 +170,7 @@ export default function Sidebar({ isOpen, setIsOpen }) {
       </aside>
 
       {/* Mobile Bottom Navigation */}
-      <nav className="lg:hidden fixed bottom-0 left-0 right-0 z-50 bg-white/80">
+      <nav className="lg:hidden fixed bottom-0 left-0 right-0 z-50 bg-white/80 backdrop-blur-md border-t border-gray-100">
         <div className="flex items-center justify-around px-2 py-2.5 pb-safe">
           {menuItems.map((item) => {
             const active = isActive(item.href);
@@ -166,30 +178,36 @@ export default function Sidebar({ isOpen, setIsOpen }) {
               <Link
                 key={item.label}
                 href={item.href}
-                className="flex flex-col items-center justify-center space-y-1 min-w-[64px] py-1 group relative"
+                className="flex flex-col items-center justify-center space-y-1 min-w-16 py-1 group relative"
               >
                 {active && (
                   <motion.div
                     layoutId="activeTab"
-                    className="absolute inset-0 bg-orange-50 rounded-xl"
+                    className="absolute inset-0 rounded-xl"
                     transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
                   />
                 )}
                 <div className="relative w-6 h-6 z-10">
                   <Image
-                    src={item.iconSrc}
+                    src={active ? item.iconActive : item.icon}
                     alt={item.label}
                     fill
                     className="object-contain"
+                    priority={active}
                   />
                 </div>
                 <span
-                  className={`text-[10px] font-medium z-10 ${
+                  className={`text-[10px] font-medium z-10 transition-colors ${
                     active ? "text-orange-600" : "text-gray-600"
                   }`}
                 >
                   {item.label}
                 </span>
+                {item.badge && (
+                  <span className="absolute top-0 right-2 z-20 bg-red-500 text-white text-[9px] font-semibold px-1.5 py-0.5 rounded-full min-w-[16px] text-center">
+                    {item.badge}
+                  </span>
+                )}
               </Link>
             );
           })}
