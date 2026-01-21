@@ -79,7 +79,7 @@ function ProductCard({ product, index }) {
           <h3 className="font-semibold text-gray-900 group-hover:text-orange-600 transition-colors">
             {product.name}
           </h3>
-          <p className="text-lg font-medium text-gray-900">{product.price}</p>
+          <p className="text-base font-medium text-gray-900">{product.price}</p>
         </div>
       </motion.div>
     </Link>
