@@ -11,9 +11,9 @@ export default function AddToCartSection({
 }) {
   return (
     <div className="fixed bottom-16 left-0 right-0 bg-white border-t border-gray-200 shadow-lg z-40 lg:hidden">
-      <div className="flex justify-between px-4 py-3">
+      <div className="flex justify-between px-4 py-2.5 items-center">
         {/* Price Section */}
-        <div className="flex flex-col items-center justify-between mb-3">
+        <div className="flex flex-col justify-between mb-3">
           <div className="flex items-baseline space-x-2">
             <span className="text-2xl font-medium text-gray-900">
               ₦{price.toLocaleString()}
@@ -40,7 +40,7 @@ export default function AddToCartSection({
         <motion.button
           onClick={onAddToCart}
           whileTap={{ scale: 0.98 }}
-          className=" bg-orange-600 hover:bg-orange-700 text-white font-semibold py-3 px-4 rounded-lg transition-colors shadow-lg shadow-orange-600/20"
+          className=" bg-orange-600 hover:bg-orange-700 text-white font-semibold py-2.5 px-4 rounded-lg transition-colors shadow-lg shadow-orange-600/20 cursor-pointer"
         >
           Add to Cart
         </motion.button>

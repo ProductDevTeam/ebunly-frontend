@@ -6,10 +6,7 @@ import Image from "next/image";
 import { useState } from "react";
 import { usePathname } from "next/navigation";
 
-import LiveBasket from "@/components/common/livebasket";
-
 export default function Sidebar({ isOpen, setIsOpen }) {
-  const [isBasketExpanded, setIsBasketExpanded] = useState(false);
   const [cartItemCount, setCartItemCount] = useState(2);
   const [notifications, setNotifications] = useState([
     {
@@ -43,13 +40,13 @@ export default function Sidebar({ isOpen, setIsOpen }) {
   const menuItems = [
     {
       icon: "/icons/home.svg",
-      iconActive: "/icons/home-active.svg",
+      iconActive: "/icons/home-2.svg",
       label: "Home",
-      href: "/home",
+      href: "/",
     },
     {
-      icon: "/icons/shop.svg",
-      iconActive: "/icons/shop-active.svg",
+      icon: "/icons/shop-2.svg",
+      iconActive: "/icons/shop.svg",
       label: "Discover",
       href: "/discover",
     },
@@ -170,7 +167,7 @@ export default function Sidebar({ isOpen, setIsOpen }) {
       </aside>
 
       {/* Mobile Bottom Navigation */}
-      <nav className="lg:hidden fixed bottom-0 left-0 right-0 z-50 bg-white/80 backdrop-blur-md border-t border-gray-100">
+      <nav className="lg:hidden fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-gray-100">
         <div className="flex items-center justify-around px-2 py-2.5 pb-safe">
           {menuItems.map((item) => {
             const active = isActive(item.href);

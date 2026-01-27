@@ -1,6 +1,7 @@
 import { DM_Sans } from "next/font/google";
 import "./globals.css";
 import DashboardShell from "./client";
+import QueryProvider from "@/components/providers/QueryProvider";
 
 const dmSans = DM_Sans({
   variable: "--font-sans",
@@ -15,8 +16,10 @@ export const metadata = {
 export default function RootLayout({ children }) {
   return (
     <html lang="en">
-      <body className={`${dmSans.variable} antialiased`}>
-        <DashboardShell>{children}</DashboardShell>
+      <body className={`${dmSans.variable} antialiased bg-white w-screen`}>
+        <QueryProvider>
+          <DashboardShell>{children}</DashboardShell>
+        </QueryProvider>
       </body>
     </html>
   );

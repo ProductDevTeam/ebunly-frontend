@@ -1,48 +1,88 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { Heart } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
+import { Loader2 } from "lucide-react";
 
-export default function ProductGrid() {
-  // Sample product data - replace with actual data
-  const products = Array(12)
-    .fill(null)
-    .map((_, index) => ({
-      id: `${index + 1}`, // Unique ID for each product
-      name: index === 1 ? "Personalized Towels" : "Black Embroidered Shirt",
-      price: 2500,
-      image: "/product.png",
-      badge: index % 3 === 0 ? "Best Seller" : null,
-      discount: index % 4 === 0 ? "50% off" : null,
-    }));
+export default function ProductGrid({
+  products = [],
+  isLoading,
+  isError,
+  error,
+  pagination,
+}) {
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <Loader2 className="w-8 h-8 animate-spin text-orange-500" />
+      </div>
+    );
+  }
 
-  // Use different image for the second product (towels)
-  const updatedProducts = products.map((product, index) => {
-    if (index === 1) {
-      return {
-        ...product,
-        image: "/product.png",
-      };
-    }
-    return product;
-  });
+  if (isError) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[400px] px-4">
+        <p className="text-red-500 font-medium mb-2">Failed to load products</p>
+        <p className="text-gray-600 text-sm">{error?.message}</p>
+      </div>
+    );
+  }
+
+  if (products.length === 0) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[400px] px-4">
+        <p className="text-gray-500 font-medium text-lg">No products found</p>
+        <p className="text-gray-400 text-sm mt-2">Try adjusting your filters</p>
+      </div>
+    );
+  }
 
   return (
     <div className="p-4 lg:p-8">
       <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2">
-        {updatedProducts.map((product, index) => (
-          <ProductCard key={index} product={product} index={index} />
+        {products.map((product, index) => (
+          <ProductCard key={product._id} product={product} index={index} />
         ))}
       </div>
+
+      {/* Pagination */}
+      {pagination && pagination.totalPages > 1 && (
+        <div className="flex items-center justify-center gap-2 mt-8">
+          <button
+            onClick={() => pagination.onPageChange(pagination.currentPage - 1)}
+            disabled={pagination.currentPage === 1}
+            className="px-4 py-2 border border-gray-300 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50"
+          >
+            Previous
+          </button>
+
+          <span className="px-4 py-2 font-medium">
+            Page {pagination.currentPage} of {pagination.totalPages}
+          </span>
+
+          <button
+            onClick={() => pagination.onPageChange(pagination.currentPage + 1)}
+            disabled={pagination.currentPage === pagination.totalPages}
+            className="px-4 py-2 border border-gray-300 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50"
+          >
+            Next
+          </button>
+        </div>
+      )}
     </div>
   );
 }
 
 function ProductCard({ product, index }) {
+  // Get the main image or fallback to first image
+  const mainImage =
+    product.images?.find((img) => img.isMain)?.url ||
+    product.images?.[0]?.url ||
+    "/product.png";
+
   return (
-    <Link href={`/discover/${product.id}`} className="block">
+    <Link href={`/discover/${product._id}`} className="block">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -52,26 +92,13 @@ function ProductCard({ product, index }) {
         {/* Product Image Container */}
         <div className="relative bg-gray-100 rounded-xl overflow-hidden aspect-square mb-3">
           <Image
-            src={product.image}
+            src={mainImage}
             alt={product.name}
             fill
             sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, (max-width: 1280px) 33vw, 25vw"
             className="object-cover transition-transform duration-300 group-hover:scale-105"
             priority={index < 4}
           />
-
-          {/* Hover Overlay */}
-          {/* <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-10 transition-all duration-300 z-[1]" /> */}
-
-          {/* Favorite Button */}
-          {/* <button className="absolute top-3 right-3 w-8 h-8 bg-white rounded-full flex items-center justify-center shadow-md opacity-0 group-hover:opacity-100 transition-opacity duration-300 hover:bg-gray-50 z-[2]">
-          <Heart className="w-4 h-4 text-gray-600" />
-        </button> */}
-
-          {/* Quick Add Button */}
-          {/* <button className="absolute bottom-3 left-3 right-3 bg-white text-gray-900 py-2 px-4 rounded-lg font-medium opacity-0 group-hover:opacity-100 transition-all duration-300 hover:bg-gray-50 shadow-md z-[2]">
-          Quick Add
-        </button> */}
         </div>
 
         {/* Product Info */}
@@ -79,7 +106,9 @@ function ProductCard({ product, index }) {
           <h3 className="font-semibold text-gray-900 group-hover:text-orange-600 transition-colors">
             {product.name}
           </h3>
-          <p className="text-base font-medium text-gray-900">{product.price}</p>
+          <p className="text-base font-medium text-gray-900">
+            ₦{product.basePrice.toLocaleString()}
+          </p>
         </div>
       </motion.div>
     </Link>

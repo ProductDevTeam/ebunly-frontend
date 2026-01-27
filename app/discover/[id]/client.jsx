@@ -15,17 +15,28 @@ import AddToCartSection from "@/components/shared/dashboard/product-detail/add-t
 
 export default function ProductDetailClient({ product }) {
   const router = useRouter();
-  const [selectedOptions, setSelectedOptions] = useState({
-    quantity: 1,
-    length: "",
-    color: product.options.color[0],
+
+  // Extract images from API response
+  const images = product.images?.map((img) => img.url) || ["/product.png"];
+
+  // Initialize variants state
+  const variantDefaults = {};
+  product.variants?.forEach((variant) => {
+    if (variant.options?.length > 0) {
+      variantDefaults[variant.name.toLowerCase()] = variant.options[0];
+    }
   });
+
+  const [selectedOptions, setSelectedOptions] = useState({
+    quantity: product.minQuantity || 1,
+    ...variantDefaults,
+  });
+
   const [personalization, setPersonalization] = useState({
     enabled: false,
-    text: "",
-    textColor: "Black",
-    fontStyle: "",
+    data: {},
   });
+
   const [isFavorite, setIsFavorite] = useState(false);
 
   const handleOptionChange = (option, value) => {
@@ -45,50 +56,48 @@ export default function ProductDetailClient({ product }) {
   const handlePersonalizationChange = (field, value) => {
     setPersonalization((prev) => ({
       ...prev,
-      [field]: value,
+      data: {
+        ...prev.data,
+        [field]: value,
+      },
     }));
   };
 
   const handleAddToCart = () => {
     console.log("Adding to cart:", {
-      product: product.id,
+      product: product._id,
       options: selectedOptions,
-      personalization: personalization.enabled ? personalization : null,
+      personalization: personalization.enabled ? personalization.data : null,
     });
     // Add your cart logic here
+  };
+
+  // Calculate delivery date
+  const getDeliveryDate = () => {
+    if (!product.estimatedDeliveryDays) return null;
+
+    const days = parseInt(product.estimatedDeliveryDays.split("-")[0]);
+    const deliveryDate = new Date();
+    deliveryDate.setDate(deliveryDate.getDate() + days);
+
+    return deliveryDate.toLocaleDateString("en-US", {
+      month: "short",
+      day: "numeric",
+    });
   };
 
   return (
     <div className="min-h-screen bg-gray-50 font-sans">
       {/* Header */}
       <header className="sticky top-0 z-50 bg-white border-b border-gray-200">
-        {/* <div className="flex items-center justify-between px-4 py-3">
-          <button
-            onClick={() => router.back()}
-            className="flex items-center space-x-2 text-gray-700 hover:text-gray-900 transition-colors"
-          >
-            <ChevronLeft className="w-5 h-5" />
-            <span className="font-medium text-sm">Go Back</span>
-          </button>
-
-          <button
-            onClick={() => setIsFavorite(!isFavorite)}
-            className="p-2 rounded-full hover:bg-gray-100 transition-colors"
-          >
-            <Heart
-              className={`w-6 h-6 transition-colors ${
-                isFavorite ? "fill-red-500 text-red-500" : "text-gray-600"
-              }`}
-            />
-          </button>
-        </div> */}
+        {/* Optional: Add back button and favorite */}
       </header>
 
       {/* Main Content */}
       <main className="pb-10 pt-2 flex flex-col lg:flex-row lg:items-start lg:gap-8 lg:px-8 lg:max-w-7xl lg:mx-auto">
         {/* Image Gallery */}
         <div className="lg:w-1/2 lg:sticky lg:top-6">
-          <ImageGallery images={product.images} />
+          <ImageGallery images={images} />
         </div>
 
         {/* Product Info */}
@@ -96,14 +105,19 @@ export default function ProductDetailClient({ product }) {
           {/* Badges & Title */}
           <div className="px-4 pt-4 pb-2">
             <div className="flex items-center space-x-2 mb-2">
-              {product.discount && (
+              {product.discountPercentage > 0 && (
                 <span className="px-2 py-1 bg-gray-200 text-black text-xs font-semibold rounded">
-                  {product.discount}
+                  {product.discountPercentage}% off
                 </span>
               )}
-              {product.badge && (
+              {product.isBestSeller && (
                 <span className="px-2 py-1 bg-gray-200 text-black text-xs font-semibold rounded">
-                  {product.badge}
+                  Best Seller
+                </span>
+              )}
+              {product.isMadeInNigeria && (
+                <span className="px-2 py-1 bg-green-100 text-green-800 text-xs font-semibold rounded">
+                  Made in Nigeria
                 </span>
               )}
             </div>
@@ -114,35 +128,55 @@ export default function ProductDetailClient({ product }) {
           </div>
 
           {/* Info Sections */}
-          <div className="px-4 py-2 space-y-0">
+          <div className="px-4 py-2 pb-8 md:pb-0 space-y-0">
             <ProductOptions
-              options={product.options}
+              product={product}
               selectedOptions={selectedOptions}
               onOptionChange={handleOptionChange}
             />
 
-            {product.personalization.available && (
-              <ProductPersonalization
-                personalization={personalization}
-                fields={product.personalization.fields}
-                onToggle={handlePersonalizationToggle}
-                onChange={handlePersonalizationChange}
-              />
+            {product.isPersonalizable &&
+              product.personalizationOptions?.length > 0 && (
+                <ProductPersonalization
+                  personalization={personalization}
+                  options={product.personalizationOptions}
+                  onToggle={handlePersonalizationToggle}
+                  onChange={handlePersonalizationChange}
+                />
+              )}
+
+            {product.keyInfo?.length > 0 && (
+              <ProductKeyInfo keyInfo={product.keyInfo} />
             )}
 
-            <ProductKeyInfo keyInfo={product.keyInfo} />
-
-            <ProductDescription description={product.description} />
+            <ProductDescription
+              description={
+                product.description || product.shortDescription || ""
+              }
+            />
           </div>
         </div>
+
+        {product.relatedProducts?.length > 0 && (
+          <RelatedProducts
+            products={product.relatedProducts}
+            className="block md:hidden"
+          />
+        )}
       </main>
-      <RelatedProducts products={product.relatedProducts} />
+
+      {product.relatedProducts?.length > 0 && (
+        <RelatedProducts
+          products={product.relatedProducts}
+          className="hidden md:block"
+        />
+      )}
 
       {/* Fixed Bottom Add to Cart */}
       <AddToCartSection
-        price={product.price}
-        originalPrice={product.originalPrice}
-        deliveryDate={product.deliveryDate}
+        price={product.basePrice}
+        originalPrice={product.compareAtPrice}
+        deliveryDate={getDeliveryDate()}
         onAddToCart={handleAddToCart}
       />
     </div>

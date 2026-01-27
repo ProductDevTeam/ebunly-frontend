@@ -6,7 +6,9 @@ import DashboardShellInner from "./inner";
 export default function DashboardShell({ children }) {
   return (
     <Suspense fallback={<ShellFallback />}>
-      <DashboardShellInner>{children}</DashboardShellInner>
+      <div className="bg-white">
+        <DashboardShellInner>{children}</DashboardShellInner>
+      </div>
     </Suspense>
   );
 }
