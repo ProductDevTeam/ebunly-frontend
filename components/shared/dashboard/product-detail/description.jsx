@@ -9,7 +9,7 @@ export default function ProductDescription({ description }) {
   const shouldTruncate = description.length > maxLength;
 
   return (
-    <div className="px-4 py-1">
+    <div className=" py-1">
       <div className="text-sm text-gray-700 leading-relaxed">
         <AnimatePresence mode="wait">
           {isExpanded || !shouldTruncate ? (

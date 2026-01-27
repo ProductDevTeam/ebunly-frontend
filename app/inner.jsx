@@ -28,7 +28,7 @@ export default function DashboardShellInner({ children }) {
   };
 
   return (
-    <div className="h-screen bg-gray-50 flex flex-col overflow-hidden font-sans">
+    <div className="h-screen bg-gray-50 flex flex-col overflow-hidden font-sans max-w-7xl mx-auto">
       {/* ===== HEADERS ===== */}
       <MobileHeader
         onMenuClick={() => setIsSidebarOpen(true)}

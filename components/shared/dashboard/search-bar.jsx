@@ -1,6 +1,20 @@
+"use client";
+
+import { useState, useEffect, useCallback } from "react";
 import Image from "next/image";
 
-export default function SearchBar({ className = "" }) {
+export default function SearchBar({ onSearch, className = "" }) {
+  const [searchTerm, setSearchTerm] = useState("");
+
+  // Debounce search with useEffect
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      onSearch?.(searchTerm);
+    }, 500);
+
+    return () => clearTimeout(timer);
+  }, [searchTerm]); // Only depend on searchTerm, not onSearch
+
   return (
     <div className={`bg-white px-4 lg:px-8 py-2 flex-1 ${className}`}>
       <div className="max-w-2xl">
@@ -19,6 +33,8 @@ export default function SearchBar({ className = "" }) {
           {/* Input */}
           <input
             type="text"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
             placeholder="Search for anything..."
             className="
               w-full

@@ -1,14 +1,16 @@
 "use client";
 
 import { motion, AnimatePresence } from "framer-motion";
-import { ChevronDown, Plus, X } from "lucide-react";
+import { Plus, X } from "lucide-react";
 
 export default function ProductPersonalization({
   personalization,
-  fields,
+  options,
   onToggle,
   onChange,
 }) {
+  if (!options || options.length === 0) return null;
+
   return (
     <div className="">
       {/* Toggle Button */}
@@ -40,58 +42,20 @@ export default function ProductPersonalization({
             className="overflow-hidden"
           >
             <div className="px-4 pb-4 space-y-3">
-              {fields.map((field) => (
-                <div key={field.id} className="space-y-1">
-                  <label
-                    htmlFor={field.id}
-                    className="block text-sm font-medium text-gray-700"
-                  >
-                    {field.label}
+              {options.map((option) => (
+                <div key={option} className="space-y-1">
+                  <label className="block text-sm font-medium text-gray-700">
+                    {option}
                   </label>
-
-                  {field.type === "text" && (
-                    <div className="relative">
-                      <input
-                        type="text"
-                        id={field.id}
-                        value={personalization[field.id]}
-                        onChange={(e) => onChange(field.id, e.target.value)}
-                        maxLength={field.maxLength}
-                        placeholder="Enter text"
-                        className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500"
-                      />
-                      {field.maxLength && (
-                        <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-gray-400">
-                          {personalization[field.id].length}/{field.maxLength}
-                        </span>
-                      )}
-                    </div>
-                  )}
-
-                  {field.type === "select" && (
-                    <div className="relative">
-                      <select
-                        id={field.id}
-                        value={personalization[field.id]}
-                        onChange={(e) => onChange(field.id, e.target.value)}
-                        className="appearance-none w-full border border-gray-200 rounded-lg pl-3 pr-8 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 cursor-pointer"
-                      >
-                        {field.options.map((option) => (
-                          <option key={option} value={option}>
-                            {option}
-                          </option>
-                        ))}
-                      </select>
-                      <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-600 pointer-events-none" />
-                    </div>
-                  )}
+                  <input
+                    type="text"
+                    value={personalization.data[option] || ""}
+                    onChange={(e) => onChange(option, e.target.value)}
+                    placeholder={`Enter ${option.toLowerCase()}`}
+                    className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500"
+                  />
                 </div>
               ))}
-
-              {/* Show Personalization Options Link */}
-              <button className="text-orange-600 text-sm font-medium hover:underline">
-                See Personalization Options
-              </button>
             </div>
           </motion.div>
         )}
