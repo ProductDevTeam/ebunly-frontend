@@ -33,6 +33,7 @@ export default function Sidebar({ isOpen, setIsOpen }) {
   ]);
 
   const pathname = usePathname();
+  const isHome = pathname === "/";
   const isActive = (href) =>
     pathname === href || pathname.startsWith(href + "/");
 
@@ -71,10 +72,12 @@ export default function Sidebar({ isOpen, setIsOpen }) {
 
   return (
     <>
-      {/* Desktop Sidebar */}
-      <aside className="hidden lg:flex lg:static inset-y-0 left-0 z-50 w-72 pt-20 bg-white font-sans flex-col">
+      {/* Desktop Sidebar - Hidden only on desktop home page */}
+      <aside
+        className={`${isHome ? "hidden lg:hidden" : "hidden lg:flex"} lg:static inset-y-0 left-0 z-50 w-72 pt-20 bg-white font-sans flex-col`}
+      >
         <nav className="flex-1 overflow-y-auto pl-16">
-          <ul className="space-y-1">
+          <ul className="space-y-3">
             {menuItems.map((item) => {
               const active = isActive(item.href);
               return (
@@ -166,7 +169,7 @@ export default function Sidebar({ isOpen, setIsOpen }) {
         </div> */}
       </aside>
 
-      {/* Mobile Bottom Navigation */}
+      {/* Mobile Bottom Navigation - Always visible */}
       <nav className="lg:hidden fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-gray-100">
         <div className="flex items-center justify-around px-2 py-2.5 pb-safe">
           {menuItems.map((item) => {

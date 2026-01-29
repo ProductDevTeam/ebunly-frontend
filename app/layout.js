@@ -1,9 +1,13 @@
-import { DM_Sans } from "next/font/google";
+import { DM_Sans, Playfair_Display } from "next/font/google";
 import "./globals.css";
 import DashboardShell from "./client";
 import QueryProvider from "@/components/providers/QueryProvider";
 
 const dmSans = DM_Sans({
+  variable: "--font-sans",
+  subsets: ["latin"],
+});
+const playFair = Playfair_Display({
   variable: "--font-sans",
   subsets: ["latin"],
 });
@@ -16,7 +20,9 @@ export const metadata = {
 export default function RootLayout({ children }) {
   return (
     <html lang="en">
-      <body className={`${dmSans.variable} antialiased bg-white w-screen`}>
+      <body
+        className={`${dmSans.variable} ${playFair.variable} antialiased bg-white w-screen`}
+      >
         <QueryProvider>
           <DashboardShell>{children}</DashboardShell>
         </QueryProvider>
