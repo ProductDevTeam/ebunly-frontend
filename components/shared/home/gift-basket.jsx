@@ -1,0 +1,81 @@
+"use client";
+
+import Image from "next/image";
+import { motion } from "framer-motion";
+import Link from "next/link";
+import { categories } from "@/lib/data";
+
+const GiftBasketsSection = () => {
+  return (
+    <section className="py-12 md:py-16 lg:py-20 px-6">
+      <div className="max-w-7xl mx-auto">
+        {/* Mobile: Stack vertically */}
+        <div className="flex flex-col lg:flex-row gap-6 lg:gap-4">
+          {/* Section Title - Takes less space on desktop */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6 }}
+            className="lg:w-[250px] xl:w-[280px] shrink-0"
+          >
+            <h2 className="text-xl md:text-3xl lg:text-4xl font-playfair leading-tight">
+              <span className="italic font-light">Gift Baskets </span>
+              <span className="font-bold">for any event or occasion</span>
+            </h2>
+          </motion.div>
+
+          {/* Categories Grid - Takes most of the space */}
+          <div className="flex-1 grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-3">
+            {categories.map((category, index) => (
+              <motion.div
+                key={category.id}
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.5, delay: index * 0.1 }}
+                className="flex flex-col"
+              >
+                <Link
+                  href={`/categories/${category.name.toLowerCase().replace(/\s+/g, "-")}`}
+                  className="block group"
+                >
+                  {/* Category Badge */}
+                  <div
+                    className={`${category.color} rounded-full px-4 py-1.5 inline-flex items-center gap-2 mb-2 transition-transform group-hover:scale-105`}
+                  >
+                    <span
+                      className={`w-2.5 h-2.5 rounded-full ${category.dotColor}`}
+                    />
+                    <span className="text-sm font-semibold text-gray-900">
+                      {category.name}
+                    </span>
+                  </div>
+
+                  {/* Image - Single per category on mobile */}
+                  <motion.div
+                    whileHover={{ scale: 1.02 }}
+                    transition={{ duration: 0.3 }}
+                    className="relative aspect-[5/3] md:aspect-[4/3] rounded-2xl overflow-hidden shadow-sm group-hover:shadow-lg transition-shadow"
+                  >
+                    <Image
+                      src={category.images[0].src}
+                      alt={category.images[0].alt}
+                      fill
+                      className="object-cover"
+                      sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
+                    />
+                    {/* Overlay on hover */}
+                    <div className="absolute inset-0 bg-black/0 group-hover:bg-black/5 transition-colors duration-300" />
+                  </motion.div>
+                </Link>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+};
+
+export default GiftBasketsSection;

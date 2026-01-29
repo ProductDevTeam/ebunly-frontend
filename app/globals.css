@@ -11,7 +11,8 @@
   --color-text-gray: #707070;
   --color-text-dark-gray: #444444;
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-sans);
+  --font-sans: var(--font-dmSans);
+  --font-playfair: var(--font-playfair);
   --font-mono: var(--font-geist-mono);
 }
 

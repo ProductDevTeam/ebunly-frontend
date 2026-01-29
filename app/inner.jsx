@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import Image from "next/image";
 
 import MobileHeader from "@/components/shared/mobile-header";
 import DesktopHeader from "@/components/shared/dashboard/desktop-header";
@@ -28,7 +27,7 @@ export default function DashboardShellInner({ children }) {
   };
 
   return (
-    <div className="h-screen bg-gray-50 flex flex-col overflow-hidden font-sans max-w-7xl mx-auto">
+    <div className="h-screen w-full bg-gray-50 flex flex-col overflow-hidden font-sans">
       {/* ===== HEADERS ===== */}
       <MobileHeader
         onMenuClick={() => setIsSidebarOpen(true)}
@@ -41,15 +40,19 @@ export default function DashboardShellInner({ children }) {
 
       {/* ===== BODY ===== */}
       <div className="flex flex-1 overflow-hidden">
-        <Sidebar isOpen={isSidebarOpen} setIsOpen={setIsSidebarOpen} />
+        <div className="mx-auto max-w-7xl w-full flex gap-8">
+          <Sidebar isOpen={isSidebarOpen} setIsOpen={setIsSidebarOpen} />
 
-        <main className="flex-1 flex flex-col overflow-hidden">
-          {isFilterOpen && (
-            <MobileFilterBar onClose={() => setIsFilterOpen(false)} />
-          )}
+          <main className="flex-1 flex flex-col overflow-hidden">
+            {isFilterOpen && (
+              <MobileFilterBar onClose={() => setIsFilterOpen(false)} />
+            )}
 
-          <div className="flex-1 overflow-y-auto pb-20 lg:pb-0">{children}</div>
-        </main>
+            <div className="flex-1 overflow-y-auto pb-20 lg:pb-0">
+              {children}
+            </div>
+          </main>
+        </div>
       </div>
     </div>
   );
