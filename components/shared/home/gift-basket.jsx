@@ -7,11 +7,11 @@ import { categories } from "@/lib/data";
 
 const GiftBasketsSection = () => {
   return (
-    <section className="py-12 md:py-16 lg:py-20 px-6">
+    <section className="py-12 md:py-16 lg:py-20 px-6 md:px-0">
       <div className="max-w-7xl mx-auto">
-        {/* Mobile: Stack vertically */}
-        <div className="flex flex-col lg:flex-row gap-6 lg:gap-4">
-          {/* Section Title - Takes less space on desktop */}
+        {/* Container: stack on mobile, row on desktop */}
+        <div className="flex flex-col lg:flex-row gap-6 lg:gap-8">
+          {/* Section Title */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -25,8 +25,8 @@ const GiftBasketsSection = () => {
             </h2>
           </motion.div>
 
-          {/* Categories Grid - Takes most of the space */}
-          <div className="flex-1 grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-3">
+          {/* Categories Grid */}
+          <div className="flex-1 grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-4">
             {categories.map((category, index) => (
               <motion.div
                 key={category.id}
@@ -37,7 +37,9 @@ const GiftBasketsSection = () => {
                 className="flex flex-col"
               >
                 <Link
-                  href={`/categories/${category.name.toLowerCase().replace(/\s+/g, "-")}`}
+                  href={`/categories/${category.name
+                    .toLowerCase()
+                    .replace(/\s+/g, "-")}`}
                   className="block group"
                 >
                   {/* Category Badge */}
@@ -52,11 +54,12 @@ const GiftBasketsSection = () => {
                     </span>
                   </div>
 
-                  {/* Image - Single per category on mobile */}
+                  {/* Image */}
                   <motion.div
                     whileHover={{ scale: 1.02 }}
                     transition={{ duration: 0.3 }}
-                    className="relative aspect-[5/3] md:aspect-[4/3] rounded-2xl overflow-hidden shadow-sm group-hover:shadow-lg transition-shadow"
+                    className="relative w-full rounded-2xl overflow-hidden shadow-sm group-hover:shadow-lg transition-shadow"
+                    style={{ aspectRatio: "4 / 3" }}
                   >
                     <Image
                       src={category.images[0].src}
@@ -65,7 +68,6 @@ const GiftBasketsSection = () => {
                       className="object-cover"
                       sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
                     />
-                    {/* Overlay on hover */}
                     <div className="absolute inset-0 bg-black/0 group-hover:bg-black/5 transition-colors duration-300" />
                   </motion.div>
                 </Link>

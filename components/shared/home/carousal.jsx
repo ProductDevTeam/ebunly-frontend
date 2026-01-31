@@ -3,7 +3,6 @@
 import Image from "next/image";
 import { motion } from "framer-motion";
 import Link from "next/link";
-import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useRef } from "react";
 
 const ProductCarouselSection = ({
@@ -30,7 +29,7 @@ const ProductCarouselSection = ({
   };
 
   return (
-    <section className="pt-12 md:py-16 lg:py-20 px-6">
+    <section className="pt-12 md:py-16 lg:py-10 px-6">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="flex items-center justify-between mb-6 md:mb-8">
@@ -55,24 +54,6 @@ const ProductCarouselSection = ({
           </Link>
         </div>
 
-        {/* Desktop Navigation Buttons */}
-        <div className="hidden lg:flex gap-2 mb-6">
-          <button
-            onClick={() => scroll("left")}
-            className="p-2 rounded-full border border-gray-300 hover:bg-gray-100 transition-colors"
-            aria-label="Scroll left"
-          >
-            <ChevronLeft className="w-5 h-5" />
-          </button>
-          <button
-            onClick={() => scroll("right")}
-            className="p-2 rounded-full border border-gray-300 hover:bg-gray-100 transition-colors"
-            aria-label="Scroll right"
-          >
-            <ChevronRight className="w-5 h-5" />
-          </button>
-        </div>
-
         {/* Products Carousel */}
         <div
           ref={scrollContainerRef}
@@ -89,17 +70,17 @@ const ProductCarouselSection = ({
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.5, delay: index * 0.1 }}
-              className="flex-none w-[280px] md:w-[300px] snap-start"
+              className="flex-none w-[260px] md:w-[280px] lg:w-[300px] snap-start"
             >
               <Link href={`/products/${product.slug}`} className="group block">
                 {/* Product Image */}
-                <div className="relative aspect-square bg-gray-100 rounded-2xl overflow-hidden mb-3">
+                <div className="relative w-full rounded-2xl overflow-hidden mb-3 h-[250px] md:h-[280px] lg:h-[300px] bg-gray-100">
                   <Image
                     src={product.image}
                     alt={product.name}
                     fill
                     className="object-cover group-hover:scale-105 transition-transform duration-300"
-                    sizes="(max-width: 768px) 280px, 300px"
+                    sizes="(max-width: 768px) 260px, (max-width: 1024px) 280px, 300px"
                   />
                 </div>
 

@@ -74,7 +74,7 @@ export default function Sidebar({ isOpen, setIsOpen }) {
     <>
       {/* Desktop Sidebar - Hidden only on desktop home page */}
       <aside
-        className={`${isHome ? "hidden lg:hidden" : "hidden lg:flex"} lg:static inset-y-0 left-0 z-50 w-72 pt-20 bg-white font-sans flex-col`}
+        className={`${isHome ? "hidden lg:hidden" : "hidden lg:hidden"} lg:static inset-y-0 left-0 z-50 w-72 pt-20 bg-white font-sans flex-col`}
       >
         <nav className="flex-1 overflow-y-auto pl-16">
           <ul className="space-y-3">

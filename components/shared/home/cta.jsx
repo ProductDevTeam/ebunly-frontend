@@ -40,10 +40,10 @@ const EventShoppingCTA = () => {
         />
       </motion.div>
 
-      <div className="max-w-5xl mx-auto">
-        {/* Content Container */}
-        <div className="text-center mb-8 md:mb-10">
-          {/* Title */}
+      {/* Main Content Container */}
+      <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center gap-8">
+        {/* Text & CTA */}
+        <div className="flex-1 text-center md:text-left">
           <motion.h2
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -58,7 +58,6 @@ const EventShoppingCTA = () => {
             </span>
           </motion.h2>
 
-          {/* CTA Button */}
           <motion.div
             initial={{ opacity: 0, scale: 0.9 }}
             whileInView={{ opacity: 1, scale: 1 }}
@@ -77,20 +76,20 @@ const EventShoppingCTA = () => {
           </motion.div>
         </div>
 
-        {/* People Illustration */}
+        {/* Illustration */}
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.8, delay: 0.3 }}
-          className="relative w-full max-w-3xl mx-auto"
+          className="flex-1 max-w-full"
         >
           <Image
             src="/people.svg"
             alt="People with gifts"
             width={800}
-            height={200}
-            className="w-full h-[250px]"
+            height={250}
+            className="w-full h-auto object-contain"
             priority
           />
         </motion.div>

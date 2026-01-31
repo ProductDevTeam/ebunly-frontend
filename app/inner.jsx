@@ -1,59 +1,43 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
-
-import MobileHeader from "@/components/shared/mobile-header";
-import DesktopHeader from "@/components/shared/dashboard/desktop-header";
 import Sidebar from "@/components/shared/dashboard/sidebar";
-import MobileFilterBar from "@/components/shared/dashboard/mobile-filter";
+import MobileHeader from "@/components/shared/mobile-header";
+import DesktopHeader from "@/components/shared/desktop-header";
+import TopHeader from "@/top-header";
 
-const VALID_TABS = ["personal", "group"];
-
-export default function DashboardShellInner({ children }) {
+export default function PageShell({ children }) {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-  const [isFilterOpen, setIsFilterOpen] = useState(false);
-
-  const router = useRouter();
-  const searchParams = useSearchParams();
-
-  const rawTab = searchParams.get("mode");
-  const tab = VALID_TABS.includes(rawTab) ? rawTab : "personal";
-
-  const setTab = (nextTab) => {
-    const params = new URLSearchParams(searchParams);
-    params.set("mode", nextTab);
-    router.push(`?${params.toString()}`, { scroll: false });
-  };
+  const [tab, setTab] = useState("personal");
 
   return (
-    <div className="h-screen w-full bg-gray-50 flex flex-col overflow-hidden font-sans">
-      {/* ===== HEADERS ===== */}
-      <MobileHeader
-        onMenuClick={() => setIsSidebarOpen(true)}
-        value={tab}
-        onChange={setTab}
-        className="lg:hidden"
-      />
-
-      <DesktopHeader value={tab} onChange={setTab} />
-
-      {/* ===== BODY ===== */}
-      <div className="flex flex-1 overflow-hidden">
-        <div className="mx-auto max-w-7xl w-full flex gap-8">
-          <Sidebar isOpen={isSidebarOpen} setIsOpen={setIsSidebarOpen} />
-
-          <main className="flex-1 flex flex-col overflow-hidden">
-            {isFilterOpen && (
-              <MobileFilterBar onClose={() => setIsFilterOpen(false)} />
-            )}
-
-            <div className="flex-1 overflow-y-auto pb-20 lg:pb-0">
-              {children}
-            </div>
-          </main>
-        </div>
+    <div className="w-full min-h-screen bg-gray-50 relative font-sans">
+      {/* ===== Headers ===== */}
+      {/* Mobile Header: visible only on mobile */}
+      <TopHeader />
+      <div className="fixed top-0 left-0 w-full z-20 md:hidden">
+        <MobileHeader value={tab} onChange={setTab} />
       </div>
+
+      {/* Desktop Header: visible only on md+ */}
+      <div className="hidden md:block">
+        <DesktopHeader value={tab} onChange={setTab} />
+      </div>
+
+      {/* ===== Sidebar ===== */}
+      <Sidebar isOpen={isSidebarOpen} setIsOpen={setIsSidebarOpen} />
+
+      {/* ===== Main Content ===== */}
+      <main
+        className={`
+          flex-1 w-full
+          ${/* Add top padding to prevent content from hiding under headers */ ""}
+          
+   
+        `}
+      >
+        {children}
+      </main>
     </div>
   );
 }

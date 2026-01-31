@@ -1,14 +1,16 @@
 import { DM_Sans, Playfair_Display } from "next/font/google";
 import "./globals.css";
-import DashboardShell from "./client";
+
 import QueryProvider from "@/components/providers/QueryProvider";
 
+import PageShell from "./inner";
+
 const dmSans = DM_Sans({
-  variable: "--font-sans",
+  variable: "--font-dmSans",
   subsets: ["latin"],
 });
 const playFair = Playfair_Display({
-  variable: "--font-sans",
+  variable: "--font-playFair",
   subsets: ["latin"],
 });
 
@@ -21,10 +23,10 @@ export default function RootLayout({ children }) {
   return (
     <html lang="en">
       <body
-        className={`${dmSans.variable} ${playFair.variable} antialiased bg-white w-screen`}
+        className={`${dmSans.variable} ${playFair.variable} antialiased bg-white font-sans`}
       >
         <QueryProvider>
-          <DashboardShell>{children}</DashboardShell>
+          <PageShell>{children}</PageShell>
         </QueryProvider>
       </body>
     </html>
