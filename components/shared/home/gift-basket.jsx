@@ -17,7 +17,7 @@ const GiftBasketsSection = () => {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.6 }}
-            className="lg:w-[250px] xl:w-[280px] shrink-0"
+            className="lg:w-62.5 xl:w-70 shrink-0"
           >
             <h2 className="text-xl md:text-3xl lg:text-4xl font-playfair leading-tight">
               <span className="italic font-light">Gift Baskets </span>
