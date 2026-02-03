@@ -11,7 +11,7 @@ export default function PageShell({ children }) {
   const [tab, setTab] = useState("personal");
 
   return (
-    <div className="w-full min-h-screen bg-gray-50 relative font-sans">
+    <div className="w-full  bg-gray-50 relative font-sans">
       {/* ===== Headers ===== */}
       {/* Mobile Header: visible only on mobile */}
       <TopHeader />

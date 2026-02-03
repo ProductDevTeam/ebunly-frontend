@@ -9,7 +9,7 @@ const TABS = [
 
 export default function DesktopHeader({ value = "personal", onChange }) {
   return (
-    <header className="hidden lg:block w-full border-b border-gray-200 bg-white mb-6">
+    <header className="hidden lg:hidden w-full border-b border-gray-200 bg-white mb-6">
       <div className="mx-auto max-w-7xl flex h-14 items-center px-16">
         {/* Left: Logo */}
         <div className="flex items-center">
