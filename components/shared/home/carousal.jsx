@@ -1,7 +1,6 @@
 "use client";
 
 import Image from "next/image";
-import { motion } from "framer-motion";
 import Link from "next/link";
 import { useRef } from "react";
 
@@ -15,7 +14,7 @@ const ProductCarouselSection = ({
 
   const scroll = (direction) => {
     if (scrollContainerRef.current) {
-      const scrollAmount = 320; // Card width + gap
+      const scrollAmount = 320;
       const newPosition =
         direction === "left"
           ? scrollContainerRef.current.scrollLeft - scrollAmount
@@ -33,18 +32,12 @@ const ProductCarouselSection = ({
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="flex items-center justify-between mb-6 md:mb-8">
-          <motion.div
-            initial={{ opacity: 0, x: -20 }}
-            whileInView={{ opacity: 1, x: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.5 }}
-            className="flex items-center gap-2"
-          >
+          <div className="flex items-center gap-2">
             <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold">
               {title}
             </h2>
             {emoji && <span className="text-2xl md:text-3xl">{emoji}</span>}
-          </motion.div>
+          </div>
 
           <Link
             href={seeMoreLink}
@@ -63,13 +56,9 @@ const ProductCarouselSection = ({
             msOverflowStyle: "none",
           }}
         >
-          {products.map((product, index) => (
-            <motion.div
+          {products.map((product) => (
+            <div
               key={product.id}
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.5, delay: index * 0.1 }}
               className="flex-none w-[260px] md:w-[280px] lg:w-[300px] snap-start"
             >
               <Link href={`/products/${product.slug}`} className="group block">
@@ -89,12 +78,12 @@ const ProductCarouselSection = ({
                   <h3 className="font-semibold text-base md:text-lg text-gray-900 truncate">
                     {product.name}
                   </h3>
-                  <p className="text-lg md:text-xl font-bold text-gray-900">
+                  <p className="text-lg md:text-xl font-normal text-gray-900">
                     ₦{product.price.toLocaleString()}
                   </p>
                 </div>
               </Link>
-            </motion.div>
+            </div>
           ))}
         </div>
       </div>
