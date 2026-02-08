@@ -68,7 +68,7 @@ const EventShoppingCTA = () => {
               <motion.button
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
-                className="bg-[#FF5722] text-white px-8 md:px-10 py-3 md:py-4 rounded-full font-bold text-base md:text-lg shadow-xl hover:shadow-2xl transition-shadow"
+                className="bg-[#FF5722] text-white px-8 md:px-6 py-3 md:py-1.5 cursor-pointer rounded-full font-bold text-base md:text-lg shadow-xl hover:shadow-2xl transition-shadow"
               >
                 Switch to Group
               </motion.button>
