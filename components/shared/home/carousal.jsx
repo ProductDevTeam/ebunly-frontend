@@ -28,7 +28,7 @@ const ProductCarouselSection = ({
   };
 
   return (
-    <section className="pt-12 md:py-16 lg:py-10 px-6">
+    <section className="pt-12 md:py-16 lg:py-6 px-6">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="flex items-center justify-between mb-6 md:mb-8">
