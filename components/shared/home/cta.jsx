@@ -6,14 +6,29 @@ import Link from "next/link";
 
 const EventShoppingCTA = () => {
   return (
-    <section className="relative pt-10 px-6 overflow-hidden bg-[#1A4D4D]">
+    <section className="relative pt-10 px-6 overflow-hidden bg-[#004138]">
       {/* Decorative Stars */}
       <motion.div
         initial={{ rotate: 0, opacity: 0 }}
         whileInView={{ rotate: 360, opacity: 1 }}
         viewport={{ once: true }}
         transition={{ duration: 1, delay: 0.2 }}
-        className="absolute top-6 md:top-8 left-6 md:left-12 w-10 h-10 md:w-12 md:h-12"
+        className="absolute top-6 md:top-8 left-6 md:left-12 w-6 h-6 md:w-12 md:h-12 md:hidden"
+      >
+        <Image
+          src="/star.svg"
+          alt="Decorative star"
+          width={48}
+          height={48}
+          className="w-full h-full"
+        />
+      </motion.div>
+      <motion.div
+        initial={{ rotate: 0, opacity: 0 }}
+        whileInView={{ rotate: -360, opacity: 1 }}
+        viewport={{ once: true }}
+        transition={{ duration: 1, delay: 0.4 }}
+        className="absolute bottom-24 md:top-6 right-6 md:left-[45%] w-10 h-10 md:w-10 md:h-10 hidden md:block"
       >
         <Image
           src="/star.svg"
@@ -29,7 +44,7 @@ const EventShoppingCTA = () => {
         whileInView={{ rotate: -360, opacity: 1 }}
         viewport={{ once: true }}
         transition={{ duration: 1, delay: 0.4 }}
-        className="absolute bottom-24 md:bottom-28 right-6 md:right-12 w-10 h-10 md:w-12 md:h-12"
+        className="absolute bottom-24 md:bottom-28 right-6 md:right-12 w-6 h-6 md:w-12 md:h-12 lg:hidden"
       >
         <Image
           src="/star.svg"
@@ -43,7 +58,7 @@ const EventShoppingCTA = () => {
       {/* Main Content Container */}
       <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center gap-8">
         {/* Text & CTA */}
-        <div className="flex-1 text-center md:text-left">
+        <div className="flex-1 text-center md:text-left w-full md:w-[30%]">
           <motion.h2
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -66,9 +81,8 @@ const EventShoppingCTA = () => {
           >
             <Link href="/group-shopping">
               <motion.button
-                whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
-                className="bg-[#FF5722] text-white px-8 md:px-10 py-3 md:py-4 rounded-full font-bold text-base md:text-lg shadow-xl hover:shadow-2xl transition-shadow"
+                className="bg-[#FF5722] text-white px-4 md:px-6 py-1.5 md:py-1.5 cursor-pointer rounded-full font-bold text-base md:text-lg shadow-xl hover:shadow-2xl transition-shadow"
               >
                 Switch to Group
               </motion.button>

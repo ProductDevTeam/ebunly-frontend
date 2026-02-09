@@ -106,7 +106,7 @@ export default function HomePage() {
 
       {/* Perfect for Weddings */}
       <ProductCarouselSection
-        title="Perfect for Weddings"
+        title="Perfect for Weddings "
         emoji="💍"
         products={weddingProducts}
         seeMoreLink="/categories/weddings"

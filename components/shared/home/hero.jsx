@@ -28,7 +28,7 @@ const HeroSection = () => {
             alt=""
             width={350}
             height={350}
-            className="w-[280px] md:w-[100px] h-auto"
+            className="w-70 md:w-25 h-auto"
           />
         </motion.div>
 
@@ -44,7 +44,7 @@ const HeroSection = () => {
             alt=""
             width={400}
             height={400}
-            className="w-[320px] md:w-[400px] h-auto"
+            className="w-[320px] md:w-100 h-auto"
           />
         </motion.div>
       </div>
@@ -63,7 +63,7 @@ const HeroSection = () => {
             alt=""
             width={80}
             height={80}
-            className="w-[50px] md:w-[70px] lg:w-[60px] h-auto opacity-80"
+            className="w-12.5 md:w-17.5 lg:w-15 h-auto opacity-80"
           />
         </motion.div>
 
@@ -74,7 +74,7 @@ const HeroSection = () => {
           transition={{ duration: 0.6 }}
           className="z-10 font-playfair max-w-xl text-center"
         >
-          <h1 className="text-4xl md:text-3xl lg:text-4xl xl:text-5xl text-[#FAF9C6] mb-6 leading-tight">
+          <h1 className="text-4xl md:text-3xl lg:text-4xl xl:text-5xl text-[#FAF9C6] mb-6 tracking-tighter">
             <span className="italic font-light">Thoughtful gifts</span>
             <br />
             <span className="font-bold font-sans">for moments worth</span>
@@ -114,12 +114,12 @@ const HeroSection = () => {
             (max-width: 1024px) 360px,
             420px
           "
-          className="w-[260px] sm:w-[300px] md:w-[360px] lg:w-[320px] h-auto"
+          className="w-65 sm:w-75 md:w-90 lg:w-[320px] h-auto"
         />
       </motion.div>
 
       {/* Subtle bottom fade */}
-      <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-black/5 to-transparent pointer-events-none" />
+      <div className="absolute bottom-0 left-0 right-0 h-32 bg-linear-to-t from-black/5 to-transparent pointer-events-none" />
     </section>
   );
 };
