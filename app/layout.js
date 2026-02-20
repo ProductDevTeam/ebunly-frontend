@@ -2,7 +2,6 @@ import { DM_Sans, Playfair_Display } from "next/font/google";
 import "./globals.css";
 
 import QueryProvider from "@/components/providers/QueryProvider";
-import PageShell from "./inner";
 
 const dmSans = DM_Sans({
   variable: "--font-dmSans",
@@ -93,9 +92,7 @@ export default function RootLayout({ children }) {
       <body
         className={`${dmSans.variable} ${playFair.variable} antialiased bg-white font-sans`}
       >
-        <QueryProvider>
-          <PageShell>{children}</PageShell>
-        </QueryProvider>
+        <QueryProvider>{children}</QueryProvider>
       </body>
     </html>
   );
