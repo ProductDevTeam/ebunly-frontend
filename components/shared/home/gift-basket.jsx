@@ -10,23 +10,47 @@ const GiftBasketsSection = () => {
     <section className="py-12 md:py-16 lg:py-20 px-6 md:px-0">
       <div className="max-w-7xl mx-auto">
         {/* Container: stack on mobile, row on desktop */}
-        <div className="flex flex-col lg:flex-row gap-2 lg:gap-8">
+        <div className="flex flex-col lg:flex-row gap-2 lg:gap-0">
           {/* Section Title */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.6 }}
-            className="lg:w-62.5 xl:w-70 shrink-0"
+            className="lg:w-62.5 xl:w-70 shrink-0 "
           >
-            <h2 className="text-xl md:text-3xl lg:text-4xl font-playfair leading-tight tracking-tighter lg:w-[80%] w-full">
-              <span className="italic font-light">Gift Baskets </span>
-              <span className="font-bold">for any event or occasion</span>
+            <h2
+              className="heading-1 lg:w-[90%] w-full"
+              style={{ lineHeight: "96%" }}
+            >
+              <span
+                className="font-playfair"
+                style={{
+                  fontWeight: 400,
+                  fontStyle: "italic",
+                  letterSpacing: "-0.06em",
+                }}
+              >
+                Gift Baskets{" "}
+              </span>
+              <span
+                className="font-sans"
+                style={{ fontWeight: 600, letterSpacing: "-0.09em" }}
+              >
+                for
+              </span>
+              <br />
+              <span
+                className="font-sans"
+                style={{ fontWeight: 600, letterSpacing: "-0.07em" }}
+              >
+                any event or occasion
+              </span>
             </h2>
           </motion.div>
 
           {/* Categories Grid */}
-          <div className="flex-1 grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-4">
+          <div className="flex-1 grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-4 pt-4">
             {categories.map((category, index) => (
               <motion.div
                 key={category.id}
@@ -44,7 +68,7 @@ const GiftBasketsSection = () => {
                 >
                   {/* Category Badge */}
                   <div
-                    className={`${category.color} rounded-full px-4 py-2 inline-flex items-center gap-2 mb-2 transition-transform group-hover:scale-105`}
+                    className={`${category.color} rounded-full px-4 py-2 inline-flex items-center gap-2 mb-2 transition-transform group-hover:scale-105 whitespace-nowrap`}
                   >
                     <span className={`w-2.5 h-2.5 rounded-full bg-gray-900`} />
                     <span className="text-sm font-semibold text-gray-900">

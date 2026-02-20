@@ -3,7 +3,18 @@
 import { motion } from "framer-motion";
 import Image from "next/image";
 import Link from "next/link";
-import { Loader2 } from "lucide-react";
+
+function ProductSkeleton() {
+  return (
+    <div className="animate-pulse font-sans">
+      <div className="bg-gray-200 rounded-xl aspect-square mb-3" />
+      <div className="space-y-2">
+        <div className="h-4 bg-gray-200 rounded w-3/4" />
+        <div className="h-4 bg-gray-200 rounded w-1/3" />
+      </div>
+    </div>
+  );
+}
 
 export default function ProductGrid({
   products = [],
@@ -14,8 +25,12 @@ export default function ProductGrid({
 }) {
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center min-h-[400px]">
-        <Loader2 className="w-8 h-8 animate-spin text-orange-500" />
+      <div className="p-4 lg:p-8">
+        <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2">
+          {Array.from({ length: 8 }).map((_, i) => (
+            <ProductSkeleton key={i} />
+          ))}
+        </div>
       </div>
     );
   }
@@ -75,7 +90,6 @@ export default function ProductGrid({
 }
 
 function ProductCard({ product, index }) {
-  // Get the main image or fallback to first image
   const mainImage =
     product.images?.find((img) => img.isMain)?.url ||
     product.images?.[0]?.url ||
@@ -89,7 +103,6 @@ function ProductCard({ product, index }) {
         transition={{ delay: index * 0.05 }}
         className="group cursor-pointer font-sans"
       >
-        {/* Product Image Container */}
         <div className="relative bg-gray-100 rounded-xl overflow-hidden aspect-square mb-3">
           <Image
             src={mainImage}
@@ -101,7 +114,6 @@ function ProductCard({ product, index }) {
           />
         </div>
 
-        {/* Product Info */}
         <div className="space-y-1 font-sans">
           <h3 className="font-semibold text-gray-900 group-hover:text-orange-600 transition-colors">
             {product.name}

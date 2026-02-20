@@ -64,12 +64,16 @@ const EventShoppingCTA = () => {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.6 }}
-            className="text-2xl md:text-3xl lg:text-4xl xl:text-5xl text-white mb-6 md:mb-8 leading-tight"
+            className="heading-1 text-white mb-6 md:mb-8 leading-[1.1]"
           >
-            <span className="font-bold">Shopping for an event</span>
-            <br />
-            <span className="font-playfair italic font-light">
-              or Special Occasion?
+            <span className="font-bold">
+              Shopping for
+              <br /> an event
+            </span>
+
+            <span className="font-playfair italic font-light ml-2">
+              or <br />
+              Special Occasion?
             </span>
           </motion.h2>
 
@@ -82,7 +86,7 @@ const EventShoppingCTA = () => {
             <Link href="/group-shopping">
               <motion.button
                 whileTap={{ scale: 0.95 }}
-                className="bg-[#FF5722] text-white px-4 md:px-6 py-1.5 md:py-1.5 cursor-pointer rounded-full font-bold text-base md:text-lg shadow-xl hover:shadow-2xl transition-shadow"
+                className="bg-[#FF5722] text-white px-4 md:px-6 py-1.5 md:py-2 cursor-pointer rounded-full font-bold text-base md:text-lg shadow-xl hover:shadow-2xl transition-shadow"
               >
                 Switch to Group
               </motion.button>

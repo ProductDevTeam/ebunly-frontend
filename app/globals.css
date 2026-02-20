@@ -58,3 +58,87 @@ body {
 .take {
   background-color: yellow;
 }
+/* ── Typography Scale ────────────────────────────── */
+
+/* Hero Section */
+.hero-heading {
+  font-size: 60px;
+  letter-spacing: -0.06em;
+  line-height: 90%;
+  font-weight: 600;
+}
+
+/* Heading 1 */
+.heading-1 {
+  font-size: 32px;
+  letter-spacing: -0.04em;
+  line-height: 140%;
+  font-weight: 600;
+}
+
+/* Heading 2 */
+.heading-2 {
+  font-size: 24px;
+  letter-spacing: -0.02em;
+  line-height: 140%;
+  font-weight: 600;
+}
+
+/* Paragraph */
+.paragraph {
+  font-size: 16px;
+  letter-spacing: 0em;
+  line-height: 140%;
+  font-weight: 400;
+}
+
+/* Paragraph S */
+.paragraph-s {
+  font-size: 14px;
+  letter-spacing: 0em;
+  line-height: 140%;
+  font-weight: 400;
+}
+
+/* Small */
+.small {
+  font-size: 12px;
+  letter-spacing: -0.02em;
+  line-height: 140%;
+  font-weight: 400;
+}
+
+/* ── Mobile Overrides ────────────────────────────── */
+
+@media (max-width: 768px) {
+  .hero-heading {
+    font-size: 36px;
+    letter-spacing: -0.06em;
+    line-height: 100%;
+  }
+
+  .heading-1 {
+    font-size: 18px;
+    letter-spacing: -0.02em;
+    line-height: 120%;
+  }
+
+  .heading-2 {
+    font-size: 18px;
+    letter-spacing: -0.02em;
+    line-height: 120%;
+  }
+
+  .paragraph {
+    font-size: 14px;
+  }
+
+  .paragraph-s {
+    font-size: 12px;
+  }
+
+  .small {
+    font-size: 10px;
+    letter-spacing: -0.02em;
+  }
+}

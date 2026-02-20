@@ -5,7 +5,7 @@ import { motion } from "framer-motion";
 
 const HeroSection = () => {
   return (
-    <section className="relative overflow-hidden h-[60vh] md:max-h-[88vh] flex flex-col items-center justify-center">
+    <section className="relative overflow-hidden h-[60vh] md:max-h-[88vh] flex flex-col items-center justify-center isolate">
       {/* Gradient Background */}
       <div
         className="absolute inset-0"
@@ -74,7 +74,7 @@ const HeroSection = () => {
           transition={{ duration: 0.6 }}
           className="z-10 font-playfair max-w-xl text-center"
         >
-          <h1 className="text-4xl md:text-3xl lg:text-4xl xl:text-5xl text-[#FAF9C6] mb-6 tracking-tighter">
+          <h1 className="hero-heading text-[#FAF9C6] mb-6">
             <span className="italic font-light">Thoughtful gifts</span>
             <br />
             <span className="font-bold font-sans">for moments worth</span>
@@ -85,7 +85,7 @@ const HeroSection = () => {
           <motion.button
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
-            className="bg-white text-gray-900 px-8 py-2.5 rounded-full font-semibold text-base md:text-lg shadow-lg hover:shadow-xl transition-shadow"
+            className="bg-white text-gray-900 px-8 py-2.5 rounded-full font-semibold text-base md:text-lg shadow-lg hover:shadow-xl transition-shadow font-sans"
           >
             Shop Now
           </motion.button>
