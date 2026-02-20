@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { Suspense, useState, useRef, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useVerifyCode } from "@/hooks/use-auth";
 import { AuthButton, BackButton } from "@/components/common/auth/input";
@@ -8,7 +8,7 @@ import { AuthButton, BackButton } from "@/components/common/auth/input";
 const CODE_LENGTH = 5;
 const RESEND_SECONDS = 20;
 
-export default function EnterCodePage() {
+function EnterCodeContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const email = searchParams.get("email") || "Email@gmail.com";
@@ -20,7 +20,6 @@ export default function EnterCodePage() {
   const [countdown, setCountdown] = useState(RESEND_SECONDS);
   const inputRefs = useRef([]);
 
-  // Countdown timer
   useEffect(() => {
     if (countdown <= 0) return;
     const timer = setTimeout(() => setCountdown((c) => c - 1), 1000);
@@ -28,14 +27,12 @@ export default function EnterCodePage() {
   }, [countdown]);
 
   const handleChange = (index, value) => {
-    // Only allow single digit
     const digit = value.replace(/\D/g, "").slice(-1);
     const newDigits = [...digits];
     newDigits[index] = digit;
     setDigits(newDigits);
     setError("");
 
-    // Auto-advance
     if (digit && index < CODE_LENGTH - 1) {
       inputRefs.current[index + 1]?.focus();
     }
@@ -44,12 +41,10 @@ export default function EnterCodePage() {
   const handleKeyDown = (index, e) => {
     if (e.key === "Backspace") {
       if (digits[index]) {
-        // Clear current
         const newDigits = [...digits];
         newDigits[index] = "";
         setDigits(newDigits);
       } else if (index > 0) {
-        // Go back
         inputRefs.current[index - 1]?.focus();
       }
     }
@@ -66,7 +61,6 @@ export default function EnterCodePage() {
       newDigits[i] = char;
     });
     setDigits(newDigits);
-    // Focus last filled or next empty
     const nextEmpty = newDigits.findIndex((d) => !d);
     const focusIdx = nextEmpty === -1 ? CODE_LENGTH - 1 : nextEmpty;
     inputRefs.current[focusIdx]?.focus();
@@ -77,8 +71,6 @@ export default function EnterCodePage() {
     setCountdown(RESEND_SECONDS);
     setDigits(Array(CODE_LENGTH).fill(""));
     setError("");
-    // useForgotPassword hook resend
-    // sendCode({ email });
   };
 
   const handleSubmit = (e) => {
@@ -112,12 +104,10 @@ export default function EnterCodePage() {
 
   return (
     <div className="min-h-screen bg-white flex flex-col px-6 pt-10 pb-8 font-sans max-w-md mx-auto">
-      {/* Back button */}
       <div className="mb-8">
         <BackButton onClick={() => router.back()} />
       </div>
 
-      {/* Heading */}
       <div className="mb-8">
         <h1 className="hero-heading text-gray-900 mb-3">Enter code</h1>
         <p className="paragraph text-gray-500">
@@ -126,7 +116,6 @@ export default function EnterCodePage() {
         </p>
       </div>
 
-      {/* OTP inputs */}
       <form onSubmit={handleSubmit} noValidate>
         <div className="flex items-center gap-3 mb-6" onPaste={handlePaste}>
           {digits.map((digit, index) => (
@@ -153,7 +142,6 @@ export default function EnterCodePage() {
         <AuthButton isLoading={isPending}>Verify code</AuthButton>
       </form>
 
-      {/* Resend */}
       <div className="mt-auto pt-8 flex items-center justify-center gap-2">
         <button
           type="button"
@@ -174,5 +162,13 @@ export default function EnterCodePage() {
         )}
       </div>
     </div>
+  );
+}
+
+export default function EnterCodePage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-white" />}>
+      <EnterCodeContent />
+    </Suspense>
   );
 }
