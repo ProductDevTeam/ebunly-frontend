@@ -6,7 +6,7 @@ import Image from "next/image";
 import { useState } from "react";
 import { usePathname } from "next/navigation";
 
-export default function Sidebar({ isOpen, setIsOpen }) {
+export default function Sidebar({ isOpen, setIsOpen, visible = true }) {
   const [cartItemCount, setCartItemCount] = useState(2);
   const [notifications, setNotifications] = useState([
     {
@@ -33,17 +33,16 @@ export default function Sidebar({ isOpen, setIsOpen }) {
   ]);
 
   const pathname = usePathname();
-  const isHome = pathname === "/";
+  const isHome = pathname === "/home";
   const isActive = (href) =>
     pathname === href || pathname.startsWith(href + "/");
 
-  // Menu items with both active and inactive icon states
   const menuItems = [
     {
       icon: "/icons/home.svg",
       iconActive: "/icons/home-2.svg",
       label: "Home",
-      href: "/",
+      href: "/home",
     },
     {
       icon: "/icons/shop-2.svg",
@@ -72,9 +71,9 @@ export default function Sidebar({ isOpen, setIsOpen }) {
 
   return (
     <>
-      {/* Desktop Sidebar - Hidden only on desktop home page */}
+      {/* Desktop Sidebar */}
       <aside
-        className={`${isHome ? "hidden lg:hidden" : "hidden lg:hidden"} lg:static inset-y-0 left-0 z-50 w-72 pt-20 bg-white font-sans flex-col`}
+        className={`${isHome ? "hidden lg:hidden" : "hidden lg:block"} lg:static inset-y-0 left-0 z-50 w-72 pt-20 bg-white font-sans flex-col`}
       >
         <nav className="flex-1 overflow-y-auto pl-16">
           <ul className="space-y-3">
@@ -110,67 +109,14 @@ export default function Sidebar({ isOpen, setIsOpen }) {
             })}
           </ul>
         </nav>
-
-        {/* <div className="px-3 py-3 border-t border-gray-200">
-          <LiveBasket
-            isExpanded={isBasketExpanded}
-            onToggle={() => setIsBasketExpanded(!isBasketExpanded)}
-            notifications={notifications}
-            onDismiss={handleDismissNotification}
-          />
-        </div>
-
-      
-        {!isBasketExpanded && (
-          <div className="px-3 py-3 border-t border-gray-200 space-y-3">
-            <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider px-1">
-              Notifications
-            </h3>
-            <div className="space-y-2 text-xs">
-              {notifications.map((n) => (
-                <div key={n.id} className="pb-2 border-b border-gray-100">
-                  <p className="text-gray-700">
-                    {n.message.split("...")[0]}{" "}
-                    <span className="font-bold">
-                      {n.message.split("...")[1]}
-                    </span>
-                  </p>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-
-       
-        <div className="px-3 py-3 border-t border-gray-200">
-          <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2 px-1">
-            In Your Cart
-          </h3>
-          <div className="flex items-center space-x-2">
-            <div className="relative w-14 h-14 rounded-lg overflow-hidden">
-              <Image
-                src="/product.png"
-                alt="Black Embroidered Shirt"
-                fill
-                sizes="56px"
-                className="object-cover"
-              />
-            </div>
-            <div className="relative w-14 h-14 rounded-lg overflow-hidden">
-              <Image
-                src="/product.png"
-                alt="Personalized Towels"
-                fill
-                sizes="56px"
-                className="object-cover"
-              />
-            </div>
-          </div>
-        </div> */}
       </aside>
 
-      {/* Mobile Bottom Navigation - Always visible */}
-      <nav className="lg:hidden fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-gray-100">
+      {/* Mobile Bottom Navigation */}
+      <nav
+        className={`lg:hidden fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-gray-100 transition-transform duration-300 ${
+          visible ? "translate-y-0" : "translate-y-full"
+        }`}
+      >
         <div className="flex items-center justify-around px-2 py-2.5 pb-safe">
           {menuItems.map((item) => {
             const active = isActive(item.href);

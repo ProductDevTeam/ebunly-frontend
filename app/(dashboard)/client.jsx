@@ -15,7 +15,7 @@ export default function DashboardShell({ children }) {
 
 function ShellFallback() {
   return (
-    <div className="h-screen bg-gray-50 flex items-center justify-center">
+    <div className="h-screen bg-white flex items-center justify-center">
       <div className="text-gray-500">Loading dashboard...</div>
     </div>
   );

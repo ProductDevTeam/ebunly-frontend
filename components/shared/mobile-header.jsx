@@ -20,8 +20,8 @@ export default function MobileHeader({ value = "personal", onChange }) {
               key={tab.key}
               onClick={() => onChange?.(tab.key)}
               className={clsx(
-                "relative z-10 px-4 py-2 text-sm font-semibold rounded-full transition-colors",
-                isActive ? "text-primary" : "text-gray-500 hover:text-gray-700"
+                "relative z-10 px-4 py-1 text-sm font-semibold rounded-full transition-colors",
+                isActive ? "text-primary" : "text-gray-500 hover:text-gray-700",
               )}
             >
               {tab.label}

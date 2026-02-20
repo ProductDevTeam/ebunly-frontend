@@ -14,7 +14,7 @@ const COMPANY_LINKS = [
 
 export default function Footer() {
   return (
-    <footer className="relative w-full bg-[#FFF5F3] overflow-hidden">
+    <footer className="relative w-full bg-[#FFF5F3] overflow-hidden pb-10 md:pb-0">
       {/* Background SVG */}
       <div className="absolute inset-0 w-full h-full">
         <Image
@@ -41,18 +41,18 @@ export default function Footer() {
               />
             </div>
 
-            <div className="space-y-1 font-sans">
-              <h2 className="text-3xl md:text-4xl font-bold text-gray-900 leading-tight">
+            <div className="space-y-1 font-sans font-medium">
+              <h2 className="text-3xl md:text-4xl  text-gray-900 leading-tight">
                 Make
                 <br />
                 memories
               </h2>
-              <p className="text-3xl md:text-4xl font-bold text-primary leading-tight">
+              <p className="text-3xl md:text-4xl text-primary leading-tight">
                 last.
               </p>
             </div>
 
-            <p className="text-sm text-gray-900 font-medium">©Ebunly2025</p>
+            <p className="text-sm text-gray-900 font-medium">©Ebunly2026</p>
           </div>
 
           {/* Right: Socials & Company */}

@@ -6,13 +6,13 @@ import { useRouter, useSearchParams } from "next/navigation";
 import MobileHeader from "@/components/shared/mobile-header";
 import DesktopHeader from "@/components/shared/dashboard/desktop-header";
 import Sidebar from "@/components/shared/dashboard/sidebar";
-import MobileFilterBar from "@/components/shared/dashboard/mobile-filter";
+import Navbar from "@/components/common/navbar";
+import TopHeader from "@/top-header";
 
 const VALID_TABS = ["personal", "group"];
 
 export default function DashboardShellInner({ children }) {
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-  const [isFilterOpen, setIsFilterOpen] = useState(false);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
 
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -27,7 +27,12 @@ export default function DashboardShellInner({ children }) {
   };
 
   return (
-    <div className=" w-full bg-gray-50 flex flex-col overflow-hidden font-sans">
+    <div className="w-full bg-white flex flex-col overflow-hidden font-sans">
+      {/* ===== NAVBAR ===== */}
+      {/* <Navbar /> */}
+
+      <TopHeader />
+
       {/* ===== HEADERS ===== */}
       <MobileHeader
         onMenuClick={() => setIsSidebarOpen(true)}
@@ -35,7 +40,6 @@ export default function DashboardShellInner({ children }) {
         onChange={setTab}
         className="lg:hidden"
       />
-
       <DesktopHeader value={tab} onChange={setTab} />
 
       {/* ===== BODY ===== */}
@@ -44,10 +48,6 @@ export default function DashboardShellInner({ children }) {
           <Sidebar isOpen={isSidebarOpen} setIsOpen={setIsSidebarOpen} />
 
           <main className="flex-1 flex flex-col overflow-hidden">
-            {isFilterOpen && (
-              <MobileFilterBar onClose={() => setIsFilterOpen(false)} />
-            )}
-
             <div className="flex-1 overflow-y-auto pb-20 lg:pb-0">
               {children}
             </div>

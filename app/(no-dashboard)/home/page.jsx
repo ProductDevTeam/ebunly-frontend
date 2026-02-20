@@ -100,7 +100,7 @@ const forHerProducts = [
 
 export default function HomePage() {
   return (
-    <div className="">
+    <div className="bg-white">
       <HeroSection />
       <GiftBasketsSection />
 

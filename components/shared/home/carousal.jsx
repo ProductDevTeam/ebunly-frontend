@@ -28,14 +28,12 @@ const ProductCarouselSection = ({
   };
 
   return (
-    <section className="pt-12 md:py-16 lg:py-6 px-6">
+    <section className="pt-8 md:pt-14 md:py-16 lg:py-6 px-6 ">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="flex items-center justify-between mb-6 md:mb-8">
           <div className="flex items-center gap-2">
-            <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold">
-              {title}
-            </h2>
+            <h2 className="heading-1 font-bold">{title}</h2>
             {emoji && <span className="text-2xl md:text-3xl">{emoji}</span>}
           </div>
 
@@ -59,11 +57,11 @@ const ProductCarouselSection = ({
           {products.map((product) => (
             <div
               key={product.id}
-              className="flex-none w-[260px] md:w-[280px] lg:w-[300px] snap-start"
+              className="flex-none w-65 md:w-70 lg:w-75 snap-start"
             >
               <Link href={`/products/${product.slug}`} className="group block">
                 {/* Product Image */}
-                <div className="relative w-full rounded-2xl overflow-hidden mb-3 h-[250px] md:h-[280px] lg:h-[300px] bg-gray-100">
+                <div className="relative w-full rounded-2xl overflow-hidden mb-3 h-62.5 md:h-70 lg:h-75 bg-gray-100">
                   <Image
                     src={product.image}
                     alt={product.name}
@@ -75,7 +73,7 @@ const ProductCarouselSection = ({
 
                 {/* Product Info */}
                 <div className="space-y-1">
-                  <h3 className="font-semibold text-base md:text-lg text-gray-900 truncate">
+                  <h3 className="font-semibold text-base md:text-[20px] text-gray-900 truncate">
                     {product.name}
                   </h3>
                   <p className="text-lg md:text-xl font-normal text-gray-900">
