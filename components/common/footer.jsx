@@ -14,7 +14,7 @@ const COMPANY_LINKS = [
 
 export default function Footer() {
   return (
-    <footer className="relative w-full bg-[#FFF5F3] overflow-hidden pb-10 md:pb-0">
+    <footer className="relative w-full bg-[#FFF5F3] overflow-hidden pb-8 md:pb-0">
       {/* Background SVG */}
       <div className="absolute inset-0 w-full h-full">
         <Image

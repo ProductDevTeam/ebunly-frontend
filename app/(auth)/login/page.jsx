@@ -3,6 +3,8 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useLogin } from "@/hooks/use-auth";
+import { useNotification } from "@/components/common/notification-provider";
+import { validateEmail, validatePassword } from "@/utils/input-validation";
 import {
   AuthButton,
   AuthFooter,
@@ -14,10 +16,10 @@ import {
 export default function LoginPage() {
   const router = useRouter();
   const { mutate: login, isPending } = useLogin();
+  const { error: notifyError, success: notifySuccess } = useNotification();
 
   const [form, setForm] = useState({ email: "", password: "" });
   const [errors, setErrors] = useState({});
-  const [serverError, setServerError] = useState("");
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -36,10 +38,11 @@ export default function LoginPage() {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    setServerError("");
     const newErrors = validate();
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
+      const firstErr = Object.values(newErrors)[0];
+      notifyError(firstErr, "Please fix the following");
       return;
     }
 
@@ -47,10 +50,14 @@ export default function LoginPage() {
       { email: form.email, password: form.password },
       {
         onSuccess: () => {
-          router.push("/home");
+          notifySuccess("Welcome back! Redirecting you now.", "Logged in");
+          setTimeout(() => router.push("/home"), 1000);
         },
         onError: (err) => {
-          setServerError(err.message || "Invalid email or password.");
+          notifyError(
+            err.message || "Incorrect email or password. Please try again.",
+            "Login failed",
+          );
         },
       },
     );
@@ -60,10 +67,10 @@ export default function LoginPage() {
     <div className="min-h-screen bg-white flex flex-col px-6 pt-12 pb-8 font-sans max-w-md mx-auto">
       {/* Heading */}
       <div className="mb-8">
-        <h1 className="hero-heading text-gray-900 mb-2">Welcome Back</h1>
-        <p className="paragraph text-gray-500">
-          Log in to your Ebunly Account
-          <br />& gift to your heart&apos;s content
+        <h1 className="hero-heading text-gray-900 mb-2">Welcome back</h1>
+        <p className="paragraph text-black">
+          Log in to your Ebunly account
+          <br />& continue gifting
         </p>
       </div>
 
@@ -79,43 +86,39 @@ export default function LoginPage() {
           error={errors.email}
           autoComplete="email"
         />
-
         <AuthInput
           label="Password"
           name="password"
           type="password"
-          placeholder="must be 8 characters"
+          placeholder="your password"
           value={form.password}
           onChange={handleChange}
           error={errors.password}
           autoComplete="current-password"
         />
 
-        {serverError && (
-          <p className="paragraph-s text-red-500 text-center">{serverError}</p>
-        )}
-
-        <div className="mt-2 flex flex-col gap-3">
-          <AuthButton isLoading={isPending}>Login</AuthButton>
-
+        {/* Forgot password link */}
+        <div className="flex justify-end -mt-2">
           <a
-            href="/auth/forgot-password"
-            className="paragraph-s text-gray-900 font-medium text-center hover:text-primary transition-colors"
+            href="/forgot-password"
+            className="text-sm font-medium"
+            style={{ color: "#FF5722", fontFamily: "'DM Sans', sans-serif" }}
           >
-            Forgot Password?
+            Forgot password?
           </a>
+        </div>
+
+        <div className="mt-2">
+          <AuthButton isLoading={isPending}>Log In</AuthButton>
         </div>
       </form>
 
-      {/* Divider */}
       <div className="my-6">
-        <OrDivider label="Or Login with" />
+        <OrDivider label="Or continue with" />
       </div>
 
-      {/* Google */}
       <GoogleButton label="Sign in with Google" />
 
-      {/* Footer */}
       <div className="mt-auto pt-8">
         <AuthFooter
           text="Don't have an account?"

@@ -85,7 +85,7 @@ const HeroSection = () => {
           <motion.button
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
-            className="bg-white text-gray-900 px-8 py-2.5 rounded-full font-semibold text-base md:text-lg shadow-lg hover:shadow-xl transition-shadow font-sans"
+            className="bg-white text-gray-900 px-8 py-2.5 rounded-full cursor-pointer font-semibold text-base md:text-lg shadow-lg hover:shadow-xl transition-shadow font-sans"
           >
             Shop Now
           </motion.button>
