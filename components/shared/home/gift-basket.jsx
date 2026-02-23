@@ -33,15 +33,18 @@ const GiftBasketsSection = () => {
               >
                 Gift Baskets{" "}
               </span>
+
               <span
-                className="font-sans"
+                className="font-sans whitespace-nowrap pl-0.5 md:pl-0"
                 style={{ fontWeight: 600, letterSpacing: "-0.09em" }}
               >
                 for
               </span>
-              <br />
+
+              <br className="hidden lg:block" />
+
               <span
-                className="font-sans"
+                className="font-sans pl-0.5 md:pl-0"
                 style={{ fontWeight: 600, letterSpacing: "-0.07em" }}
               >
                 any event or occasion

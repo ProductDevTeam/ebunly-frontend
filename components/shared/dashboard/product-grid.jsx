@@ -37,7 +37,7 @@ export default function ProductGrid({
 
   if (isError) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-[400px] px-4">
+      <div className="flex flex-col items-center justify-center min-h-100 px-4">
         <p className="text-red-500 font-medium mb-2">Failed to load products</p>
         <p className="text-gray-600 text-sm">{error?.message}</p>
       </div>
@@ -46,7 +46,7 @@ export default function ProductGrid({
 
   if (products.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-[400px] px-4">
+      <div className="flex flex-col items-center justify-center min-h-100 px-4">
         <p className="text-gray-500 font-medium text-lg">No products found</p>
         <p className="text-gray-400 text-sm mt-2">Try adjusting your filters</p>
       </div>
@@ -115,7 +115,7 @@ function ProductCard({ product, index }) {
         </div>
 
         <div className="space-y-1 font-sans">
-          <h3 className="font-semibold text-gray-900 group-hover:text-orange-600 transition-colors">
+          <h3 className="font-semibold text-gray-900 group-hover:text-orange-600 transition-colors truncate">
             {product.name}
           </h3>
           <p className="text-base font-medium text-gray-900">

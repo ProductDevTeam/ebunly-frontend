@@ -70,7 +70,7 @@ export function AuthButton({
       type={type}
       onClick={onClick}
       disabled={isLoading}
-      className={`w-full py-3.5 rounded-full font-semibold paragraph transition-all active:scale-95
+      className={`w-full py-3.5 rounded-full cursor-pointer font-semibold paragraph transition-all active:scale-95
         ${
           variant === "primary"
             ? "bg-primary hover:bg-orange-600 text-white shadow-sm"
@@ -105,7 +105,7 @@ export function GoogleButton({ label }) {
   return (
     <button
       type="button"
-      className="w-full flex items-center justify-center gap-3 py-3.5 rounded-full border border-gray-200 bg-white hover:bg-gray-50 transition-all active:scale-95"
+      className="w-full flex items-center justify-center cursor-pointer gap-3 py-3.5 rounded-full border border-gray-200 bg-white hover:bg-gray-50 transition-all active:scale-95"
     >
       {/* Google SVG icon */}
       <svg width="20" height="20" viewBox="0 0 48 48" fill="none">
@@ -133,7 +133,7 @@ export function GoogleButton({ label }) {
 
 export function AuthFooter({ text, linkText, href }) {
   return (
-    <p className="paragraph-s text-gray-500 text-center">
+    <p className="paragraph text-gray-500 text-center">
       {text}{" "}
       <a href={href} className="text-primary font-semibold hover:underline">
         {linkText}

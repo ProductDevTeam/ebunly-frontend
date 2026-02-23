@@ -3,20 +3,21 @@
 import { Suspense, useState, useRef, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useVerifyCode } from "@/hooks/use-auth";
+import { useNotification } from "@/components/common/notification-provider";
 import { AuthButton, BackButton } from "@/components/common/auth/input";
 
-const CODE_LENGTH = 5;
+const CODE_LENGTH = 6;
 const RESEND_SECONDS = 20;
 
 function EnterCodeContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const email = searchParams.get("email") || "Email@gmail.com";
+  const email = searchParams.get("email") || "";
 
   const { mutate: verifyCode, isPending } = useVerifyCode();
+  const { error: notifyError } = useNotification();
 
   const [digits, setDigits] = useState(Array(CODE_LENGTH).fill(""));
-  const [error, setError] = useState("");
   const [countdown, setCountdown] = useState(RESEND_SECONDS);
   const inputRefs = useRef([]);
 
@@ -31,7 +32,6 @@ function EnterCodeContent() {
     const newDigits = [...digits];
     newDigits[index] = digit;
     setDigits(newDigits);
-    setError("");
 
     if (digit && index < CODE_LENGTH - 1) {
       inputRefs.current[index + 1]?.focus();
@@ -70,25 +70,40 @@ function EnterCodeContent() {
     if (countdown > 0) return;
     setCountdown(RESEND_SECONDS);
     setDigits(Array(CODE_LENGTH).fill(""));
-    setError("");
+    inputRefs.current[0]?.focus();
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
     const code = digits.join("");
+
     if (code.length < CODE_LENGTH) {
-      setError("Please enter all 5 digits");
+      notifyError(
+        "Please enter all 6 digits of your verification code.",
+        "Incomplete code",
+      );
+      return;
+    }
+
+    if (!email) {
+      notifyError(
+        "Email address is missing. Please go back and try again.",
+        "Missing email",
+      );
       return;
     }
 
     verifyCode(
-      { email, code },
+      { email, otp: code },
       {
         onSuccess: () => {
-          router.push("/reset-password");
+          router.push(`/home`);
         },
         onError: (err) => {
-          setError(err.message || "Invalid code. Please try again.");
+          notifyError(
+            err.message || "Invalid code. Please try again.",
+            "Verification failed",
+          );
           setDigits(Array(CODE_LENGTH).fill(""));
           inputRefs.current[0]?.focus();
         },
@@ -102,6 +117,9 @@ function EnterCodeContent() {
     return `${String(m).padStart(2, "0")}:${String(sec).padStart(2, "0")}`;
   };
 
+  const filledCount = digits.filter(Boolean).length;
+  const isComplete = filledCount === CODE_LENGTH;
+
   return (
     <div className="min-h-screen bg-white flex flex-col px-6 pt-10 pb-8 font-sans max-w-md mx-auto">
       <div className="mb-8">
@@ -111,8 +129,12 @@ function EnterCodeContent() {
       <div className="mb-8">
         <h1 className="hero-heading text-gray-900 mb-3">Enter code</h1>
         <p className="paragraph text-gray-500">
-          We&apos;ve sent an Email with an activation code to{" "}
-          <span className="font-medium text-gray-900">{email}</span>
+          We&apos;ve sent an email with an activation code to{" "}
+          {email ? (
+            <span className="font-medium text-gray-900">{email}</span>
+          ) : (
+            <span className="font-medium text-gray-400">your email</span>
+          )}
         </p>
       </div>
 
@@ -130,16 +152,21 @@ function EnterCodeContent() {
               onKeyDown={(e) => handleKeyDown(index, e)}
               className={`w-full aspect-square max-w-16 text-center text-xl font-semibold rounded-2xl border-2 outline-none transition-all
                 ${digit ? "border-gray-900 bg-white" : "border-gray-200 bg-white"}
-                ${error ? "border-red-400" : "focus:border-gray-900"}
+                focus:border-gray-900
               `}
               autoFocus={index === 0}
             />
           ))}
         </div>
 
-        {error && <p className="paragraph-s text-red-500 mb-4">{error}</p>}
+        {/* Progress indicator */}
+        <p className="text-xs text-gray-400 mb-4 text-right">
+          {filledCount}/{CODE_LENGTH} digits entered
+        </p>
 
-        <AuthButton isLoading={isPending}>Verify code</AuthButton>
+        <AuthButton isLoading={isPending} disabled={!isComplete || isPending}>
+          Verify code
+        </AuthButton>
       </form>
 
       <div className="mt-auto pt-8 flex items-center justify-center gap-2">

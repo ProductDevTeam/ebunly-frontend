@@ -2,6 +2,7 @@ import { DM_Sans, Playfair_Display } from "next/font/google";
 import "./globals.css";
 
 import QueryProvider from "@/components/providers/QueryProvider";
+import { NotificationProvider } from "@/components/common/notification-provider";
 
 const dmSans = DM_Sans({
   variable: "--font-dmSans",
@@ -92,7 +93,9 @@ export default function RootLayout({ children }) {
       <body
         className={`${dmSans.variable} ${playFair.variable} antialiased bg-white font-sans`}
       >
-        <QueryProvider>{children}</QueryProvider>
+        <QueryProvider>
+          <NotificationProvider>{children}</NotificationProvider>
+        </QueryProvider>
       </body>
     </html>
   );
