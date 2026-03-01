@@ -3,34 +3,24 @@
 import { motion } from "framer-motion";
 import Link from "next/link";
 import Image from "next/image";
-import { useState } from "react";
 import { usePathname } from "next/navigation";
+import { useEffect, useState } from "react";
+import { useCartStore } from "@/hooks/use-cart-store";
+
+// Reads cart count only after hydration to avoid SSR mismatch
+function useCartCount() {
+  const [count, setCount] = useState(0);
+  const storeCount = useCartStore((s) => s.totalCount());
+
+  useEffect(() => {
+    setCount(storeCount);
+  }, [storeCount]);
+
+  return count;
+}
 
 export default function Sidebar({ isOpen, setIsOpen, visible = true }) {
-  const [cartItemCount, setCartItemCount] = useState(2);
-  const [notifications, setNotifications] = useState([
-    {
-      id: 1,
-      type: "cart",
-      title: "Item Added",
-      message: "You added Black Embroide... to your cart",
-      timestamp: new Date(Date.now() - 300000),
-    },
-    {
-      id: 2,
-      type: "success",
-      title: "Signed In",
-      message: "You signed in as Ade@gmail.com",
-      timestamp: new Date(Date.now() - 600000),
-    },
-    {
-      id: 3,
-      type: "info",
-      title: "Delivery Update",
-      message: "Your new Est. delivery date is Dec 25th 2025",
-      timestamp: new Date(Date.now() - 900000),
-    },
-  ]);
+  const cartCount = useCartCount();
 
   const pathname = usePathname();
   const isHome = pathname === "/home";
@@ -55,7 +45,7 @@ export default function Sidebar({ isOpen, setIsOpen, visible = true }) {
       iconActive: "/icons/bag-active.svg",
       label: "Cart",
       href: "/cart",
-      badge: cartItemCount,
+      badge: cartCount || null,
     },
     {
       icon: "/icons/basket.svg",
@@ -64,10 +54,6 @@ export default function Sidebar({ isOpen, setIsOpen, visible = true }) {
       href: "/profile",
     },
   ];
-
-  const handleDismissNotification = (id) => {
-    setNotifications((prev) => prev.filter((notif) => notif.id !== id));
-  };
 
   return (
     <>
@@ -150,9 +136,15 @@ export default function Sidebar({ isOpen, setIsOpen, visible = true }) {
                   {item.label}
                 </span>
                 {item.badge && (
-                  <span className="absolute top-0 right-2 z-20 bg-red-500 text-white text-[9px] font-semibold px-1.5 py-0.5 rounded-full min-w-[16px] text-center">
+                  <motion.span
+                    key={item.badge}
+                    initial={{ scale: 0.6, opacity: 0 }}
+                    animate={{ scale: 1, opacity: 1 }}
+                    transition={{ type: "spring", stiffness: 500, damping: 20 }}
+                    className="absolute top-0 right-2 z-20 bg-red-500 text-white text-[9px] font-semibold px-1.5 py-0.5 rounded-full min-w-[16px] text-center"
+                  >
                     {item.badge}
-                  </span>
+                  </motion.span>
                 )}
               </Link>
             );
