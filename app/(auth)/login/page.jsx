@@ -120,95 +120,99 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-white flex flex-col px-6 pt-12 pb-8 font-sans max-w-md mx-auto">
-      {/* Heading */}
-      <div className="mb-8">
-        <h1 className="hero-heading text-gray-900 mb-2">Welcome back</h1>
-        <p className="paragraph text-black">
-          Log in to your Ebunly account
-          <br />& continue gifting
-        </p>
-      </div>
-
-      {/* Email not verified banner */}
-      {emailNotVerified && (
-        <div className="mb-5 rounded-2xl bg-orange-50 border border-orange-200 px-4 py-4 flex flex-col gap-2">
-          <p className="text-sm font-medium text-orange-800">
-            Your email address hasn&apos;t been verified yet.
+    <div className="h-screen bg-white flex flex-col px-6 py-6 font-sans max-w-md mx-auto justify-between">
+      {/* Top section */}
+      <div className="flex flex-col gap-5">
+        {/* Heading */}
+        <div>
+          <h1 className="hero-heading text-gray-900 mb-1">Welcome back</h1>
+          <p className="paragraph text-black text-sm">
+            Log in to your Ebunly account & continue gifting
           </p>
-          <p className="text-sm text-orange-600">
-            Please verify your email before logging in.
-          </p>
-          <button
-            type="button"
-            onClick={handleResendVerification}
-            className="mt-1 self-start text-sm cursor-pointer font-semibold underline underline-offset-2"
-            style={{ color: "#FF5722" }}
-          >
-            Resend verification email →
-          </button>
-        </div>
-      )}
-
-      {/* Form */}
-      <form onSubmit={handleSubmit} noValidate className="flex flex-col gap-5">
-        <AuthInput
-          label="Email"
-          name="email"
-          type="email"
-          placeholder="example@gmail.com"
-          value={form.email}
-          onChange={handleChange}
-          error={errors.email}
-          autoComplete="email"
-        />
-        <AuthInput
-          label="Password"
-          name="password"
-          type="password"
-          placeholder="your password"
-          value={form.password}
-          onChange={handleChange}
-          error={errors.password}
-          autoComplete="current-password"
-        />
-
-        {/* Forgot password link */}
-        <div className="flex justify-end -mt-2">
-          <a
-            href="/forgot-password"
-            className="text-sm font-medium"
-            style={{ color: "#FF5722", fontFamily: "'DM Sans', sans-serif" }}
-          >
-            Forgot password?
-          </a>
         </div>
 
-        <div className="mt-2">
+        {/* Email not verified banner */}
+        {emailNotVerified && (
+          <div className="rounded-2xl bg-orange-50 border border-orange-200 px-4 py-3 flex flex-col gap-1">
+            <p className="text-sm font-medium text-orange-800">
+              Your email address hasn&apos;t been verified yet.
+            </p>
+            <p className="text-xs text-orange-600">
+              Please verify your email before logging in.
+            </p>
+            <button
+              type="button"
+              onClick={handleResendVerification}
+              className="mt-1 self-start text-xs cursor-pointer font-semibold underline underline-offset-2"
+              style={{ color: "#FF5722" }}
+            >
+              Resend verification email →
+            </button>
+          </div>
+        )}
+
+        {/* Form */}
+        <form
+          onSubmit={handleSubmit}
+          noValidate
+          className="flex flex-col gap-4"
+        >
+          <AuthInput
+            label="Email"
+            name="email"
+            type="email"
+            placeholder="example@gmail.com"
+            value={form.email}
+            onChange={handleChange}
+            error={errors.email}
+            autoComplete="email"
+          />
+          <AuthInput
+            label="Password"
+            name="password"
+            type="password"
+            placeholder="your password"
+            value={form.password}
+            onChange={handleChange}
+            error={errors.password}
+            autoComplete="current-password"
+          />
+
+          {/* Forgot password link */}
+          <div className="flex justify-end -mt-1">
+            <a
+              href="/forgot-password"
+              className="text-sm font-medium"
+              style={{ color: "#FF5722", fontFamily: "'DM Sans', sans-serif" }}
+            >
+              Forgot password?
+            </a>
+          </div>
+
           <AuthButton isLoading={isPending}>Log In</AuthButton>
+        </form>
+
+        {/* Divider + Google */}
+        <div className="flex flex-col gap-4">
+          <OrDivider label="Or continue with" />
+
+          {/* Hidden Google rendered button — do not remove */}
+          <div ref={googleBtnRef} className="hidden" />
+
+          <GoogleButton
+            label="Sign in with Google"
+            onClick={handleGoogleLogin}
+            isLoading={isGooglePending}
+          />
         </div>
-      </form>
-
-      <div className="my-6">
-        <OrDivider label="Or continue with" />
       </div>
 
-      {/* Hidden Google rendered button — do not remove */}
-      <div ref={googleBtnRef} className="hidden" />
-
-      <GoogleButton
-        label="Sign in with Google"
-        onClick={handleGoogleLogin}
-        isLoading={isGooglePending}
+      {/* Footer pinned to bottom */}
+      <AuthFooter
+        text="Don't have an account?"
+        linkText="Sign up"
+        href="/sign-up"
       />
-
-      <div className="mt-auto pt-8">
-        <AuthFooter
-          text="Don't have an account?"
-          linkText="Sign up"
-          href="/sign-up"
-        />
-      </div>
     </div>
   );
 }
