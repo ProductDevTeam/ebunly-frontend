@@ -1,10 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import { ChevronLeft, Heart, Minus, Plus } from "lucide-react";
+
 import { useRouter } from "next/navigation";
-import Image from "next/image";
+
 import ImageGallery from "@/components/shared/dashboard/product-detail/gallery";
 import ProductOptions from "@/components/shared/dashboard/product-detail/options";
 import ProductPersonalization from "@/components/shared/dashboard/product-detail/personalization";
@@ -174,10 +173,10 @@ export default function ProductDetailClient({ product }) {
 
       {/* Fixed Bottom Add to Cart */}
       <AddToCartSection
-        price={product.basePrice}
-        originalPrice={product.compareAtPrice}
+        product={product}
+        selectedOptions={selectedOptions}
+        personalization={personalization.enabled ? personalization.data : null}
         deliveryDate={getDeliveryDate()}
-        onAddToCart={handleAddToCart}
       />
     </div>
   );
