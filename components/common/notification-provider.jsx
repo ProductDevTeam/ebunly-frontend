@@ -208,8 +208,8 @@ function Toast({
     <motion.div
       layout
       {...motionProps}
-      onMouseEnter={!isMobile ? pauseTimer : undefined}
-      onMouseLeave={!isMobile ? resumeTimer : undefined}
+      onMouseEnter={isMobile ? undefined : pauseTimer}
+      onMouseLeave={isMobile ? undefined : resumeTimer}
       className={`
         relative overflow-hidden select-none
         bg-white/96 backdrop-blur-2xl
@@ -238,7 +238,7 @@ function Toast({
       <div className="flex items-center gap-3 px-3 pt-2 pb-3">
         {/* Icon badge */}
         <motion.div
-          className="shrink-0 w-[34px] h-[34px] rounded-[10px] flex items-center justify-center"
+          className="shrink-0 w-8.5 h-8.5 rounded-[10px] flex items-center justify-center"
           style={{ background: cfg.iconBg, color: cfg.iconColor }}
           initial={{ scale: 0.5, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
@@ -276,7 +276,7 @@ function Toast({
         {/* Close button */}
         <button
           onClick={() => onDismiss(id)}
-          className="shrink-0 w-[26px] h-[26px] rounded-[8px] flex items-center justify-center text-gray-300 hover:text-gray-500 hover:bg-gray-100 active:scale-95 transition-all"
+          className="shrink-0 w-6.5 h-6.5 rounded-lg flex items-center justify-center text-gray-300 hover:text-gray-500 hover:bg-gray-100 active:scale-95 transition-all"
           aria-label="Dismiss"
         >
           <svg width="9" height="9" viewBox="0 0 9 9" fill="none">
@@ -291,7 +291,7 @@ function Toast({
       </div>
 
       {/* Progress bar — bottom edge, 1.5px */}
-      <div className="absolute bottom-0 left-0 right-0 h-[1.5px] bg-black/[0.04]">
+      <div className="absolute bottom-0 left-0 right-0 h-[1.5px] bg-black/4">
         <motion.div
           className="absolute inset-y-0 left-0"
           style={{ background: cfg.accent, opacity: 0.7 }}
@@ -330,7 +330,7 @@ function ToastContainer({ toasts, onDismiss }) {
   return (
     <div
       className={`
-        fixed z-[9999] flex flex-col pointer-events-none
+        fixed z-9999 flex flex-col pointer-events-none
         ${
           isMobile
             ? "top-[env(safe-area-inset-top,16px)] left-0 right-0 items-center gap-2 px-4 pt-4"

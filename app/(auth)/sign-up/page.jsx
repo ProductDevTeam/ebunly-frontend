@@ -1,7 +1,8 @@
 "use client";
 
-import { useState } from "react";
-import { useSignUp } from "@/hooks/use-auth";
+import { useState, useEffect, useRef } from "react";
+import { useRouter } from "next/navigation";
+import { useSignUp, useGoogleAuth } from "@/hooks/use-auth";
 import { useNotification } from "@/components/common/notification-provider";
 import {
   validateEmail,
@@ -18,8 +19,11 @@ import {
 import { RegistrationSuccessModal } from "@/components/common/auth/success-modal";
 
 export default function SignUpPage() {
+  const router = useRouter();
   const { mutate: signUp, isPending } = useSignUp();
-  const { error: notifyError } = useNotification();
+  const { mutate: googleAuth, isPending: isGooglePending } = useGoogleAuth();
+  const { error: notifyError, success: notifySuccess } = useNotification();
+  const googleBtnRef = useRef(null);
 
   const [form, setForm] = useState({
     firstName: "",
@@ -30,6 +34,41 @@ export default function SignUpPage() {
   });
   const [errors, setErrors] = useState({});
   const [showSuccess, setShowSuccess] = useState(false);
+
+  useEffect(() => {
+    if (typeof window === "undefined" || !window.google) return;
+
+    window.google.accounts.id.initialize({
+      client_id: process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID,
+      callback: (response) => {
+        const idToken = response.credential;
+        googleAuth(idToken, {
+          onSuccess: () => {
+            notifySuccess("Account created with Google!", "Welcome to Ebunly");
+            setTimeout(() => router.push("/home"), 800);
+          },
+          onError: (err) => {
+            notifyError(
+              err.message || "Google sign-up failed. Please try again.",
+              "Sign up failed",
+            );
+          },
+        });
+      },
+    });
+
+    if (googleBtnRef.current) {
+      window.google.accounts.id.renderButton(googleBtnRef.current, {
+        type: "standard",
+        theme: "outline",
+        size: "large",
+      });
+    }
+  }, []);
+
+  const handleGoogleSignUp = () => {
+    googleBtnRef.current?.querySelector("div[role=button]")?.click();
+  };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -55,9 +94,7 @@ export default function SignUpPage() {
     const newErrors = validate();
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
-      // Surface the first validation error as a toast too
-      const firstErr = Object.values(newErrors)[0];
-      notifyError(firstErr, "Please fix the following");
+      notifyError(Object.values(newErrors)[0], "Please fix the following");
       return;
     }
 
@@ -160,7 +197,14 @@ export default function SignUpPage() {
           <OrDivider label="Or Register with" />
         </div>
 
-        <GoogleButton label="Sign up with Google" />
+        {/* Hidden Google rendered button — do not remove */}
+        <div ref={googleBtnRef} className="hidden" />
+
+        <GoogleButton
+          label="Sign up with Google"
+          onClick={handleGoogleSignUp}
+          isLoading={isGooglePending}
+        />
 
         <div className="mt-auto pt-8">
           <AuthFooter
