@@ -6,26 +6,51 @@ import ProductGrid from "@/components/shared/dashboard/product-grid";
 import SearchBar from "@/components/shared/dashboard/search-bar";
 import MobileFilterBar from "@/components/shared/dashboard/mobile-filter";
 import { useProducts } from "@/hooks/use-products";
+import { useSearchHistory } from "@/hooks/use-search-history";
+
+const DEFAULT_FILTERS = {
+  category: "",
+  search: "",
+  occasions: [],
+  giftTypes: [],
+  minPrice: undefined,
+  maxPrice: undefined,
+  minDiscount: undefined,
+  madeInNigeria: undefined,
+  maxDeliveryDays: undefined,
+  page: 1,
+  limit: 12,
+};
 
 export default function DiscoverPage() {
-  const [isFilterOpen, setIsFilterOpen] = useState(true);
-  const [filters, setFilters] = useState({
-    category: "",
-    search: "",
-    minPrice: undefined,
-    maxPrice: undefined,
-    page: 1,
-    limit: 12,
-  });
+  const [filters, setFilters] = useState(DEFAULT_FILTERS);
+  const [restoredFilters, setRestoredFilters] = useState(null);
 
+  const { saveToHistory } = useSearchHistory();
   const { data, isLoading, isError, error } = useProducts(filters);
 
-  const handleSearch = useCallback((searchTerm) => {
-    setFilters((prev) => ({ ...prev, search: searchTerm, page: 1 }));
-  }, []);
+  const handleSearch = useCallback(
+    (searchTerm) => {
+      const next = { ...filters, search: searchTerm, page: 1 };
+      setFilters(next);
+      saveToHistory(next);
+    },
+    [filters, saveToHistory],
+  );
 
-  const handleFilterChange = useCallback((newFilters) => {
-    setFilters((prev) => ({ ...prev, ...newFilters, page: 1 }));
+  const handleFilterChange = useCallback(
+    (newFilters) => {
+      const merged = { ...filters, ...newFilters, page: 1 };
+      setFilters(merged);
+      saveToHistory(merged);
+    },
+    [filters, saveToHistory],
+  );
+
+  const handleRestoreFilters = useCallback((restored) => {
+    const next = { ...DEFAULT_FILTERS, ...restored, page: 1 };
+    setFilters(next);
+    setRestoredFilters(next);
   }, []);
 
   const handlePageChange = useCallback((newPage) => {
@@ -34,11 +59,18 @@ export default function DiscoverPage() {
 
   return (
     <>
-      <SearchBar onSearch={handleSearch} />
-      {isFilterOpen && (
-        <MobileFilterBar onClose={() => setIsFilterOpen(false)} />
-      )}
-      <FilterBar onFilterChange={handleFilterChange} />
+      <SearchBar
+        onSearch={handleSearch}
+        onRestoreFilters={handleRestoreFilters}
+      />
+      <MobileFilterBar
+        onFilterChange={handleFilterChange}
+        externalFilters={restoredFilters}
+      />
+      <FilterBar
+        onFilterChange={handleFilterChange}
+        externalFilters={restoredFilters}
+      />
       <ProductGrid
         products={data?.data || []}
         isLoading={isLoading}

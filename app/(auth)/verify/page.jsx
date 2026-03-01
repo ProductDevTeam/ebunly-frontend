@@ -1,7 +1,7 @@
 "use client";
 
 import { Suspense, useState, useRef, useEffect } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { useVerifyCode } from "@/hooks/use-auth";
 import { useNotification } from "@/components/common/notification-provider";
 import { AuthButton, BackButton } from "@/components/common/auth/input";
@@ -11,15 +11,25 @@ const RESEND_SECONDS = 20;
 
 function EnterCodeContent() {
   const router = useRouter();
-  const searchParams = useSearchParams();
-  const email = searchParams.get("email") || "";
 
   const { mutate: verifyCode, isPending } = useVerifyCode();
   const { error: notifyError } = useNotification();
 
+  const [email, setEmail] = useState("");
   const [digits, setDigits] = useState(Array(CODE_LENGTH).fill(""));
   const [countdown, setCountdown] = useState(RESEND_SECONDS);
   const inputRefs = useRef([]);
+
+  // Read email from sessionStorage (set by sign-up or resend-verification flows)
+  useEffect(() => {
+    const stored = sessionStorage.getItem("verify_email");
+    if (!stored) {
+      router.replace("/login");
+      return;
+    }
+    setEmail(stored);
+    // Do NOT remove here — keep it so resend can re-use it if needed
+  }, []);
 
   useEffect(() => {
     if (countdown <= 0) return;
@@ -97,7 +107,8 @@ function EnterCodeContent() {
       { email, otp: code },
       {
         onSuccess: () => {
-          router.push(`/home`);
+          sessionStorage.removeItem("verify_email"); // clean up on success
+          router.push("/home");
         },
         onError: (err) => {
           notifyError(

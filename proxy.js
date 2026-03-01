@@ -35,7 +35,7 @@ function isGuestOnlyPage(pathname) {
 }
 
 function isApiProxy(pathname) {
-  return pathname.startsWith("/api/proxy/");
+  return pathname.startsWith("/proxy/");
 }
 
 // ── Security headers ───────────────────────────────────────────────────────
@@ -59,12 +59,12 @@ function applySecurityHeaders(response) {
 const rateLimitStore = new Map();
 
 const RATE_LIMIT_RULES = {
-  "/auth/login": { maxRequests: 5, windowMs: 15 * 60 * 1000 },
-  "/auth/register": { maxRequests: 3, windowMs: 60 * 60 * 1000 },
-  "/auth/forgot-password": { maxRequests: 3, windowMs: 60 * 60 * 1000 },
-  "/auth/verify-email": { maxRequests: 5, windowMs: 15 * 60 * 1000 },
-  "/auth/change-password": { maxRequests: 3, windowMs: 30 * 60 * 1000 },
-  "/auth/profile": { maxRequests: 20, windowMs: 60 * 1000 },
+  "/login": { maxRequests: 5, windowMs: 15 * 60 * 1000 },
+  "/register": { maxRequests: 3, windowMs: 60 * 60 * 1000 },
+  "/forgot-password": { maxRequests: 3, windowMs: 60 * 60 * 1000 },
+  "/verify-email": { maxRequests: 5, windowMs: 15 * 60 * 1000 },
+  "/change-password": { maxRequests: 3, windowMs: 30 * 60 * 1000 },
+  "/profile": { maxRequests: 20, windowMs: 60 * 1000 },
 };
 
 function checkServerRateLimit(ip, apiPath) {
@@ -104,16 +104,18 @@ function pruneRateLimitStore() {
 
 // ── Proxy handler ──────────────────────────────────────────────────────────
 async function handleProxy(request, pathname) {
-  // Strip /api/proxy prefix — API_BASE already ends with /
-  const apiPath = pathname.replace(/^\/api\/proxy\//, "");
-  const destination = `${API_BASE}${apiPath}`;
+  // Strip /proxy prefix
+  const apiPath = pathname.replace(/^\/proxy\//, "");
+  const search = request.nextUrl.search;
+  const destination = `${API_BASE}/${apiPath}${search}`;
 
+  console.log(destination);
   const ip =
     request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ||
     request.headers.get("x-real-ip") ||
     "unknown";
 
-  // Rate limit against the normalised API path (with leading slash for rule lookup)
+  // Rate limit against the normalised API path
   const { limited, retryAfterMs } = checkServerRateLimit(ip, `/${apiPath}`);
   if (limited) {
     const retryAfterSecs = Math.ceil((retryAfterMs ?? 60000) / 1000);
@@ -166,8 +168,13 @@ async function handleProxy(request, pathname) {
       },
     });
 
-    const setCookie = apiResponse.headers.get("set-cookie");
-    if (setCookie) proxiedResponse.headers.set("Set-Cookie", setCookie);
+    // ✅ Forward ALL Set-Cookie headers using getSetCookie() array
+    // This replaces the old single .get("set-cookie") approach which
+    // only returned the first cookie and used .set() (overwrites).
+    const setCookies = apiResponse.headers.getSetCookie?.() ?? [];
+    setCookies.forEach((cookie) => {
+      proxiedResponse.headers.append("Set-Cookie", cookie);
+    });
 
     return applySecurityHeaders(proxiedResponse);
   } catch (err) {
@@ -181,7 +188,7 @@ async function handleProxy(request, pathname) {
   }
 }
 
-// ── Main export — Next.js 16 requires "proxy" (not "middleware") ───────────
+// ── Main export — Next.js 16 proxy convention ──────────────────────────────
 export async function proxy(request) {
   const { pathname } = request.nextUrl;
 
@@ -215,7 +222,7 @@ export async function proxy(request) {
 // ── Matcher ────────────────────────────────────────────────────────────────
 export const config = {
   matcher: [
-    "/api/proxy/:path*",
+    "/proxy/:path*",
     "/home/:path*",
     "/profile/:path*",
     "/orders/:path*",

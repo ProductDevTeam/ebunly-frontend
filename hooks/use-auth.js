@@ -111,6 +111,7 @@ async function loginApi(data) {
     email: sanitiseEmail(data.email),
     password: data.password,
   });
+  console.log(result);
   resetRateLimit("login");
   return result;
 }
@@ -140,7 +141,33 @@ export function useSignUp() {
   return useMutation({ mutationFn: signUpApi });
 }
 export function useLogin() {
-  return useMutation({ mutationFn: loginApi });
+  return useMutation({
+    mutationFn: loginApi,
+    onSuccess: (data) => {
+      const token = data?.data?.token;
+      if (token) {
+        const secure = location.protocol === "https:" ? "; Secure" : "";
+        document.cookie = `token=${token}; path=/; max-age=${7 * 24 * 60 * 60}; SameSite=Lax${secure}`;
+      }
+    },
+  });
+}
+async function googleAuthApi(idToken) {
+  const result = await apiPost("auth/google", { idToken });
+  return result;
+}
+
+export function useGoogleAuth() {
+  return useMutation({
+    mutationFn: googleAuthApi,
+    onSuccess: (data) => {
+      const token = data?.data?.token;
+      if (token) {
+        const secure = location.protocol === "https:" ? "; Secure" : "";
+        document.cookie = `token=${token}; path=/; max-age=${7 * 24 * 60 * 60}; SameSite=Lax${secure}`;
+      }
+    },
+  });
 }
 export function useForgotPassword() {
   return useMutation({ mutationFn: forgotPasswordApi });

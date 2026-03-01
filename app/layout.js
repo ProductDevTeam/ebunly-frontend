@@ -3,6 +3,7 @@ import "./globals.css";
 
 import QueryProvider from "@/components/providers/QueryProvider";
 import { NotificationProvider } from "@/components/common/notification-provider";
+import Script from "next/script";
 
 const dmSans = DM_Sans({
   variable: "--font-dmSans",
@@ -96,6 +97,11 @@ export default function RootLayout({ children }) {
         <QueryProvider>
           <NotificationProvider>{children}</NotificationProvider>
         </QueryProvider>
+
+        <Script
+          src="https://accounts.google.com/gsi/client"
+          strategy="beforeInteractive"
+        />
       </body>
     </html>
   );

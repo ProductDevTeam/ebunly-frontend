@@ -101,13 +101,15 @@ export function OrDivider({ label }) {
   );
 }
 
-export function GoogleButton({ label }) {
+export function GoogleButton({ label, onClick, isLoading }) {
   return (
     <button
       type="button"
-      className="w-full flex items-center justify-center cursor-pointer gap-3 py-3.5 rounded-full border border-gray-200 bg-white hover:bg-gray-50 transition-all active:scale-95"
+      onClick={onClick}
+      disabled={isLoading}
+      className="w-full flex items-center justify-center cursor-pointer gap-3 py-3.5 rounded-full border border-gray-200 bg-white hover:bg-gray-50 transition-all active:scale-95 disabled:opacity-70 disabled:cursor-not-allowed"
     >
-      {/* Google SVG icon */}
+      {/* Google SVG — keep as-is */}
       <svg width="20" height="20" viewBox="0 0 48 48" fill="none">
         <path
           d="M47.532 24.552c0-1.636-.132-3.2-.38-4.704H24.48v9.02h12.944c-.568 2.988-2.24 5.52-4.752 7.22v6.004h7.692c4.496-4.14 7.168-10.244 7.168-17.54z"
@@ -126,7 +128,9 @@ export function GoogleButton({ label }) {
           fill="#EA4335"
         />
       </svg>
-      <span className="paragraph font-semibold text-gray-900">{label}</span>
+      <span className="paragraph font-semibold text-gray-900">
+        {isLoading ? "Please wait..." : label}
+      </span>
     </button>
   );
 }

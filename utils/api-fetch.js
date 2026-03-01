@@ -25,7 +25,7 @@ function parseApiError(json, status) {
  */
 export async function apiFetch(path, options = {}) {
   // Route through proxy — middleware strips /api/proxy and forwards to API_BASE
-  const url = `/api/proxy/${path}`;
+  const url = `/proxy/${path}`;
 
   const csrfToken = getCsrfToken();
 

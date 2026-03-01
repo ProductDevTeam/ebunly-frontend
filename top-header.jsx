@@ -1,13 +1,16 @@
 "use client";
 
 import Image from "next/image";
-import { ShoppingBag } from "lucide-react";
 import Link from "next/link";
+import { useMe } from "@/hooks/use-profile";
 
 export default function TopHeader() {
+  const { data, isLoading } = useMe();
+  const user = data?.data;
+  const isLoggedIn = !!user;
+
   return (
     <div className="hidden md:flex w-full bg-white border-b border-gray-100 font-sans">
-      {/* Inner content constrained */}
       <div className="flex items-center justify-between w-full max-w-7xl mx-auto px-6 py-1">
         {/* Left: Logo */}
         <Link href="/" className="flex items-center gap-2">
@@ -31,9 +34,12 @@ export default function TopHeader() {
           </span>
         </div>
 
-        {/* Right: Cart & Sign Up */}
+        {/* Right: Cart & Auth */}
         <div className="flex items-center gap-3">
-          <button className="flex items-center gap-2 px-4 py-2.5 text-gray-900 hover:bg-gray-50 rounded-lg transition-colors">
+          <Link
+            href="/cart"
+            className="flex items-center gap-2 px-4 py-2.5 text-gray-900 hover:bg-gray-50 rounded-lg transition-colors"
+          >
             <div className="w-5 h-5 relative">
               <Image
                 src="/icons/bag.svg"
@@ -43,11 +49,50 @@ export default function TopHeader() {
               />
             </div>
             <span className="text-sm font-medium">Cart</span>
-          </button>
+          </Link>
 
-          <button className="px-14 py-2.5 bg-primary hover:bg-orange-600 text-white text-sm font-semibold rounded-lg transition-colors">
-            Sign Up
-          </button>
+          {isLoading ? (
+            /* Skeleton to avoid layout shift */
+            <div className="w-32 h-9 bg-gray-100 animate-pulse rounded-lg" />
+          ) : isLoggedIn ? (
+            <Link
+              href="/profile"
+              className="flex items-center gap-2 px-4 py-2.5 hover:bg-gray-50 rounded-lg transition-colors"
+            >
+              {user.avatarUrl ? (
+                <div className="w-7 h-7 relative rounded-full overflow-hidden">
+                  <Image
+                    src={user.avatarUrl}
+                    alt={user.firstName}
+                    fill
+                    className="object-cover"
+                  />
+                </div>
+              ) : (
+                <div className="w-7 h-7 rounded-full bg-primary flex items-center justify-center text-white text-xs font-bold">
+                  {(user.firstName?.[0] ?? "U").toUpperCase()}
+                </div>
+              )}
+              <span className="text-sm font-medium text-gray-900">
+                {user.firstName}
+              </span>
+            </Link>
+          ) : (
+            <>
+              <Link
+                href="/login"
+                className="px-4 py-2.5 text-gray-700 hover:bg-gray-50 text-sm font-medium rounded-lg transition-colors"
+              >
+                Log In
+              </Link>
+              <Link
+                href="/sign-up"
+                className="px-14 py-2.5 bg-primary hover:bg-orange-600 text-white text-sm font-semibold rounded-lg transition-colors"
+              >
+                Sign Up
+              </Link>
+            </>
+          )}
         </div>
       </div>
     </div>
