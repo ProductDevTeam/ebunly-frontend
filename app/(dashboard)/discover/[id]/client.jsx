@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-
 import { useRouter } from "next/navigation";
 
 import ImageGallery from "@/components/shared/dashboard/product-detail/gallery";
@@ -11,14 +10,13 @@ import ProductKeyInfo from "@/components/shared/dashboard/product-detail/info";
 import ProductDescription from "@/components/shared/dashboard/product-detail/description";
 import RelatedProducts from "@/components/shared/dashboard/product-detail/related";
 import AddToCartSection from "@/components/shared/dashboard/product-detail/add-to-cart";
+import AddToCartDesktop from "@/components/shared/dashboard/product-detail/desktop-cart";
 
 export default function ProductDetailClient({ product }) {
   const router = useRouter();
 
-  // Extract images from API response
   const images = product.images?.map((img) => img.url) || ["/product.png"];
 
-  // Initialize variants state
   const variantDefaults = {};
   product.variants?.forEach((variant) => {
     if (variant.options?.length > 0) {
@@ -39,51 +37,32 @@ export default function ProductDetailClient({ product }) {
   const [isFavorite, setIsFavorite] = useState(false);
 
   const handleOptionChange = (option, value) => {
-    setSelectedOptions((prev) => ({
-      ...prev,
-      [option]: value,
-    }));
+    setSelectedOptions((prev) => ({ ...prev, [option]: value }));
   };
 
   const handlePersonalizationToggle = () => {
-    setPersonalization((prev) => ({
-      ...prev,
-      enabled: !prev.enabled,
-    }));
+    setPersonalization((prev) => ({ ...prev, enabled: !prev.enabled }));
   };
 
   const handlePersonalizationChange = (field, value) => {
     setPersonalization((prev) => ({
       ...prev,
-      data: {
-        ...prev.data,
-        [field]: value,
-      },
+      data: { ...prev.data, [field]: value },
     }));
   };
 
-  const handleAddToCart = () => {
-    console.log("Adding to cart:", {
-      product: product._id,
-      options: selectedOptions,
-      personalization: personalization.enabled ? personalization.data : null,
-    });
-    // Add your cart logic here
-  };
-
-  // Calculate delivery date
   const getDeliveryDate = () => {
     if (!product.estimatedDeliveryDays) return null;
-
     const days = parseInt(product.estimatedDeliveryDays.split("-")[0]);
     const deliveryDate = new Date();
     deliveryDate.setDate(deliveryDate.getDate() + days);
-
     return deliveryDate.toLocaleDateString("en-US", {
       month: "short",
       day: "numeric",
     });
   };
+
+  const deliveryDate = getDeliveryDate();
 
   return (
     <div className="min-h-screen bg-gray-50 font-sans">
@@ -144,6 +123,18 @@ export default function ProductDetailClient({ product }) {
                 />
               )}
 
+            {/* ── Desktop Add to Cart (shown before key info) ── */}
+            <div className="py-4">
+              <AddToCartDesktop
+                product={product}
+                selectedOptions={selectedOptions}
+                personalization={
+                  personalization.enabled ? personalization.data : null
+                }
+                deliveryDate={deliveryDate}
+              />
+            </div>
+
             {product.keyInfo?.length > 0 && (
               <ProductKeyInfo keyInfo={product.keyInfo} />
             )}
@@ -171,12 +162,12 @@ export default function ProductDetailClient({ product }) {
         />
       )}
 
-      {/* Fixed Bottom Add to Cart */}
+      {/* Mobile-only fixed bottom bar — untouched */}
       <AddToCartSection
         product={product}
         selectedOptions={selectedOptions}
         personalization={personalization.enabled ? personalization.data : null}
-        deliveryDate={getDeliveryDate()}
+        deliveryDate={deliveryDate}
       />
     </div>
   );

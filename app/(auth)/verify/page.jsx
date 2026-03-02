@@ -2,6 +2,8 @@
 
 import { Suspense, useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
+import Image from "next/image";
 import { useVerifyCode } from "@/hooks/use-auth";
 import { useNotification } from "@/components/common/notification-provider";
 import { AuthButton, BackButton } from "@/components/common/auth/input";
@@ -20,7 +22,6 @@ function EnterCodeContent() {
   const [countdown, setCountdown] = useState(RESEND_SECONDS);
   const inputRefs = useRef([]);
 
-  // Read email from sessionStorage (set by sign-up or resend-verification flows)
   useEffect(() => {
     const stored = sessionStorage.getItem("verify_email");
     if (!stored) {
@@ -28,7 +29,6 @@ function EnterCodeContent() {
       return;
     }
     setEmail(stored);
-    // Do NOT remove here — keep it so resend can re-use it if needed
   }, []);
 
   useEffect(() => {
@@ -107,7 +107,7 @@ function EnterCodeContent() {
       { email, otp: code },
       {
         onSuccess: () => {
-          sessionStorage.removeItem("verify_email"); // clean up on success
+          sessionStorage.removeItem("verify_email");
           router.push("/home");
         },
         onError: (err) => {
@@ -132,72 +132,104 @@ function EnterCodeContent() {
   const isComplete = filledCount === CODE_LENGTH;
 
   return (
-    <div className="min-h-screen bg-white flex flex-col px-6 pt-10 pb-8 font-sans max-w-md mx-auto">
-      <div className="mb-8">
-        <BackButton onClick={() => router.back()} />
-      </div>
+    <div className="bg-[#FEEEE9] min-h-screen md:flex md:items-center md:justify-center">
+      {/* Logo (Desktop Only) */}
+      <Link
+        href="/"
+        className="hidden md:flex items-center gap-2 absolute top-6 left-20"
+      >
+        <Image
+          src="/logo.svg"
+          alt="Ebunly Logo"
+          width={100}
+          height={100}
+          className="object-contain"
+        />
+      </Link>
 
-      <div className="mb-8">
-        <h1 className="hero-heading text-gray-900 mb-3">Enter code</h1>
-        <p className="paragraph text-gray-500">
-          We&apos;ve sent an email with an activation code to{" "}
-          {email ? (
-            <span className="font-medium text-gray-900">{email}</span>
-          ) : (
-            <span className="font-medium text-gray-400">your email</span>
-          )}
-        </p>
-      </div>
+      <div className="flex items-center justify-center w-full">
+        <div className="h-screen md:h-auto bg-white flex flex-col px-6 py-6 font-sans w-full md:max-w-md mx-auto justify-between rounded-3xl pt-20 md:pt-10 md:shadow-xl">
+          {/* Top Section */}
+          <div className="flex flex-col gap-5 pb-4">
+            <div>
+              <BackButton onClick={() => router.back()} />
+            </div>
 
-      <form onSubmit={handleSubmit} noValidate>
-        <div className="flex items-center gap-3 mb-6" onPaste={handlePaste}>
-          {digits.map((digit, index) => (
-            <input
-              key={index}
-              ref={(el) => (inputRefs.current[index] = el)}
-              type="text"
-              inputMode="numeric"
-              maxLength={1}
-              value={digit}
-              onChange={(e) => handleChange(index, e.target.value)}
-              onKeyDown={(e) => handleKeyDown(index, e)}
-              className={`w-full aspect-square max-w-16 text-center text-xl font-semibold rounded-2xl border-2 outline-none transition-all
-                ${digit ? "border-gray-900 bg-white" : "border-gray-200 bg-white"}
-                focus:border-gray-900
-              `}
-              autoFocus={index === 0}
-            />
-          ))}
+            <div className="max-w-3xs text-center mx-auto">
+              <h1 className="font-semibold text-[36px] text-gray-900 mb-1 text-center">
+                Enter code
+              </h1>
+              <p className="paragraph text-black text-sm text-center">
+                We&apos;ve sent an activation code to{" "}
+                {email ? (
+                  <span className="font-medium text-gray-900">{email}</span>
+                ) : (
+                  <span className="font-medium text-gray-400">your email</span>
+                )}
+              </p>
+            </div>
+
+            <form
+              onSubmit={handleSubmit}
+              noValidate
+              className="flex flex-col gap-4"
+            >
+              {/* OTP Inputs */}
+              <div className="flex items-center gap-3" onPaste={handlePaste}>
+                {digits.map((digit, index) => (
+                  <input
+                    key={index}
+                    ref={(el) => (inputRefs.current[index] = el)}
+                    type="text"
+                    inputMode="numeric"
+                    maxLength={1}
+                    value={digit}
+                    onChange={(e) => handleChange(index, e.target.value)}
+                    onKeyDown={(e) => handleKeyDown(index, e)}
+                    className={`w-full aspect-square max-w-16 text-center text-xl font-semibold rounded-2xl border-2 outline-none transition-all
+                      ${digit ? "border-gray-900 bg-white" : "border-gray-200 bg-white"}
+                      focus:border-gray-900
+                    `}
+                    autoFocus={index === 0}
+                  />
+                ))}
+              </div>
+
+              {/* Progress indicator */}
+              <p className="text-xs text-gray-400 text-right">
+                {filledCount}/{CODE_LENGTH} digits entered
+              </p>
+
+              <AuthButton
+                isLoading={isPending}
+                disabled={!isComplete || isPending}
+              >
+                Verify code
+              </AuthButton>
+            </form>
+          </div>
+
+          {/* Footer — resend */}
+          <div className="flex items-center justify-center gap-2 pt-4">
+            <button
+              type="button"
+              onClick={handleResend}
+              disabled={countdown > 0}
+              className={`text-sm font-semibold transition-colors ${
+                countdown > 0
+                  ? "text-gray-400 cursor-not-allowed"
+                  : "text-gray-900 hover:text-[#FF5722]"
+              }`}
+            >
+              Send code again
+            </button>
+            {countdown > 0 && (
+              <span className="text-sm text-gray-400">
+                {formatTime(countdown)}
+              </span>
+            )}
+          </div>
         </div>
-
-        {/* Progress indicator */}
-        <p className="text-xs text-gray-400 mb-4 text-right">
-          {filledCount}/{CODE_LENGTH} digits entered
-        </p>
-
-        <AuthButton isLoading={isPending} disabled={!isComplete || isPending}>
-          Verify code
-        </AuthButton>
-      </form>
-
-      <div className="mt-auto pt-8 flex items-center justify-center gap-2">
-        <button
-          type="button"
-          onClick={handleResend}
-          disabled={countdown > 0}
-          className={`paragraph-s font-semibold transition-colors ${
-            countdown > 0
-              ? "text-gray-400 cursor-not-allowed"
-              : "text-gray-900 hover:text-primary"
-          }`}
-        >
-          Send code again
-        </button>
-        {countdown > 0 && (
-          <span className="paragraph-s text-gray-400">
-            {formatTime(countdown)}
-          </span>
-        )}
       </div>
     </div>
   );
@@ -205,7 +237,7 @@ function EnterCodeContent() {
 
 export default function EnterCodePage() {
   return (
-    <Suspense fallback={<div className="min-h-screen bg-white" />}>
+    <Suspense fallback={<div className="min-h-screen bg-[#FEEEE9]" />}>
       <EnterCodeContent />
     </Suspense>
   );

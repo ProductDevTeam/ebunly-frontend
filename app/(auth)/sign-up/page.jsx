@@ -2,6 +2,8 @@
 
 import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
+import Image from "next/image";
 import { useSignUp, useGoogleAuth } from "@/hooks/use-auth";
 import { useNotification } from "@/components/common/notification-provider";
 import {
@@ -106,9 +108,7 @@ export default function SignUpPage() {
         password: form.password,
       },
       {
-        onSuccess: () => {
-          setShowSuccess(true);
-        },
+        onSuccess: () => setShowSuccess(true),
         onError: (err) => {
           notifyError(
             err.message || "Something went wrong. Please try again.",
@@ -121,97 +121,115 @@ export default function SignUpPage() {
 
   return (
     <>
-      <div className="min-h-screen bg-white flex flex-col px-6 pt-12 pb-8 font-sans max-w-md mx-auto">
-        {/* Heading */}
-        <div className="mb-8">
-          <h1 className="hero-heading text-gray-900 mb-2">Sign up</h1>
-          <p className="paragraph text-black">
-            Create a free Ebunly Account
-            <br />& gift to your heart&lsquo;s content
-          </p>
-        </div>
-
-        {/* Form */}
-        <form
-          onSubmit={handleSubmit}
-          noValidate
-          className="flex flex-col gap-5"
+      <div className="bg-[#FEEEE9] min-h-screen md:flex md:items-center md:justify-center">
+        {/* Logo (Desktop Only) */}
+        <Link
+          href="/"
+          className="hidden md:flex items-center gap-2 absolute top-6 left-20"
         >
-          <AuthInput
-            label="First name"
-            name="firstName"
-            type="text"
-            placeholder="John"
-            value={form.firstName}
-            onChange={handleChange}
-            error={errors.firstName}
-            autoComplete="given-name"
+          <Image
+            src="/logo.svg"
+            alt="Ebunly Logo"
+            width={100}
+            height={100}
+            className="object-contain"
           />
-          <AuthInput
-            label="Last name"
-            name="lastName"
-            type="text"
-            placeholder="Doe"
-            value={form.lastName}
-            onChange={handleChange}
-            error={errors.lastName}
-            autoComplete="family-name"
-          />
-          <AuthInput
-            label="Email"
-            name="email"
-            type="email"
-            placeholder="example@gmail.com"
-            value={form.email}
-            onChange={handleChange}
-            error={errors.email}
-            autoComplete="email"
-          />
-          <AuthInput
-            label="Create a password"
-            name="password"
-            type="password"
-            placeholder="must be 8 characters"
-            value={form.password}
-            onChange={handleChange}
-            error={errors.password}
-            autoComplete="new-password"
-          />
-          <AuthInput
-            label="Confirm password"
-            name="confirm"
-            type="password"
-            placeholder="repeat password"
-            value={form.confirm}
-            onChange={handleChange}
-            error={errors.confirm}
-            autoComplete="new-password"
-          />
+        </Link>
 
-          <div className="mt-2">
-            <AuthButton isLoading={isPending}>Create Account</AuthButton>
+        <div className="flex items-center justify-center w-full">
+          <div className="h-screen md:h-auto bg-white flex flex-col px-6 py-6 font-sans w-full md:max-w-md mx-auto justify-between rounded-3xl pt-20 md:pt-10 md:shadow-xl overflow-y-auto">
+            {/* Top Section */}
+            <div className="flex flex-col gap-5 pb-4">
+              {/* Heading */}
+              <div className="max-w-3xs text-center mx-auto">
+                <h1 className="font-semibold text-[36px] text-gray-900 mb-1 text-center">
+                  Sign up
+                </h1>
+                <p className="paragraph text-black text-sm text-center">
+                  Create a free Ebunly Account &amp; gift to your heart&apos;s
+                  content
+                </p>
+              </div>
+
+              {/* Form */}
+              <form
+                onSubmit={handleSubmit}
+                noValidate
+                className="flex flex-col gap-4"
+              >
+                <AuthInput
+                  label="First name"
+                  name="firstName"
+                  type="text"
+                  placeholder="John"
+                  value={form.firstName}
+                  onChange={handleChange}
+                  error={errors.firstName}
+                  autoComplete="given-name"
+                />
+                <AuthInput
+                  label="Last name"
+                  name="lastName"
+                  type="text"
+                  placeholder="Doe"
+                  value={form.lastName}
+                  onChange={handleChange}
+                  error={errors.lastName}
+                  autoComplete="family-name"
+                />
+                <AuthInput
+                  label="Email"
+                  name="email"
+                  type="email"
+                  placeholder="example@gmail.com"
+                  value={form.email}
+                  onChange={handleChange}
+                  error={errors.email}
+                  autoComplete="email"
+                />
+                <AuthInput
+                  label="Create a password"
+                  name="password"
+                  type="password"
+                  placeholder="must be 8 characters"
+                  value={form.password}
+                  onChange={handleChange}
+                  error={errors.password}
+                  autoComplete="new-password"
+                />
+                <AuthInput
+                  label="Confirm password"
+                  name="confirm"
+                  type="password"
+                  placeholder="repeat password"
+                  value={form.confirm}
+                  onChange={handleChange}
+                  error={errors.confirm}
+                  autoComplete="new-password"
+                />
+
+                <AuthButton isLoading={isPending}>Create Account</AuthButton>
+              </form>
+
+              {/* Divider + Google */}
+              <div className="flex flex-col gap-4">
+                <OrDivider label="Or Register with" />
+                <div ref={googleBtnRef} className="hidden" />
+                <GoogleButton
+                  label="Sign up with Google"
+                  onClick={handleGoogleSignUp}
+                  isLoading={isGooglePending}
+                />
+              </div>
+            </div>
+
+            {/* Footer */}
+            <AuthFooter
+              text="Already have an account?"
+              linkText="Log in"
+              href="/login"
+            />
           </div>
-        </form>
-
-        <div className="my-6">
-          <OrDivider label="Or Register with" />
-        </div>
-
-        {/* Hidden Google rendered button — do not remove */}
-        <div ref={googleBtnRef} className="hidden" />
-
-        <GoogleButton
-          label="Sign up with Google"
-          onClick={handleGoogleSignUp}
-          isLoading={isGooglePending}
-        />
-
-        <div className="mt-auto pt-8">
-          <AuthFooter
-            text="Already have an account?"
-            linkText="Log in"
-            href="/login"
-          />
         </div>
       </div>
 
