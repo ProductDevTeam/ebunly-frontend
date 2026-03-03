@@ -48,7 +48,7 @@ export default function DashboardShellInner({ children }) {
           <Sidebar isOpen={isSidebarOpen} setIsOpen={setIsSidebarOpen} />
 
           <main className="flex-1 flex flex-col overflow-hidden">
-            <div className="flex-1 overflow-y-auto pb-20 lg:pb-0">
+            <div className="flex-1 overflow-y-auto pb-20 lg:pb-0 bg-black ml-36">
               {children}
             </div>
           </main>
