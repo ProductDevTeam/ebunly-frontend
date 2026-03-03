@@ -27,12 +27,10 @@ export default function DashboardShellInner({ children }) {
   };
 
   return (
-    <div className="w-full bg-white flex flex-col overflow-hidden font-sans">
+    <div className="h-screen w-full bg-white flex flex-col overflow-hidden font-sans">
       {/* ===== NAVBAR ===== */}
       {/* <Navbar /> */}
-
       <TopHeader />
-
       {/* ===== HEADERS ===== */}
       <MobileHeader
         onMenuClick={() => setIsSidebarOpen(true)}
@@ -41,14 +39,13 @@ export default function DashboardShellInner({ children }) {
         className="lg:hidden"
       />
       <DesktopHeader value={tab} onChange={setTab} />
-
       {/* ===== BODY ===== */}
       <div className="flex flex-1 overflow-hidden">
-        <div className="mx-auto max-w-7xl w-full flex gap-8">
+        <div className="md:mx-auto max-w-7xl w-full flex gap-8">
           <Sidebar isOpen={isSidebarOpen} setIsOpen={setIsSidebarOpen} />
 
           <main className="flex-1 flex flex-col overflow-hidden">
-            <div className="flex-1 overflow-y-auto pb-20 lg:pb-0 bg-black ml-36">
+            <div className="flex-1 overflow-y-auto pb-20 lg:pb-0 bg-white ">
               {children}
             </div>
           </main>
