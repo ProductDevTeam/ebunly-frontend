@@ -1,7 +1,8 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Truck, Plus, Minus, ShoppingCart } from "lucide-react";
+import { Truck, Plus, Minus } from "lucide-react";
 import { useCartStore } from "@/hooks/use-cart-store";
 import { useNotification } from "@/components/common/notification-provider";
 
@@ -9,10 +10,16 @@ export default function AddToCartDesktop({
   product,
   selectedOptions,
   personalization,
+  onOptionChange,
   deliveryDate,
 }) {
   const { addItem, increment, decrement, getCartItem } = useCartStore();
   const { notify } = useNotification();
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   if (!product) return null;
 
@@ -20,27 +27,30 @@ export default function AddToCartDesktop({
     Object.entries(selectedOptions ?? {}).filter(([k]) => k !== "quantity"),
   );
 
-  const cartItem = product?._id ? getCartItem(product._id, variants) : null;
+  // Before mount, always null to match server render (no localStorage on server)
+  const cartItem =
+    mounted && product?._id ? getCartItem(product._id, variants) : null;
   const quantity = cartItem?.quantity ?? 0;
 
   const handleAdd = () => {
-    addItem(product, product.minQuantity ?? 1, variants, personalization);
-    notify({
-      type: "cart",
-      product,
-      quantity: product.minQuantity ?? 1,
-      duration: 4000,
-    });
+    const qty = selectedOptions?.quantity ?? product.minQuantity ?? 1;
+    addItem(product, qty, variants, personalization);
+    notify({ type: "cart", product, quantity: qty, duration: 4000 });
   };
 
   const handleIncrement = () => {
+    if (!cartItem) return;
     increment(cartItem.cartItemId);
-    notify({
-      type: "cart",
-      product,
-      quantity: quantity + 1,
-      duration: 2500,
-    });
+    const newQty = quantity + 1;
+    onOptionChange?.("quantity", newQty);
+    notify({ type: "cart", product, quantity: newQty, duration: 2500 });
+  };
+
+  const handleDecrement = () => {
+    if (!cartItem) return;
+    decrement(cartItem.cartItemId);
+    const newQty = Math.max(product.minQuantity ?? 1, quantity - 1);
+    onOptionChange?.("quantity", newQty);
   };
 
   return (
@@ -55,7 +65,7 @@ export default function AddToCartDesktop({
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 6 }}
             transition={{ duration: 0.15 }}
-            className="w-full flex items-center justify-center gap-2 bg-primary  text-white  py-3 px-5 rounded-lg transition-colors  shadow-orange-600/20 text-base cursor-pointer hover:bg-orange-600"
+            className="w-full flex items-center justify-center gap-2 bg-primary text-white py-3 px-5 rounded-lg transition-colors shadow-orange-600/20 text-base cursor-pointer hover:bg-orange-600"
           >
             Add To Basket
           </motion.button>
@@ -69,7 +79,7 @@ export default function AddToCartDesktop({
             className="flex items-center bg-orange-600 rounded-2xl overflow-hidden shadow-lg shadow-orange-600/20 w-full"
           >
             <button
-              onClick={() => decrement(cartItem.cartItemId)}
+              onClick={handleDecrement}
               className="px-5 py-4 text-white hover:bg-orange-700 transition-colors"
             >
               <Minus className="w-5 h-5" />
@@ -88,7 +98,6 @@ export default function AddToCartDesktop({
         )}
       </AnimatePresence>
 
-      {/* Delivery date */}
       {deliveryDate && (
         <div className="flex items-center justify-center gap-1.5 mt-3 text-sm text-gray-500">
           <Truck className="w-4 h-4" />

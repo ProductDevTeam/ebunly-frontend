@@ -166,11 +166,11 @@ export default function LoginPage() {
           {/* Top Section */}
           <div className="flex flex-col gap-5 pb-4">
             {/* Heading */}
-            <div className="max-w-3xs text-center mx-auto">
-              <h1 className="font-semibold text-[36px] text-gray-900 mb-1 text-center">
+            <div className="max-w-full text-center mx-auto">
+              <h1 className="font-semibold text-[36px] text-gray-900 mb-1 text-center tracking-tighter">
                 Welcome back
               </h1>
-              <p className="paragraph text-black text-sm text-center">
+              <p className="paragraph text-black text-sm text-center w-[60%] mx-auto tracking-tighter">
                 Log in to your Ebunly Account & gift to your heart&apos;s
                 content
               </p>
@@ -223,7 +223,25 @@ export default function LoginPage() {
                 autoComplete="current-password"
               />
 
-              <div className="flex justify-end -mt-1">
+              <div className="flex items-center justify-between -mt-1">
+                {/* Remember Me */}
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    name="rememberMe"
+                    checked={form.rememberMe ?? false}
+                    onChange={(e) =>
+                      setForm((prev) => ({
+                        ...prev,
+                        rememberMe: e.target.checked,
+                      }))
+                    }
+                    className="w-4 h-4 rounded border-gray-300 text-black accent-black cursor-pointer"
+                  />
+                  <span className="text-sm text-black">Remember me</span>
+                </label>
+
+                {/* Forgot Password */}
                 <Link
                   href="/forgot-password"
                   className="text-sm font-medium text-[#FF5722]"

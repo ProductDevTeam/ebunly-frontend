@@ -62,18 +62,18 @@ export default function ForgotPasswordPage() {
       </Link>
 
       <div className="flex items-center justify-center w-full">
-        <div className="h-screen md:h-auto bg-white flex flex-col px-6 py-6 font-sans w-full md:max-w-md mx-auto justify-between rounded-3xl pt-20 md:pt-10 md:shadow-xl">
+        <div className="h-screen md:h-auto bg-white flex flex-col px-6 py-6 font-sans w-full md:max-w-md mx-auto justify-between rounded-3xl pt-4 md:pt-10 md:shadow-xl">
           {/* Top Section */}
           <div className="flex flex-col gap-5 pb-4">
             <div>
               <BackButton onClick={() => router.back()} />
             </div>
 
-            <div className="max-w-3xs text-center mx-auto">
-              <h1 className="font-semibold text-[36px] text-gray-900 mb-1 text-center">
+            <div className="max-w-2xs text-center mx-auto">
+              <h1 className="font-semibold text-[36px] text-gray-900 text-center tracking-tighter">
                 Forgot password?
               </h1>
-              <p className="paragraph text-black text-sm text-center">
+              <p className="paragraph text-black text-sm text-center tracking-tighter">
                 Don&apos;t worry! Please enter the email associated with your
                 account.
               </p>

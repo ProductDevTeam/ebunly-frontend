@@ -75,6 +75,11 @@ body {
   line-height: 140%;
   font-weight: 600;
 }
+.heading-1-mod {
+  font-size: 32px;
+  letter-spacing: -0.04em;
+  font-weight: 600;
+}
 
 /* Heading 2 */
 .heading-2 {
@@ -121,6 +126,10 @@ body {
     font-size: 18px;
     letter-spacing: -0.02em;
     line-height: 120%;
+  }
+  .heading-1-mod {
+    font-size: 18px;
+    letter-spacing: -0.02em;
   }
 
   .heading-2 {

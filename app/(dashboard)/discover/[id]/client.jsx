@@ -16,7 +16,8 @@ export default function ProductDetailClient({ product }) {
   const router = useRouter();
 
   const images = product.images?.map((img) => img.url) || ["/product.png"];
-
+  console.log("ProductDetailClient render", { product });
+  console.log("images[0]", product.images?.[0]);
   const variantDefaults = {};
   product.variants?.forEach((variant) => {
     if (variant.options?.length > 0) {
@@ -131,6 +132,7 @@ export default function ProductDetailClient({ product }) {
                 personalization={
                   personalization.enabled ? personalization.data : null
                 }
+                onOptionChange={handleOptionChange}
                 deliveryDate={deliveryDate}
               />
             </div>
@@ -168,6 +170,7 @@ export default function ProductDetailClient({ product }) {
         selectedOptions={selectedOptions}
         personalization={personalization.enabled ? personalization.data : null}
         deliveryDate={deliveryDate}
+        onOptionChange={handleOptionChange}
       />
     </div>
   );

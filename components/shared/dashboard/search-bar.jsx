@@ -3,18 +3,20 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
-import { Clock, X, Trash2, Tag } from "lucide-react";
+import { Clock, X, Trash2, Tag, Search } from "lucide-react";
 import {
   useSearchHistory,
   buildFilterSummary,
 } from "@/hooks/use-search-history";
+import { useProducts } from "@/hooks/use-products";
 
 export default function SearchBar({
   onSearch,
   onRestoreFilters,
+  initialValue = "",
   className = "",
 }) {
-  const [searchTerm, setSearchTerm] = useState("");
+  const [searchTerm, setSearchTerm] = useState(initialValue);
   const [isFocused, setIsFocused] = useState(false);
   const inputRef = useRef(null);
   const containerRef = useRef(null);
@@ -22,13 +24,25 @@ export default function SearchBar({
   const { history, saveToHistory, clearHistory, removeEntry } =
     useSearchHistory();
 
-  // Debounced search
+  // Live suggestions: fetch when user has typed 2+ chars
+  const { data: suggestionsData } = useProducts(
+    { search: searchTerm, limit: 5 },
+    { enabled: searchTerm.trim().length >= 2 },
+  );
+  const suggestions = suggestionsData?.data ?? [];
+
+  // Debounced search — 200ms for snappy feel
   useEffect(() => {
     const timer = setTimeout(() => {
       onSearch?.(searchTerm);
-    }, 500);
+    }, 200);
     return () => clearTimeout(timer);
   }, [searchTerm]);
+
+  // Sync if parent changes initialValue (e.g. URL param on mount)
+  useEffect(() => {
+    setSearchTerm(initialValue);
+  }, [initialValue]);
 
   // Close dropdown on outside click
   useEffect(() => {
@@ -41,17 +55,29 @@ export default function SearchBar({
     return () => document.removeEventListener("mousedown", handleClick);
   }, []);
 
-  const handleSearch = useCallback((value) => {
-    setSearchTerm(value);
-    setIsFocused(false);
-  }, []);
+  const handleSearch = useCallback(
+    (value) => {
+      setSearchTerm(value);
+      setIsFocused(false);
+      onSearch?.(value);
+    },
+    [onSearch],
+  );
+
+  const handleSuggestionClick = useCallback(
+    (product) => {
+      setSearchTerm(product.name);
+      setIsFocused(false);
+      onSearch?.(product.name);
+    },
+    [onSearch],
+  );
 
   const handleRestoreSearch = useCallback(
     (entry) => {
       const searchValue = entry.filters.search || "";
       setSearchTerm(searchValue);
       setIsFocused(false);
-      // Restore full filter state to parent
       onRestoreFilters?.(entry.filters);
     },
     [onRestoreFilters],
@@ -71,7 +97,10 @@ export default function SearchBar({
     [searchTerm, onSearch],
   );
 
-  const showDropdown = isFocused && history.length > 0;
+  const showSuggestions =
+    isFocused && searchTerm.trim().length >= 2 && suggestions.length > 0;
+  const showHistory = isFocused && !showSuggestions && history.length > 0;
+  const showDropdown = showSuggestions || showHistory;
 
   return (
     <div
@@ -100,13 +129,7 @@ export default function SearchBar({
             onFocus={() => setIsFocused(true)}
             onKeyDown={handleKeyDown}
             placeholder="Search for anything..."
-            className="
-              w-full pl-10 pr-10 py-2.5
-              border border-gray-200 rounded-xl
-              font-sans placeholder:font-medium placeholder:text-[#CACACA]
-              focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-transparent
-              transition-all duration-200
-            "
+            className="w-full pl-10 pr-10 py-2.5 border border-gray-200 rounded-xl font-sans placeholder:font-medium placeholder:text-[#CACACA] focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-transparent transition-all duration-200"
           />
 
           {/* Clear button */}
@@ -124,7 +147,7 @@ export default function SearchBar({
           )}
         </div>
 
-        {/* Recent Searches Dropdown */}
+        {/* Dropdown */}
         <AnimatePresence>
           {showDropdown && (
             <motion.div
@@ -134,65 +157,116 @@ export default function SearchBar({
               transition={{ duration: 0.15, ease: "easeOut" }}
               className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-100 rounded-2xl shadow-xl z-50 overflow-hidden"
             >
-              {/* Header */}
-              <div className="flex items-center justify-between px-4 py-2.5 border-b border-gray-50">
-                <span className="text-xs font-semibold text-gray-400 uppercase tracking-wider">
-                  Recent Searches
-                </span>
-                <button
-                  onClick={clearHistory}
-                  className="flex items-center gap-1 text-xs text-gray-400 hover:text-red-400 transition-colors"
-                >
-                  <Trash2 className="w-3 h-3" />
-                  Clear all
-                </button>
-              </div>
+              {/* Live Suggestions */}
+              {showSuggestions && (
+                <>
+                  <div className="px-4 py-2.5 border-b border-gray-50">
+                    <span className="text-xs font-semibold text-gray-400 uppercase tracking-wider">
+                      Suggestions
+                    </span>
+                  </div>
+                  <ul className="py-1">
+                    {suggestions.map((product, i) => (
+                      <motion.li
+                        key={product._id}
+                        initial={{ opacity: 0, x: -10 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ delay: i * 0.04 }}
+                        className="group flex items-center gap-3 px-4 py-2.5 hover:bg-orange-50 cursor-pointer transition-colors"
+                        onClick={() => handleSuggestionClick(product)}
+                      >
+                        {/* Product thumbnail */}
+                        {product.images?.[0]?.url ? (
+                          <div className="w-8 h-8 rounded-lg overflow-hidden relative shrink-0">
+                            <Image
+                              src={product.images[0].url}
+                              alt={product.name}
+                              fill
+                              sizes="32px"
+                              className="object-cover"
+                              unoptimized
+                            />
+                          </div>
+                        ) : (
+                          <div className="w-8 h-8 rounded-lg bg-gray-100 flex items-center justify-center shrink-0">
+                            <Search className="w-4 h-4 text-gray-400" />
+                          </div>
+                        )}
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm text-gray-800 truncate group-hover:text-orange-700">
+                            {product.name}
+                          </p>
+                          {product.category?.name && (
+                            <p className="text-xs text-gray-400">
+                              {product.category.name}
+                            </p>
+                          )}
+                        </div>
+                        <span className="text-sm font-semibold text-gray-700 shrink-0">
+                          ₦{product.basePrice?.toLocaleString()}
+                        </span>
+                      </motion.li>
+                    ))}
+                  </ul>
+                </>
+              )}
 
-              {/* History entries */}
-              <ul className="py-1">
-                {history.map((entry, i) => (
-                  <motion.li
-                    key={entry.id}
-                    initial={{ opacity: 0, x: -10 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: i * 0.04 }}
-                    className="group flex items-start gap-3 px-4 py-2.5 hover:bg-orange-50 cursor-pointer transition-colors"
-                    onClick={() => handleRestoreSearch(entry)}
-                  >
-                    {/* Clock icon */}
-                    <Clock className="w-4 h-4 text-gray-300 mt-0.5 flex-shrink-0 group-hover:text-orange-400 transition-colors" />
-
-                    {/* Filter tags */}
-                    <div className="flex-1 min-w-0">
-                      <div className="flex flex-wrap gap-1.5">
-                        {entry.summary.map((tag, idx) => (
-                          <span
-                            key={idx}
-                            className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-600 group-hover:bg-orange-100 group-hover:text-orange-700 transition-colors"
-                          >
-                            {idx === 0 &&
-                            entry.filters.search === tag ? null : (
-                              <Tag className="w-2.5 h-2.5 opacity-60" />
-                            )}
-                            {tag}
-                          </span>
-                        ))}
-                      </div>
-                    </div>
-
-                    {/* Remove button */}
+              {/* Recent Searches */}
+              {showHistory && (
+                <>
+                  <div className="flex items-center justify-between px-4 py-2.5 border-b border-gray-50">
+                    <span className="text-xs font-semibold text-gray-400 uppercase tracking-wider">
+                      Recent Searches
+                    </span>
                     <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        removeEntry(entry.id);
-                      }}
-                      className="opacity-0 group-hover:opacity-100 text-gray-300 hover:text-red-400 transition-all flex-shrink-0 mt-0.5"
+                      onClick={clearHistory}
+                      className="flex items-center gap-1 text-xs text-gray-400 hover:text-red-400 transition-colors"
                     >
-                      <X className="w-3.5 h-3.5" />
+                      <Trash2 className="w-3 h-3" />
+                      Clear all
                     </button>
-                  </motion.li>
-                ))}
-              </ul>
+                  </div>
+                  <ul className="py-1">
+                    {history.map((entry, i) => (
+                      <motion.li
+                        key={entry.id}
+                        initial={{ opacity: 0, x: -10 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ delay: i * 0.04 }}
+                        className="group flex items-start gap-3 px-4 py-2.5 hover:bg-orange-50 cursor-pointer transition-colors"
+                        onClick={() => handleRestoreSearch(entry)}
+                      >
+                        <Clock className="w-4 h-4 text-gray-300 mt-0.5 flex-shrink-0 group-hover:text-orange-400 transition-colors" />
+                        <div className="flex-1 min-w-0">
+                          <div className="flex flex-wrap gap-1.5">
+                            {entry.summary.map((tag, idx) => (
+                              <span
+                                key={idx}
+                                className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-600 group-hover:bg-orange-100 group-hover:text-orange-700 transition-colors"
+                              >
+                                {idx === 0 &&
+                                entry.filters.search === tag ? null : (
+                                  <Tag className="w-2.5 h-2.5 opacity-60" />
+                                )}
+                                {tag}
+                              </span>
+                            ))}
+                          </div>
+                        </div>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            removeEntry(entry.id);
+                          }}
+                          className="opacity-0 group-hover:opacity-100 text-gray-300 hover:text-red-400 transition-all flex-shrink-0 mt-0.5"
+                        >
+                          <X className="w-3.5 h-3.5" />
+                        </button>
+                      </motion.li>
+                    ))}
+                  </ul>
+                </>
+              )}
             </motion.div>
           )}
         </AnimatePresence>

@@ -17,7 +17,18 @@ import { getAllProducts } from "@/lib/products";
 export function useProducts(filters = {}, options = {}) {
   return useQuery({
     queryKey: ["products", filters],
-    queryFn: () => getAllProducts(filters),
+    queryFn: async () => {
+      const result = await getAllProducts(filters);
+      console.log(
+        "📦 API result for",
+        JSON.stringify(filters.search),
+        "→",
+        result?.data?.length,
+        "items",
+        result?.data?.map((p) => p.name),
+      );
+      return result;
+    },
     staleTime: 5 * 60 * 1000, // Data stays fresh for 5 minutes
     gcTime: 10 * 60 * 1000, // Cache persists for 10 minutes
     retry: 2,

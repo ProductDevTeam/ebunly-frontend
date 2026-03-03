@@ -6,7 +6,7 @@ import Link from "next/link";
 
 const EventShoppingCTA = () => {
   return (
-    <section className="relative pt-10 px-6 overflow-hidden bg-[#004138]">
+    <section className="relative px-6 overflow-hidden bg-[#004138]">
       {/* Decorative Stars */}
       <motion.div
         initial={{ rotate: 0, opacity: 0 }}
@@ -23,6 +23,7 @@ const EventShoppingCTA = () => {
           className="w-full h-full"
         />
       </motion.div>
+
       <motion.div
         initial={{ rotate: 0, opacity: 0 }}
         whileInView={{ rotate: -360, opacity: 1 }}
@@ -56,27 +57,25 @@ const EventShoppingCTA = () => {
       </motion.div>
 
       {/* Main Content Container */}
-      <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center gap-8">
-        {/* Text & CTA */}
-        <div className="flex-1 text-center md:text-left w-full md:w-[30%]">
+      <div className="max-w-7xl mx-auto flex flex-col md:flex-row md:items-end gap-8">
+        {/* Text & CTA — padded top and bottom, image will align to bottom */}
+        <div className="flex-1 text-center md:text-left w-full md:w-[30%] pt-14 pb-14 md:pt-20 md:pb-20">
           <motion.h2
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.6 }}
-            className="heading-1 text-white mb-6 md:mb-8 leading-[1.1]"
+            className="heading-1-mod text-white mb-6 md:mb-2 leading-9"
           >
-            <span className="font-bold">
+            <span className="font-semibold">
               Shopping for
-              <br /> an event
+              <br /> an event or
             </span>
-
-            <span className="font-playfair italic font-light ml-2">
-              or <br />
+            <span className="font-playfair italic font-light">
+              <br />
               Special Occasion?
             </span>
           </motion.h2>
-
           <motion.div
             initial={{ opacity: 0, scale: 0.9 }}
             whileInView={{ opacity: 1, scale: 1 }}
@@ -86,7 +85,7 @@ const EventShoppingCTA = () => {
             <Link href="/group-shopping">
               <motion.button
                 whileTap={{ scale: 0.95 }}
-                className="bg-[#FF5722] text-white px-4 md:px-6 py-1.5 md:py-2 cursor-pointer rounded-full font-bold text-base md:text-lg shadow-xl hover:shadow-2xl transition-shadow"
+                className="bg-[#FF5722] md:mt-4 text-white px-2.5 md:px-5 py-1.5 md:py-2 cursor-pointer rounded-full font-bold text-base md:text-lg shadow-xl hover:shadow-2xl transition-shadow"
               >
                 Switch to Group
               </motion.button>
@@ -94,20 +93,20 @@ const EventShoppingCTA = () => {
           </motion.div>
         </div>
 
-        {/* Illustration */}
+        {/* Illustration — self-end pins image flush to bottom */}
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.8, delay: 0.3 }}
-          className="flex-1 max-w-full"
+          className="flex-1 max-w-full self-end scale-[1.15] origin-bottom"
         >
           <Image
             src="/people.svg"
             alt="People with gifts"
-            width={800}
+            width={1000}
             height={250}
-            className="w-full h-auto object-contain"
+            className="w-full h-auto object-contain block"
             priority
           />
         </motion.div>

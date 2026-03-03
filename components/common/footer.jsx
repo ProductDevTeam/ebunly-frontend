@@ -41,13 +41,13 @@ export default function Footer() {
               />
             </div>
 
-            <div className="space-y-1 font-sans font-medium">
-              <h2 className="text-3xl md:text-4xl  text-gray-900 leading-tight">
+            <div className="space-y-0 font-sans font-semibold">
+              <h2 className="text-3xl md:text-4xl text-gray-900 leading-8">
                 Make
                 <br />
                 memories
               </h2>
-              <p className="text-3xl md:text-4xl text-primary leading-tight">
+              <p className="text-3xl md:text-4xl text-primary leading-none">
                 last.
               </p>
             </div>
@@ -73,16 +73,15 @@ export default function Footer() {
                     </a>
                   </li>
                 ))}
+                <li>
+                  <a
+                    href="mailto:Hello@Ebunly.com"
+                    className="text-gray-900 hover:text-primary transition-colors"
+                  >
+                    Hello@Ebunly.com
+                  </a>
+                </li>
               </ul>
-
-              <div className="pt-4">
-                <a
-                  href="mailto:Hello@Ebunly.com"
-                  className="text-gray-900 hover:text-primary transition-colors"
-                >
-                  Hello@Ebunly.com
-                </a>
-              </div>
             </div>
 
             {/* Company */}
