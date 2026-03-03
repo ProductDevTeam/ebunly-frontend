@@ -49,6 +49,7 @@ export default function ImageGallery({ images }) {
                 src={image}
                 alt={`Product image ${index + 1}`}
                 fill
+                unoptimized
                 sizes="(max-width: 1024px) 100vw, 50vw"
                 className="object-cover"
                 priority={index === 0}
@@ -93,6 +94,7 @@ export default function ImageGallery({ images }) {
                 src={image}
                 alt={`Thumbnail ${index + 1}`}
                 fill
+                unoptimized
                 sizes="64px"
                 className="object-cover"
               />

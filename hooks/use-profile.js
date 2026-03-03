@@ -69,12 +69,21 @@ async function fetchMe() {
   return apiGet("auth/me");
 }
 
+function hasAuthToken() {
+  if (typeof document === "undefined") return false;
+  return (
+    document.cookie.includes("token=") ||
+    document.cookie.includes("accessToken=")
+  );
+}
+
 export function useMe() {
   return useQuery({
     queryKey: profileKeys.me,
     queryFn: fetchMe,
-    staleTime: 5 * 60 * 1000, // 5 min
-    gcTime: 10 * 60 * 1000, // 10 min cache
+    enabled: hasAuthToken(),
+    staleTime: 5 * 60 * 1000,
+    gcTime: 10 * 60 * 1000,
     retry: (failureCount, error) => {
       if (
         error?.message?.includes("401") ||

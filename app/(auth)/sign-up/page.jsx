@@ -137,26 +137,37 @@ export default function SignUpPage() {
         </Link>
 
         <div className="flex items-center justify-center w-full">
-          <div className="h-screen md:h-auto bg-white flex flex-col px-6 py-6 font-sans w-full md:max-w-md mx-auto justify-between rounded-3xl pt-20 md:pt-10 md:shadow-xl overflow-y-auto">
-            {/* Top Section */}
-            <div className="flex flex-col gap-5 pb-4">
-              {/* Heading */}
-              <div className="max-w-3xs text-center mx-auto">
-                <h1 className="font-semibold text-[36px] text-gray-900 mb-1 text-center">
-                  Sign up
-                </h1>
-                <p className="paragraph text-black text-sm text-center">
-                  Create a free Ebunly Account &amp; gift to your heart&apos;s
-                  content
-                </p>
-              </div>
+          <div
+            className="
+            h-screen md:h-[85vh]
+            bg-white flex flex-col
+            px-6 py-6 md:px-10 md:py-8
+            font-sans w-full
+            md:max-w-lg mx-auto
+            justify-between rounded-3xl
+            pt-4 md:pt-8
+            md:shadow-xl
+          "
+          >
+            {/* Heading */}
+            <div className="max-w-2xs text-center mx-auto">
+              <h1 className="font-semibold text-[36px] text-gray-900 text-center tracking-tighter">
+                Sign up
+              </h1>
+              <p className="text-black text-sm text-center tracking-tighter">
+                Create a free Ebunly Account &amp; gift to your heart&apos;s
+                content
+              </p>
+            </div>
 
-              {/* Form */}
-              <form
-                onSubmit={handleSubmit}
-                noValidate
-                className="flex flex-col gap-4"
-              >
+            {/* Form */}
+            <form
+              onSubmit={handleSubmit}
+              noValidate
+              className="flex flex-col gap-3 flex-1 mt-4 md:mt-3"
+            >
+              {/* Name row — side by side on desktop */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                 <AuthInput
                   label="First name"
                   name="firstName"
@@ -177,21 +188,26 @@ export default function SignUpPage() {
                   error={errors.lastName}
                   autoComplete="family-name"
                 />
-                <AuthInput
-                  label="Email"
-                  name="email"
-                  type="email"
-                  placeholder="example@gmail.com"
-                  value={form.email}
-                  onChange={handleChange}
-                  error={errors.email}
-                  autoComplete="email"
-                />
+              </div>
+
+              <AuthInput
+                label="Email"
+                name="email"
+                type="email"
+                placeholder="example@gmail.com"
+                value={form.email}
+                onChange={handleChange}
+                error={errors.email}
+                autoComplete="email"
+              />
+
+              {/* Password row — side by side on desktop */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                 <AuthInput
                   label="Create a password"
                   name="password"
                   type="password"
-                  placeholder="must be 8 characters"
+                  placeholder="min. 8 characters"
                   value={form.password}
                   onChange={handleChange}
                   error={errors.password}
@@ -207,12 +223,12 @@ export default function SignUpPage() {
                   error={errors.confirm}
                   autoComplete="new-password"
                 />
+              </div>
 
-                <AuthButton isLoading={isPending}>Create Account</AuthButton>
-              </form>
+              <AuthButton isLoading={isPending}>Create Account</AuthButton>
 
               {/* Divider + Google */}
-              <div className="flex flex-col gap-4">
+              <div className="flex flex-col gap-3">
                 <OrDivider label="Or Register with" />
                 <div ref={googleBtnRef} className="hidden" />
                 <GoogleButton
@@ -221,7 +237,7 @@ export default function SignUpPage() {
                   isLoading={isGooglePending}
                 />
               </div>
-            </div>
+            </form>
 
             {/* Footer */}
             <AuthFooter

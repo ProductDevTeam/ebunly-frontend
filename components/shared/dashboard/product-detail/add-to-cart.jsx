@@ -1,8 +1,8 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Truck, Plus, Minus, ShoppingCart } from "lucide-react";
-import Image from "next/image";
 import { useCartStore } from "@/hooks/use-cart-store";
 import { useNotification } from "@/components/common/notification-provider";
 
@@ -11,9 +11,15 @@ export default function AddToCartSection({
   selectedOptions,
   personalization,
   deliveryDate,
+  onOptionChange,
 }) {
   const { addItem, increment, decrement, getCartItem } = useCartStore();
   const { notify } = useNotification();
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   if (!product) return null;
 
@@ -21,29 +27,30 @@ export default function AddToCartSection({
     Object.entries(selectedOptions ?? {}).filter(([k]) => k !== "quantity"),
   );
 
-  const cartItem = product?._id ? getCartItem(product._id, variants) : null;
+  // Before mount, always null to match server render (no localStorage on server)
+  const cartItem =
+    mounted && product?._id ? getCartItem(product._id, variants) : null;
   const quantity = cartItem?.quantity ?? 0;
 
   const handleAdd = () => {
-    addItem(product, product.minQuantity ?? 1, variants, personalization);
-
-    // Fire the cart toast
-    notify({
-      type: "cart",
-      product,
-      quantity: product.minQuantity ?? 1,
-      duration: 4000,
-    });
+    const qty = selectedOptions?.quantity ?? product.minQuantity ?? 1;
+    addItem(product, qty, variants, personalization);
+    notify({ type: "cart", product, quantity: qty, duration: 4000 });
   };
 
   const handleIncrement = () => {
+    if (!cartItem) return;
     increment(cartItem.cartItemId);
-    notify({
-      type: "cart",
-      product,
-      quantity: quantity + 1,
-      duration: 2500,
-    });
+    const newQty = quantity + 1;
+    onOptionChange?.("quantity", newQty);
+    notify({ type: "cart", product, quantity: newQty, duration: 2500 });
+  };
+
+  const handleDecrement = () => {
+    if (!cartItem) return;
+    decrement(cartItem.cartItemId);
+    const newQty = Math.max(product.minQuantity ?? 1, quantity - 1);
+    onOptionChange?.("quantity", newQty);
   };
 
   return (
@@ -53,7 +60,14 @@ export default function AddToCartSection({
         <div className="flex flex-col justify-between">
           <div className="flex items-baseline space-x-2">
             <span className="text-2xl font-medium text-gray-900">
-              ₦{(product.basePrice * Math.max(quantity, 1)).toLocaleString()}
+              ₦
+              {(
+                product.basePrice *
+                Math.max(
+                  cartItem ? quantity : (selectedOptions?.quantity ?? 1),
+                  1,
+                )
+              ).toLocaleString()}
             </span>
             {product.compareAtPrice > product.basePrice && !cartItem && (
               <span className="text-sm text-gray-400 line-through">
@@ -98,7 +112,7 @@ export default function AddToCartSection({
               className="flex items-center bg-orange-600 rounded-xl overflow-hidden shadow-lg shadow-orange-600/20"
             >
               <button
-                onClick={() => decrement(cartItem.cartItemId)}
+                onClick={handleDecrement}
                 className="px-3 py-2.5 text-white hover:bg-orange-700 transition-colors"
               >
                 <Minus className="w-4 h-4" />
