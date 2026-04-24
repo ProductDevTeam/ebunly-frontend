@@ -1,130 +1,196 @@
-"use client";
-
-import Image from "next/image";
-import { motion } from "framer-motion";
 import Link from "next/link";
-import { categories } from "@/lib/data";
+import Image from "next/image";
 
-const GiftBasketsSection = () => {
+const categories = [
+  {
+    id: 1,
+    name: "Weddings",
+    subtitle: "Gifts & Keepsakes",
+    image: "/categories/wedding.jpg",
+    icon: "/categories/wedding-icon.png",
+    cardBg: "#C8EFE9",
+    mobileBg: "#D4EFE9",
+    href: "/discover?category=weddings",
+  },
+  {
+    id: 2,
+    name: "Conferences",
+    subtitle: "Branded & Bulk Gifting",
+    image: "/categories/conference.jpg",
+    icon: "/categories/conference-icon.png",
+    cardBg: "#FAE2D4",
+    mobileBg: "#FAD9CE",
+    href: "/discover?category=conferences",
+  },
+  {
+    id: 3,
+    name: "Parties",
+    subtitle: "Celebrate in Style",
+    image: "/categories/parties.jpg",
+    icon: "/categories/parties-icon.png",
+    cardBg: "#EDD9F9",
+    mobileBg: "#EAD9F7",
+    href: "/discover?category=parties",
+  },
+  {
+    id: 4,
+    name: "Birthdays",
+    subtitle: "Any age. Any budget",
+    image: "/categories/birthday.jpg",
+    icon: "/categories/birthday-icon.png",
+    cardBg: "#FEF3C7",
+    mobileBg: "#FEF0C2",
+    href: "/discover?category=birthdays",
+  },
+  {
+    id: 5,
+    name: "Corporate Events",
+    subtitle: "Trophies, retreats, everything",
+    image: "/categories/event.jpg",
+    icon: "/categories/event-icon.png",
+    cardBg: "#DBEAFE",
+    mobileBg: "#E0EAF4",
+    href: "/discover?category=corporate",
+  },
+];
+
+const staggerDelays = ["reveal-d1", "reveal-d2", "reveal-d3", "reveal-d4", "reveal-d5"];
+
+export default function GiftBasketsSection() {
   return (
-    <section className="py-12 md:py-16 lg:py-20 px-6 md:px-0">
-      <div className="max-w-7xl mx-auto">
-        {/* Container: stack on mobile, row on desktop */}
-        <div className="flex flex-col lg:flex-row gap-2 lg:gap-0">
-          {/* Section Title */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.6 }}
-            className="lg:w-62.5 xl:w-70 shrink-0 "
-          >
-            <h2
-              className="heading-1 lg:w-[90%] w-full"
-              style={{ lineHeight: "96%" }}
+    <section className="py-10 md:py-16 px-4 md:px-6 bg-white">
+      <div className="max-w-[1280px] mx-auto">
+        {/* Title */}
+        <div data-reveal className="reveal text-center mb-8 md:mb-10">
+          <h2 className="inline leading-[96%]">
+            <span
+              className="font-playfair italic text-[26px] md:text-[34px] text-black"
+              style={{ fontWeight: 400, letterSpacing: "-6%" }}
             >
-              <span
-                className="font-playfair"
-                style={{
-                  fontWeight: 400,
-                  fontStyle: "italic",
-                  letterSpacing: "-0.06em",
-                }}
-              >
-                Gift Baskets{" "}
-              </span>
+              Gift Baskets{" "}
+            </span>
+            <span
+              className="font-sans font-semibold text-[26px] md:text-[34px] text-black"
+              style={{ letterSpacing: "-7%" }}
+            >
+              for any <br /> event or occasion
+            </span>
+          </h2>
+        </div>
 
-              <span
-                className="font-sans whitespace-nowrap pl-0.5 md:pl-0"
-                style={{ fontWeight: 600, letterSpacing: "-0.09em" }}
-              >
-                for
-              </span>
-
-              <br className="hidden lg:block" />
-
-              <span
-                className="font-sans pl-0.5 md:pl-0"
-                style={{ fontWeight: 600, letterSpacing: "-0.07em" }}
-              >
-                any event or occasion
-              </span>
-            </h2>
-          </motion.div>
-
-          {/* Categories Grid */}
-          <div className="flex-1 grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-4 pt-4">
-            {categories.map((category, index) => (
-              <motion.div
-                key={category.id}
-                initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.5, delay: index * 0.1 }}
-                className="flex flex-col"
-              >
-                <Link
-                  href={`/categories/${category.name
-                    .toLowerCase()
-                    .replace(/\s+/g, "-")}`}
-                  className="block group"
+        {/* ── Desktop: 5-column grid ───────────────────── */}
+        <div className="hidden md:grid md:grid-cols-5 gap-4 lg:gap-6">
+          {categories.map((cat, i) => (
+            <div
+              key={cat.id}
+              data-reveal
+              className={`reveal ${staggerDelays[i] ?? ""}`}
+            >
+              <Link href={cat.href} className="group block">
+                <div
+                  className="w-full rounded-2xl overflow-hidden"
+                  style={{ backgroundColor: cat.cardBg }}
                 >
-                  {/* Category Badge */}
-                  <div
-                    className={`${category.color} rounded-full px-4 py-2 inline-flex items-center gap-2 mb-2 transition-transform group-hover:scale-105 whitespace-nowrap`}
-                  >
-                    <span className={`w-2.5 h-2.5 rounded-full bg-gray-900`} />
-                    <span className="text-sm font-semibold text-gray-900">
-                      {category.name}
-                    </span>
+                  <div className="relative">
+                    <img
+                      src={cat.image}
+                      alt={cat.name}
+                      className="w-full aspect-[4/3] object-cover"
+                    />
+                    <div className="absolute bottom-0 left-3 translate-y-1/2 w-12 h-12 bg-white rounded-full flex items-center justify-center shadow-md">
+                      <img src={cat.icon} alt="" className="w-7 h-7 object-contain" />
+                    </div>
                   </div>
+                  <div className="pt-9 pb-4 px-3">
+                    <p className="font-bold text-[14px] text-gray-900 leading-snug">
+                      {cat.name}
+                    </p>
+                    <p className="text-[12px] text-gray-400 mt-0.5">{cat.subtitle}</p>
+                  </div>
+                </div>
+              </Link>
+            </div>
+          ))}
+        </div>
 
-                  {/* Images Container - Single on mobile, Two on desktop */}
-                  <div className="flex flex-col gap-2">
-                    {/* First Image - Always visible */}
-                    <motion.div
-                      whileHover={{ scale: 1.02 }}
-                      transition={{ duration: 0.3 }}
-                      className="relative w-full rounded-2xl overflow-hidden shadow-sm group-hover:shadow-lg transition-shadow"
-                      style={{ aspectRatio: "16 / 9" }}
-                    >
+        {/* ── Mobile: bento layout ─────────────────────── */}
+        <div className="md:hidden flex flex-col gap-3">
+          {/* Weddings — full width with photo */}
+          <div data-reveal className="reveal">
+            <Link href={categories[0].href} className="block">
+              <div
+                className="rounded-2xl p-3 flex items-center gap-2 h-28"
+                style={{ backgroundColor: categories[0].mobileBg }}
+              >
+                <div className="flex-1">
+                  <p className="font-bold text-[16px] text-gray-900 leading-tight">
+                    {categories[0].name}
+                  </p>
+                  <p className="text-[12px] text-gray-500 mt-1 leading-tight">
+                    {categories[0].subtitle}
+                  </p>
+                </div>
+                <div className="w-7 h-7 shrink-0 bg-white rounded-full flex items-center justify-center shadow-sm">
+                  <Image
+                    src={categories[0].icon}
+                    alt=""
+                    width={16}
+                    height={16}
+                    className="object-contain"
+                    unoptimized
+                  />
+                </div>
+                <div className="self-stretch w-[48%] shrink-0 rounded-2xl overflow-hidden relative -my-2 -mr-2">
+                  <Image
+                    src={categories[0].image}
+                    alt={categories[0].name}
+                    fill
+                    className="object-cover"
+                    sizes="200px"
+                  />
+                </div>
+              </div>
+            </Link>
+          </div>
+
+          {/* 2×2 grid for remaining 4 */}
+          <div className="grid grid-cols-2 gap-3">
+            {categories.slice(1).map((cat, i) => (
+              <div
+                key={cat.id}
+                data-reveal
+                className={`reveal ${staggerDelays[i] ?? ""}`}
+              >
+                <Link href={cat.href} className="block h-full">
+                  <div
+                    className="rounded-2xl p-3 min-h-16 h-full flex flex-col justify-between relative"
+                    style={{ backgroundColor: cat.mobileBg }}
+                  >
+                    <div className="self-end w-7 h-7 bg-white rounded-full flex items-center justify-center shadow-sm">
                       <Image
-                        src={category.images[0].src}
-                        alt={category.images[0].alt}
-                        fill
-                        className="object-cover"
-                        sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
+                        src={cat.icon}
+                        alt=""
+                        unoptimized
+                        width={24}
+                        height={20}
+                        className="object-contain"
                       />
-                      <div className="absolute inset-0 bg-black/0 group-hover:bg-black/5 transition-colors duration-300" />
-                    </motion.div>
-
-                    {/* Second Image - Hidden on mobile, visible on desktop */}
-                    {category.images[1] && (
-                      <motion.div
-                        whileHover={{ scale: 1.02 }}
-                        transition={{ duration: 0.3 }}
-                        className="hidden lg:block relative w-full rounded-2xl overflow-hidden shadow-sm group-hover:shadow-lg transition-shadow"
-                        style={{ aspectRatio: "16 / 9" }}
-                      >
-                        <Image
-                          src={category.images[1].src}
-                          alt={category.images[1].alt}
-                          fill
-                          className="object-cover"
-                          sizes="25vw"
-                        />
-                        <div className="absolute inset-0 bg-black/0 group-hover:bg-black/5 transition-colors duration-300" />
-                      </motion.div>
-                    )}
+                    </div>
+                    <div>
+                      <p className="font-bold text-[14px] text-gray-900 leading-tight">
+                        {cat.name}
+                      </p>
+                      <p className="text-[12px] text-gray-500 mt-0.5 leading-tight">
+                        {cat.subtitle}
+                      </p>
+                    </div>
                   </div>
                 </Link>
-              </motion.div>
+              </div>
             ))}
           </div>
         </div>
       </div>
     </section>
   );
-};
-
-export default GiftBasketsSection;
+}

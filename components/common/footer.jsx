@@ -1,8 +1,10 @@
+import Link from "next/link";
 import Image from "next/image";
 
 const SOCIAL_LINKS = [
   { label: "Instagram", href: "https://instagram.com" },
   { label: "Twitter (X)", href: "https://twitter.com" },
+  { label: "Hello@Ebunly.com", href: "mailto:Hello@Ebunly.com" },
 ];
 
 const COMPANY_LINKS = [
@@ -14,94 +16,94 @@ const COMPANY_LINKS = [
 
 export default function Footer() {
   return (
-    <footer className="relative w-full bg-[#FFF5F3] overflow-hidden pb-8 md:pb-0">
-      {/* Background SVG */}
-      <div className="absolute inset-0 w-full h-full">
-        <Image
-          src="/footer-bg.svg"
-          alt=""
-          fill
-          className="object-cover blur-3xl"
-          priority={false}
-        />
+    <footer className="relative bg-[#0F0E0C] text-white font-sans overflow-hidden">
+      {/* ── Star: top-right corner (mobile + desktop) ── */}
+      <div className="absolute top-8 right-6 md:top-10 md:right-10 z-20 pointer-events-none">
+        <Image src="/star.svg" alt="" width={24} height={24} />
       </div>
 
-      {/* Content */}
-      <div className="relative z-10 max-w-7xl mx-auto px-4 md:px-8 py-12 md:py-16">
+      {/* ── Main content ─────────────────────────────── */}
+      <div className="relative z-10 max-w-7xl mx-auto px-5 md:px-10 pt-10 md:pt-14">
         <div className="flex flex-col md:flex-row md:justify-between gap-8 md:gap-12">
-          {/* Left: Tagline */}
-          <div className="space-y-6">
-            <div className="flex items-center gap-2">
-              <Image
-                src="/logo-basket.svg"
-                alt="Ebunly Logo"
-                width={40}
-                height={40}
-                className="object-contain"
-              />
-            </div>
-
-            <div className="space-y-0 font-sans font-semibold">
-              <h2 className="text-3xl md:text-4xl text-gray-900 leading-8">
-                Make
-                <br />
-                memories
-              </h2>
-              <p className="text-3xl md:text-4xl text-primary leading-none">
-                last.
-              </p>
-            </div>
-
-            <p className="text-sm text-gray-900 font-medium">©Ebunly2026</p>
+          {/* Left: Brand block */}
+          <div className="flex flex-col gap-3">
+            <Link
+              href="/"
+              className="font-panchang font-bold text-[26px] md:text-[28px] text-white leading-none tracking-tight"
+            >
+              EBUNLY
+            </Link>
+            <p className="text-[15px] md:text-[16px] text-white leading-snug">
+              Making memories{" "}
+              <span className="text-[#F85826] font-semibold">last.</span>
+            </p>
+            <p className="text-[13px] text-white/50 mt-0.5">©Ebunly2026</p>
           </div>
 
-          {/* Right: Socials & Company */}
-          <div className="flex flex-col sm:flex-row gap-8 md:gap-12 lg:gap-28">
+          {/* Right: Link columns */}
+          <div className="flex gap-10 md:gap-16 lg:gap-24">
             {/* Socials */}
-            <div className="space-y-4">
-              <h3 className="text-lg font-semibold text-gray-900">Socials</h3>
-              <ul className="space-y-3">
+            <div>
+              <p className="text-[16px] tracking-[0] uppercase text-[#5C5C5C] mb-4 md:mb-5">
+                Socials
+              </p>
+              <ul className="flex flex-col gap-3">
                 {SOCIAL_LINKS.map((link) => (
                   <li key={link.label}>
                     <a
                       href={link.href}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-gray-900 hover:text-primary transition-colors"
+                      className="text-[16px] text-white hover:text-white/70 transition-colors leading-[120%] tracking-[0]"
                     >
                       {link.label}
                     </a>
                   </li>
                 ))}
-                <li>
-                  <a
-                    href="mailto:Hello@Ebunly.com"
-                    className="text-gray-900 hover:text-primary transition-colors"
-                  >
-                    Hello@Ebunly.com
-                  </a>
-                </li>
               </ul>
             </div>
 
             {/* Company */}
-            <div className="space-y-4">
-              <h3 className="text-lg font-semibold text-gray-900">Company</h3>
-              <ul className="space-y-3">
+            <div>
+              <p className="text-[16px] tracking-[0] uppercase text-[#5C5C5C] mb-4 md:mb-5">
+                Company
+              </p>
+              <ul className="flex flex-col gap-3">
                 {COMPANY_LINKS.map((link) => (
                   <li key={link.label}>
-                    <a
+                    <Link
                       href={link.href}
-                      className="text-gray-900 hover:text-primary transition-colors"
+                      className="text-[16px] text-white hover:text-white/70 transition-colors leading-[120%] tracking-[0]"
                     >
                       {link.label}
-                    </a>
+                    </Link>
                   </li>
                 ))}
               </ul>
+
+              {/* Star: below Company column — desktop only */}
+              <div className="hidden md:block mt-8">
+                <Image src="/star.svg" alt="" width={20} height={20} />
+              </div>
             </div>
           </div>
         </div>
+      </div>
+
+      {/* ── Giant outline EBUNLY ──────────────────────── */}
+      <div className="relative mt-6 md:mt-10 overflow-hidden">
+        {/* Star: bottom-left, overlapping the giant text */}
+        <div className="absolute left-4 md:left-[138px] top-[50%] -translate-y-1/2 z-10 pointer-events-none">
+          <Image src="/star.svg" alt="" width={28} height={28} />
+        </div>
+
+        <p
+          className="font-panchang font-bold leading-[0.7] text-transparent select-none whitespace-nowrap pl-4 md:pl-36"
+          style={{
+            fontSize: "max(65px, 13vw)",
+            WebkitTextStroke: "1px rgba(255,255,255,0.55)",
+          }}
+        >
+          EBUNLY
+        </p>
       </div>
     </footer>
   );

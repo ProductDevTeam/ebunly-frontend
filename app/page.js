@@ -1,5 +1,67 @@
-import { redirect } from "next/navigation";
+import Navbar from "@/components/common/navbar";
+import Footer from "@/components/common/footer";
+import ScrollReveal from "@/components/common/scroll-reveal";
+import HeroSection from "@/components/shared/home/hero";
+import GiftBasketsSection from "@/components/shared/home/gift-basket";
+import PerfectForYouSection from "@/components/shared/home/carousal";
+import WhoGiftingSection from "@/components/shared/home/who-gifting";
+import GroupGiftingSection from "@/components/shared/home/group-gifting";
+import BudgetSection from "@/components/shared/home/budget";
+import NewsletterSection from "@/components/shared/home/newsletter";
+
+const perfectForYouProducts = [
+  {
+    id: 1,
+    name: "Chumby's Jollof Rice",
+    price: 2500,
+    image: "/product.png",
+    slug: "chumbys-jollof-rice",
+  },
+  {
+    id: 2,
+    name: "Mini Scented Candle Set",
+    price: 75000,
+    image: "/product2.png",
+    slug: "mini-scented-candle",
+  },
+  {
+    id: 3,
+    name: "Floral Dream Trio",
+    price: 53000,
+    image: "/product.png",
+    slug: "floral-dream-trio",
+  },
+  {
+    id: 4,
+    name: "Dala Ife",
+    price: 30000,
+    image: "/product2.png",
+    slug: "dala-ife",
+  },
+  {
+    id: 5,
+    name: "Sugar Wax Kit",
+    price: 17000,
+    image: "/product.png",
+    slug: "sugar-wax-kit",
+  },
+];
 
 export default function HomePage() {
-  redirect("/home");
+  return (
+    <div className="bg-white min-h-screen font-sans">
+      <ScrollReveal />
+      <Navbar />
+      <main>
+        <HeroSection />
+        <GiftBasketsSection />
+        <PerfectForYouSection products={perfectForYouProducts} />
+        <WhoGiftingSection />
+        <GroupGiftingSection />
+        <BudgetSection />
+        <NewsletterSection />
+      </main>
+      <Footer />
+    </div>
+  );
 }

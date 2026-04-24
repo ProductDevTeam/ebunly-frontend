@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback, useEffect } from "react";
+import { Suspense, useState, useCallback, useEffect } from "react";
 import { useSearchParams } from "next/navigation";
 import FilterBar from "@/components/shared/dashboard/filterbar";
 import ProductGrid from "@/components/shared/dashboard/product-grid";
@@ -23,7 +23,7 @@ const DEFAULT_FILTERS = {
   limit: 12,
 };
 
-export default function DiscoverPage() {
+function DiscoverInner() {
   const searchParams = useSearchParams();
   const urlSearch = searchParams.get("search") ?? "";
 
@@ -33,7 +33,6 @@ export default function DiscoverPage() {
   });
   const [restoredFilters, setRestoredFilters] = useState(null);
 
-  // If user navigates here from TopHeader search, sync the URL param
   useEffect(() => {
     if (urlSearch) {
       setFilters((prev) => ({ ...prev, search: urlSearch, page: 1 }));
@@ -46,7 +45,6 @@ export default function DiscoverPage() {
   const handleSearch = useCallback(
     (searchTerm) => {
       const next = { ...filters, search: searchTerm, page: 1 };
-      console.log("📦 Filters sent to API:", JSON.stringify(next));
       setFilters(next);
       saveToHistory(next);
     },
@@ -100,5 +98,13 @@ export default function DiscoverPage() {
         }}
       />
     </>
+  );
+}
+
+export default function DiscoverPage() {
+  return (
+    <Suspense>
+      <DiscoverInner />
+    </Suspense>
   );
 }

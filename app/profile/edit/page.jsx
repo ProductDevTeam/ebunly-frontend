@@ -220,7 +220,7 @@ const EditProfilePage = () => {
   }
 
   return (
-    <div className="min-h-screen bg-white md:ml-36">
+    <div className="min-h-screen bg-white">
       <div className="max-w-md  px-6 py-8">
         <h1 className="text-2xl font-semibold mb-8">Edit Profile</h1>
 
