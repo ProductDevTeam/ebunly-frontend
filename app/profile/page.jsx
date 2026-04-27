@@ -32,7 +32,7 @@ export default function ProfilePage() {
 
   return (
     <>
-      <div className="min-h-screen bg-white md:ml-36">
+      <div className="min-h-screen bg-white">
         <div className="max-w-md  bg-white">
           {/* User Profile Section — fetches /auth/me internally */}
           <UserProfile onCountryChange={handleCountryChange} />

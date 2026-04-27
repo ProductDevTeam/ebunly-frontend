@@ -1,4 +1,6 @@
-import { DM_Sans, Playfair_Display } from "next/font/google";
+import { DM_Sans, Playfair_Display, PT_Serif } from "next/font/google";
+import localFont from "next/font/local";
+
 import "./globals.css";
 
 import QueryProvider from "@/components/providers/QueryProvider";
@@ -9,14 +11,30 @@ const dmSans = DM_Sans({
   variable: "--font-dmSans",
   subsets: ["latin"],
 });
+const ptSerif = PT_Serif({
+  variable: "--font-ptSerif",
+  subsets: ["latin"],
+  weight: ["400", "700"],
+});
 
 const playFair = Playfair_Display({
   variable: "--font-playFair",
   subsets: ["latin"],
 });
 
+const panchang = localFont({
+  src: [
+    {
+      path: "../public/fonts/Panchang-Variable.woff2",
+      style: "normal",
+    },
+  ],
+  variable: "--font-panchang",
+  display: "swap",
+});
+
 export const metadata = {
-  metadataBase: new URL("https://yourdomain.com"),
+  metadataBase: new URL("https://ebunly.com"),
 
   title: {
     default: "Luxury Gift Baskets & Personalized Gifts | Ebunly",
@@ -92,7 +110,7 @@ export default function RootLayout({ children }) {
   return (
     <html lang="en">
       <body
-        className={`${dmSans.variable} ${playFair.variable} antialiased bg-white font-sans`}
+        className={`${dmSans.variable} ${ptSerif.variable} ${playFair.variable} ${panchang.variable} antialiased bg-white font-sans`}
       >
         <QueryProvider>
           <NotificationProvider>{children}</NotificationProvider>
