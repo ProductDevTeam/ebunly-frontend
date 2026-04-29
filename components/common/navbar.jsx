@@ -18,8 +18,8 @@ export default function Navbar() {
   return (
     <header className="w-full bg-white font-sans sticky top-0 z-50">
       {/* ── Desktop Main Row ─────────────────────────── */}
-      <div className="hidden md:block border-b border-gray-100">
-        <div className="flex items-center h-17 max-w-7xl mx-auto px-6 gap-4">
+      <div className="hidden md:block ">
+        <div className="flex items-center justify-between h-17 max-w-7xl mx-auto px-6 gap-4">
           {/* Logo */}
           <Link
             href="/"
@@ -28,30 +28,8 @@ export default function Navbar() {
             EBUNLY
           </Link>
 
-          {/* Categories */}
-          <button className="shrink-0 flex items-center gap-2 text-sm font-medium text-gray-800 hover:text-gray-600 transition-colors">
-            <svg width="16" height="11" viewBox="0 0 16 11" fill="none">
-              <rect width="16" height="1.8" rx="0.9" fill="currentColor" />
-              <rect
-                y="4.6"
-                width="16"
-                height="1.8"
-                rx="0.9"
-                fill="currentColor"
-              />
-              <rect
-                y="9.2"
-                width="16"
-                height="1.8"
-                rx="0.9"
-                fill="currentColor"
-              />
-            </svg>
-            Categories
-          </button>
-
           {/* Search */}
-          <div className="flex-1 max-w-125 mx-3">
+          <div className="flex-1 max-w-72 ml-40">
             <label className="flex items-center gap-2.5 h-9.5 bg-white border border-gray-200 rounded-md px-4 cursor-text">
               <svg
                 width="20"
@@ -77,12 +55,11 @@ export default function Navbar() {
           </div>
 
           {/* Right actions */}
-          <div className="flex items-center gap-1.5 ml-auto shrink-0">
+          <div className="flex items-center gap-1.5 shrink-0">
             {/* Shopping for an event */}
             <button className="flex items-center gap-1.5 border border-primary text-primary rounded-[9px] px-3.5 font-sans py-1.75 bg-[#FAF5F5] text-sm font-medium tracking-[0] whitespace-nowrap hover:bg-[#FAF6F5] cursor-pointer transition-colors mr-2">
               Shopping for an event?
             </button>
-
             {/* User */}
             <button className="p-1.5">
               <Image
