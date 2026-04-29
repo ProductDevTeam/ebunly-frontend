@@ -16,25 +16,43 @@ export default function NewsletterSection() {
       {/* Decorative star — left */}
       <div
         data-reveal
-        className="star-reveal absolute left-[4%] top-[18%] md:left-[30%] md:top-[22%] w-10 h-10 md:w-7 md:h-7 pointer-events-none"
+        className="md:star-reveal absolute left-[4%] top-[18%] md:left-[30%] md:top-[22%] w-4 h-4 md:w-7 md:h-7 pointer-events-none"
       >
-        <Image src="/star.svg" alt="" width={20} height={20} className="w-full h-full" />
+        <Image
+          src="/star.svg"
+          alt=""
+          width={12}
+          height={12}
+          className="w-full h-full"
+        />
       </div>
 
       {/* Decorative star — bottom-left blur */}
       <div
         data-reveal
-        className="star-reveal absolute left-[4%] top-[18%] md:left-[11%] md:top-[70%] w-10 h-10 md:w-22 md:h-22 blur-lg pointer-events-none"
+        className="star-reveal absolute left-[4%] top-[25%] md:left-[11%] md:top-[70%] w-10 h-10 md:w-22 md:h-22 md:blur-lg pointer-events-none hidden md:block"
       >
-        <Image src="/star.svg" alt="" width={88} height={88} className="w-full h-full" />
+        <Image
+          src="/star.svg"
+          alt=""
+          width={88}
+          height={88}
+          className="w-full h-full"
+        />
       </div>
 
       {/* Decorative star — right */}
       <div
         data-reveal
-        className="star-reveal-neg absolute right-[4%] bottom-[18%] md:right-[8%] md:bottom-[22%] w-8 h-8 md:w-5 md:h-5 pointer-events-none"
+        className="star-reveal-neg absolute right-[4%] bottom-[18%] md:right-[8%] md:bottom-[22%] w-12 h-12 blur-lg md:w-5 md:h-5 pointer-events-none"
       >
-        <Image src="/star.svg" alt="" width={36} height={36} className="w-full h-full" />
+        <Image
+          src="/star.svg"
+          alt=""
+          width={36}
+          height={36}
+          className="w-full h-full"
+        />
       </div>
 
       {/* Content */}
@@ -42,11 +60,14 @@ export default function NewsletterSection() {
         <div data-reveal className="reveal">
           <h2
             className="font-sans font-semibold text-[24px] md:text-[32px] text-[#1E1E1E] mb-2 md:mb-3"
-            style={{ letterSpacing: "-2%" }}
+            style={{ letterSpacing: "-4%", lineHeight: "120%" }}
           >
             Stay in the loop
           </h2>
-          <p className="text-[14px] md:text-[15px] text-text-new-gray mb-6 md:mb-8 leading-relaxed">
+          <p
+            className="text-[14px] md:text-[15px] text-black mb-6 md:mb-8 "
+            style={{ letterSpacing: "-2%", lineHeight: "140%" }}
+          >
             Sign up for sales, discounts, and unique gift ideas
           </p>
 

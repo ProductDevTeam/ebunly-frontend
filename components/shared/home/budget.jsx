@@ -56,7 +56,7 @@ export default function BudgetSection() {
             <div
               key={b.id}
               className="shrink-0 snap-start"
-              style={{ width: "calc(50vw - 12px)" }}
+              style={{ width: "calc(68vw - 12px)" }}
             >
               <Link href={b.href} className="group block h-full">
                 <div

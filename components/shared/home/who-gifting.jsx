@@ -63,7 +63,13 @@ export default function WhoGiftingSection() {
                 className="group block relative rounded-2xl overflow-hidden h-65 lg:h-75"
               >
                 <div className="absolute inset-0">
-                  <Image src={r.image} alt={r.label} fill className="object-cover" sizes="25vw" />
+                  <Image
+                    src={r.image}
+                    alt={r.label}
+                    fill
+                    className="object-cover object-[65%_40%] scale-105"
+                    sizes="25vw"
+                  />
                 </div>
                 <div
                   className="absolute bottom-0 left-0 right-0 p-4"

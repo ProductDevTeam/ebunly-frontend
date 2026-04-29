@@ -26,18 +26,26 @@ export default function Footer() {
       <div className="relative z-10 max-w-7xl mx-auto px-5 md:px-10 pt-10 md:pt-14">
         <div className="flex flex-col md:flex-row md:justify-between gap-8 md:gap-12">
           {/* Left: Brand block */}
-          <div className="flex flex-col gap-3">
+          <div className="flex flex-col gap-1.5">
             <Link
               href="/"
               className="font-panchang font-bold text-[26px] md:text-[28px] text-white leading-none tracking-tight"
             >
               EBUNLY
             </Link>
-            <p className="text-[15px] md:text-[16px] text-white leading-snug">
+            <p
+              className="text-[15px] md:text-[16px] text-white"
+              style={{ lineHeight: "99%", letterSpacing: 0 }}
+            >
               Making memories{" "}
               <span className="text-[#F85826] font-semibold">last.</span>
             </p>
-            <p className="text-[13px] text-white/50 mt-0.5">©Ebunly2026</p>
+            <p
+              className="text-[13px] text-white/50 "
+              style={{ lineHeight: "20px", letterSpacing: 0 }}
+            >
+              ©Ebunly2026
+            </p>
           </div>
 
           {/* Right: Link columns */}

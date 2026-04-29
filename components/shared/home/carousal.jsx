@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
+import { AnimatePresence, motion } from "framer-motion";
 import { useRef, useState } from "react";
 
 const SKELETON_COUNT = 5;
@@ -32,7 +33,10 @@ const PerfectForYouSection = ({ products = [] }) => {
     <section className="py-8 md:py-14 px-4 md:px-6 bg-white">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
-        <div data-reveal className="reveal flex items-center justify-between mb-6 md:mb-8">
+        <div
+          data-reveal
+          className="reveal flex items-center justify-between mb-6 md:mb-8"
+        >
           <h2
             className="font-sans font-semibold leading-[120%] text-[20px] md:text-[28px] text-[#1E1E1E]"
             style={{ letterSpacing: "-2%" }}
@@ -48,7 +52,16 @@ const PerfectForYouSection = ({ products = [] }) => {
                 className="w-9 h-9 rounded-full border border-gray-200 flex items-center justify-center text-gray-400 hover:border-gray-400 hover:text-gray-700 transition-colors"
                 aria-label="Scroll left"
               >
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <svg
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
                   <path d="m15 18-6-6 6-6" />
                 </svg>
               </button>
@@ -57,7 +70,16 @@ const PerfectForYouSection = ({ products = [] }) => {
                 className="w-9 h-9 rounded-full bg-black flex items-center justify-center text-white hover:bg-black/80 transition-colors"
                 aria-label="Scroll right"
               >
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                <svg
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2.2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
                   <path d="m9 18 6-6-6-6" />
                 </svg>
               </button>
@@ -77,7 +99,10 @@ const PerfectForYouSection = ({ products = [] }) => {
             : products.map((product) => {
                 const isActive = activeCard === product.id;
                 return (
-                  <div key={product.id} className="flex-none w-50 md:w-55 lg:w-60">
+                  <div
+                    key={product.id}
+                    className="flex-none w-50 md:w-55 lg:w-60"
+                  >
                     {/* Card */}
                     <div className="mb-3 relative w-full rounded-2xl overflow-hidden bg-gray-100 aspect-square group">
                       <Link href={`/discover/${product.slug}`}>
@@ -96,33 +121,64 @@ const PerfectForYouSection = ({ products = [] }) => {
                           e.preventDefault();
                           setActiveCard(isActive ? null : product.id);
                         }}
-                        className="absolute top-2.5 right-2.5 w-8 h-8 rounded-full bg-white shadow-md flex items-center justify-center text-gray-700 z-10"
+                        className="absolute bottom-2.5 right-2.5 w-8 h-8 rounded-full bg-white shadow-md flex items-center justify-center text-gray-700 z-20"
+                        aria-label={
+                          isActive
+                            ? "Close product actions"
+                            : "Open product actions"
+                        }
                       >
-                        {isActive ? (
-                          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round">
-                            <path d="M18 6L6 18M6 6l12 12" />
-                          </svg>
-                        ) : (
-                          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round">
-                            <path d="M12 5v14M5 12h14" />
-                          </svg>
-                        )}
+                        <motion.span
+                          animate={{ rotate: isActive ? 45 : 0 }}
+                          transition={{
+                            duration: 0.22,
+                            ease: [0.4, 0, 0.2, 1],
+                          }}
+                          className="relative block h-4 w-4"
+                        >
+                          <span className="absolute left-1/2 top-0 h-4 w-0.5 -translate-x-1/2 rounded-full bg-current" />
+                          <span className="absolute left-0 top-1/2 h-0.5 w-4 -translate-y-1/2 rounded-full bg-current" />
+                        </motion.span>
                       </button>
 
                       {/* CTA overlay */}
-                      {isActive && (
-                        <div className="md:hidden absolute bottom-0 left-0 right-0 flex flex-col">
-                          <button
-                            className="w-full text-[#444] text-[13px] font-medium py-3 text-center"
-                            style={{ background: "#FFFFFF" }}
+                      <AnimatePresence>
+                        {isActive && (
+                          <motion.div
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            transition={{ duration: 0.18 }}
+                            className="absolute inset-x-0 bottom-0 z-10 flex flex-col overflow-hidden"
                           >
-                            Add to favorites
-                          </button>
-                          <button className="w-full bg-[#F85826] text-white text-[14px] font-semibold py-3">
-                            Add to cart
-                          </button>
-                        </div>
-                      )}
+                            <motion.button
+                              initial={{ y: "100%" }}
+                              animate={{ y: 0 }}
+                              exit={{ y: "100%" }}
+                              transition={{
+                                duration: 0.24,
+                                ease: [0.4, 0, 0.2, 1],
+                              }}
+                              className="w-full bg-white text-[#444] text-[13px] font-medium py-3 text-center"
+                            >
+                              Add to favorites
+                            </motion.button>
+                            <motion.button
+                              initial={{ y: "100%" }}
+                              animate={{ y: 0 }}
+                              exit={{ y: "100%" }}
+                              transition={{
+                                duration: 0.24,
+                                delay: 0.05,
+                                ease: [0.4, 0, 0.2, 1],
+                              }}
+                              className="w-full bg-[#F85826] text-white text-[14px] font-semibold py-3"
+                            >
+                              Add to cart
+                            </motion.button>
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
                     </div>
 
                     {/* Info */}
@@ -136,7 +192,12 @@ const PerfectForYouSection = ({ products = [] }) => {
                         </p>
                       </div>
                       <button className="p-1.5">
-                        <Image src="/icons/heart.svg" width={22} height={20} alt="Wishlist" />
+                        <Image
+                          src="/icons/heart.svg"
+                          width={22}
+                          height={20}
+                          alt="Wishlist"
+                        />
                       </button>
                     </div>
                   </div>
