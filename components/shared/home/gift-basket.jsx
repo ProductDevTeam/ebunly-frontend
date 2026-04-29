@@ -59,7 +59,7 @@ const staggerDelays = ["reveal-d1", "reveal-d2", "reveal-d3", "reveal-d4", "reve
 export default function GiftBasketsSection() {
   return (
     <section className="py-10 md:py-16 px-4 md:px-6 bg-white">
-      <div className="max-w-[1280px] mx-auto">
+      <div className="max-w-7xl mx-auto">
         {/* Title */}
         <div data-reveal className="reveal text-center mb-8 md:mb-10">
           <h2 className="inline leading-[96%]">
@@ -91,14 +91,24 @@ export default function GiftBasketsSection() {
                   className="w-full rounded-2xl overflow-hidden"
                   style={{ backgroundColor: cat.cardBg }}
                 >
-                  <div className="relative">
-                    <img
+                  <div className="relative aspect-4/3">
+                    <Image
                       src={cat.image}
                       alt={cat.name}
-                      className="w-full aspect-[4/3] object-cover"
+                      fill
+                      className="object-cover"
+                      sizes="(max-width: 1280px) 20vw, 256px"
+                      loading="lazy"
                     />
                     <div className="absolute bottom-0 left-3 translate-y-1/2 w-12 h-12 bg-white rounded-full flex items-center justify-center shadow-md">
-                      <img src={cat.icon} alt="" className="w-7 h-7 object-contain" />
+                      <Image
+                        src={cat.icon}
+                        alt=""
+                        width={28}
+                        height={28}
+                        className="object-contain"
+                        unoptimized
+                      />
                     </div>
                   </div>
                   <div className="pt-9 pb-4 px-3">
