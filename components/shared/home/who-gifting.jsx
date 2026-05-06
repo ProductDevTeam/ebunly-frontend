@@ -23,7 +23,7 @@ const recipients = [
     href: "/discover?for=couples",
     image: "/categories/for-couples.jpg",
     mobileBtn: true,
-    mobileBtnEmoji: "🎁",
+    mobileBtnImage: "/categories/couples.png",
   },
   {
     id: 4,
@@ -32,7 +32,7 @@ const recipients = [
     href: "/discover?for=babies",
     image: "/categories/for-babies.jpg",
     mobileBtn: true,
-    mobileBtnEmoji: "🍼",
+    mobileBtnImage: "/categories/babies.png",
   },
 ];
 
@@ -67,7 +67,7 @@ export default function WhoGiftingSection() {
                     src={r.image}
                     alt={r.label}
                     fill
-                    className="object-cover object-[65%_40%] scale-105"
+                    className="object-cover object-[65%_40%] scale-100"
                     sizes="25vw"
                   />
                 </div>
@@ -100,20 +100,20 @@ export default function WhoGiftingSection() {
                 href={r.href}
                 className="block relative rounded-2xl overflow-hidden h-52"
               >
-                <div className="absolute inset-0">
+                <div className="absolute right-0 top-0 bottom-0 w-[58%]">
                   <Image
                     src={r.image}
                     alt={r.label}
                     fill
-                    className="object-cover object-[70%_20%]"
-                    sizes="100vw"
+                    className="object-cover object-[left_30%]"
+                    sizes="60vw"
                   />
                 </div>
                 <div
                   className="absolute inset-0"
                   style={{
                     background:
-                      "linear-gradient(270deg, rgba(0, 0, 0, 0) 0%, #000000 80%)",
+                      "linear-gradient(to right, #000000 42%, rgba(0,0,0,0) 68%)",
                   }}
                 />
                 <div className="absolute bottom-0 left-0 right-0 p-4">
@@ -133,7 +133,13 @@ export default function WhoGiftingSection() {
                 href={r.href}
                 className="flex-1 flex items-center justify-center gap-2 border border-gray-300 rounded-full py-3 text-[14px] font-medium text-text-new-gray hover:bg-gray-50 transition-colors"
               >
-                <span>{r.mobileBtnEmoji}</span>
+                <Image
+                  src={r.mobileBtnImage}
+                  alt={r.label}
+                  width={20}
+                  height={20}
+                  className="w-5 h-5 object-cover"
+                />
                 <span>{r.label}</span>
               </Link>
             ))}

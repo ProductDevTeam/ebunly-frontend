@@ -45,6 +45,41 @@ const perfectForYouProducts = [
     image: "/product.png",
     slug: "sugar-wax-kit",
   },
+  {
+    id: 6,
+    name: "Luxury Bath Set",
+    price: 22000,
+    image: "/product2.png",
+    slug: "luxury-bath-set",
+  },
+  {
+    id: 7,
+    name: "Artisan Gift Box",
+    price: 45000,
+    image: "/product.png",
+    slug: "artisan-gift-box",
+  },
+  {
+    id: 8,
+    name: "Silk Scarf Bundle",
+    price: 38000,
+    image: "/product2.png",
+    slug: "silk-scarf-bundle",
+  },
+  {
+    id: 9,
+    name: "Gourmet Hamper",
+    price: 60000,
+    image: "/product.png",
+    slug: "gourmet-hamper",
+  },
+  {
+    id: 10,
+    name: "Wellness Gift Kit",
+    price: 28000,
+    image: "/product2.png",
+    slug: "wellness-gift-kit",
+  },
 ];
 
 export default function HomePage() {
