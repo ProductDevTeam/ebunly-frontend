@@ -20,11 +20,19 @@ const PerfectForYouSection = ({ products = [] }) => {
   const [activeCard, setActiveCard] = useState(null);
 
   const scroll = (dir) => {
-    if (!scrollRef.current) return;
-    scrollRef.current.scrollBy({
-      left: dir === "right" ? 280 : -280,
-      behavior: "smooth",
-    });
+    const el = scrollRef.current;
+    if (!el) return;
+    const distance = dir === "right" ? el.clientWidth : -el.clientWidth;
+    const duration = 400;
+    const start = el.scrollLeft;
+    const startTime = performance.now();
+    const ease = (t) => 1 - Math.pow(1 - t, 3);
+    const step = (now) => {
+      const progress = Math.min((now - startTime) / duration, 1);
+      el.scrollLeft = start + distance * ease(progress);
+      if (progress < 1) requestAnimationFrame(step);
+    };
+    requestAnimationFrame(step);
   };
 
   const isEmpty = products.length === 0;
@@ -169,7 +177,6 @@ const PerfectForYouSection = ({ products = [] }) => {
                               exit={{ y: "100%" }}
                               transition={{
                                 duration: 0.24,
-                                delay: 0.05,
                                 ease: [0.4, 0, 0.2, 1],
                               }}
                               className="w-full bg-[#F85826] text-white text-[14px] font-semibold py-3"
