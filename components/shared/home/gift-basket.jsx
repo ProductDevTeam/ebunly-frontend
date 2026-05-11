@@ -65,7 +65,7 @@ const staggerDelays = [
 export default function GiftBasketsSection() {
   return (
     <section className="py-10 md:py-16 px-4 md:px-6 ">
-      <div className="max-w-7xl mx-auto bg-[#F5F8FA] px-8 py-8">
+      <div className="max-w-7xl mx-auto bg-[#F5F8FA] rounded-xl px-2 md:px-8 py-8">
         {/* Title */}
         <div data-reveal className="reveal text-center mb-8 md:mb-10">
           <h2 className="inline leading-[96%]">
@@ -106,7 +106,7 @@ export default function GiftBasketsSection() {
                       sizes="(max-width: 1280px) 20vw, 256px"
                       loading="lazy"
                     />
-                    <div className="absolute bottom-0 left-3 translate-y-1/2 w-12 h-12 bg-white rounded-full flex items-center justify-center shadow-md">
+                    <div className="absolute bottom-0 left-3 translate-y-1/2 w-12 h-12 bg-white rounded-full flex items-center justify-center ">
                       <Image
                         src={cat.icon}
                         alt=""

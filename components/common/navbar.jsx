@@ -23,7 +23,7 @@ export default function Navbar() {
           {/* Logo */}
           <Link
             href="/"
-            className="shrink-0 font-panchang font-semibold text-[14px] text-gray-900 tracking-tight mr-1"
+            className="shrink-0 font-panchang font-semibold text-[16px] text-gray-900 tracking-tight mr-1"
           >
             EBUNLY
           </Link>
@@ -55,9 +55,9 @@ export default function Navbar() {
           </div>
 
           {/* Right actions */}
-          <div className="flex items-center gap-1.5 shrink-0">
+          <div className="flex items-center gap-1.5 shrink-0 ">
             {/* Shopping for an event */}
-            <button className="flex items-center gap-1.5 border border-primary text-primary rounded-[9px] px-3.5 font-sans py-1.75 bg-[#FAF5F5] text-sm font-medium tracking-[0] whitespace-nowrap hover:bg-[#FAF6F5] cursor-pointer transition-colors mr-2">
+            <button className=" mr-72 flex items-center gap-1.5 border border-primary text-primary rounded-[9px] px-3.5 font-sans py-1.75 bg-[#FAF5F5] text-sm font-medium tracking-[0] whitespace-nowrap hover:bg-[#FAF6F5] cursor-pointer transition-colors ">
               Shopping for an event?
             </button>
             {/* User */}
