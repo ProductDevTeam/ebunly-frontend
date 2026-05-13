@@ -84,10 +84,10 @@ const perfectForYouProducts = [
 
 export default function HomePage() {
   return (
-    <div className="bg-white min-h-screen font-sans">
+    <div className="min-h-screen font-sans">
       <ScrollReveal />
       <Navbar />
-      <main>
+      <main className="bg-white">
         <HeroSection />
         <GiftBasketsSection />
         <PerfectForYouSection products={perfectForYouProducts} />

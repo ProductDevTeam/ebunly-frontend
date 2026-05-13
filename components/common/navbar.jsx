@@ -1,25 +1,30 @@
 "use client";
 
 import { useState } from "react";
+import { usePathname } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 
-const NAV_LINKS = [
-  "Gifts",
-  "Jewellery",
-  "Fashion & Beauty",
-  "Baby & Child",
-  "Weddings",
+const FALLBACK_CATEGORIES = [
+  { id: "fashion-accessories", label: "Fashion & Accessories" },
+  { id: "beauty-self-care", label: "Beauty & Self Care" },
+  { id: "food-treats", label: "Food & Treats" },
+  { id: "gift-boxes", label: "Gift Boxes" },
+  { id: "home-living", label: "Home & Living" },
+  { id: "tech-gadgets", label: "Tech & Gadgets" },
+  { id: "baby-child", label: "Baby & Child" },
+  { id: "personalized-gifts", label: "Personalized Gifts" },
 ];
 
-export default function Navbar() {
+export default function Navbar({ categories = FALLBACK_CATEGORIES }) {
   const [search, setSearch] = useState("");
+  const pathname = usePathname();
 
   return (
-    <header className="w-full bg-white font-sans sticky top-0 z-50">
+    <header className="w-full font-sans">
       {/* ── Desktop Main Row ─────────────────────────── */}
       <div className="hidden md:block ">
-        <div className="flex items-center justify-between h-17 max-w-7xl mx-auto px-6 gap-4">
+        <div className="max-w-7xl flex items-center justify-around h-17 mx-auto px-6 gap-4">
           {/* Logo */}
           <Link
             href="/"
@@ -28,38 +33,39 @@ export default function Navbar() {
             EBUNLY
           </Link>
 
-          {/* Search */}
-          <div className="flex-1 max-w-72 ml-40">
-            <label className="flex items-center gap-2.5 h-9.5 bg-white border border-gray-200 rounded-md px-4 cursor-text">
-              <svg
-                width="20"
-                height="20"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="#9CA3AF"
-                strokeWidth="2.5"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
-                <circle cx="11" cy="11" r="8" />
-                <path d="m21 21-4.35-4.35" />
-              </svg>
-              <input
-                type="text"
-                placeholder="Search for anything..."
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                className="flex-1 text-sm text-gray-900 placeholder:text-gray-400 bg-transparent focus:outline-none min-w-0"
-              />
-            </label>
+          {/* Search + Shopping for an event */}
+          <div className="flex items-center gap-5 flex-1 max-w-xl">
+            <div className="flex-1">
+              <label className="flex items-center gap-2.5 h-9.5 bg-white rounded-md px-4 cursor-text">
+                <svg
+                  width="20"
+                  height="20"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="#9CA3AF"
+                  strokeWidth="2.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <circle cx="11" cy="11" r="8" />
+                  <path d="m21 21-4.35-4.35" />
+                </svg>
+                <input
+                  type="text"
+                  placeholder="Search for anything..."
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  className="flex-1 text-sm text-gray-900 placeholder:text-gray-400 bg-transparent focus:outline-none min-w-0"
+                />
+              </label>
+            </div>
+            <button className="shrink-0 flex items-center gap-1.5 border border-primary text-primary rounded-[9px] px-3.5 font-sans py-1.75 bg-[#FAF5F5] text-sm font-medium tracking-[0] whitespace-nowrap hover:bg-[#FAF6F5] cursor-pointer transition-colors">
+              Shopping for an event?
+            </button>
           </div>
 
           {/* Right actions */}
           <div className="flex items-center gap-1.5 shrink-0 ">
-            {/* Shopping for an event */}
-            <button className=" mr-72 flex items-center gap-1.5 border border-primary text-primary rounded-[9px] px-3.5 font-sans py-1.75 bg-[#FAF5F5] text-sm font-medium tracking-[0] whitespace-nowrap hover:bg-[#FAF6F5] cursor-pointer transition-colors ">
-              Shopping for an event?
-            </button>
             {/* User */}
             <button className="p-1.5">
               <Image
@@ -85,21 +91,28 @@ export default function Navbar() {
       </div>
 
       {/* ── Desktop Secondary Nav ────────────────────── */}
-      <div className="hidden md:flex items-center justify-center gap-8 h-9 border-b border-gray-100">
-        {NAV_LINKS.map((item) => (
-          <Link
-            key={item}
-            href="/discover"
-            className="text-sm font-sans font-medium text-text-dark-gray hover:text-primary transition-colors py-1.5"
-          >
-            {item}
-          </Link>
-        ))}
+      <div className="hidden md:flex items-center justify-center gap-8 h-9 ">
+        {categories.map((cat) => {
+          const isActive = pathname === `/shop/categories/${cat.id}`;
+          return (
+            <Link
+              key={cat.id}
+              href={`/shop/categories/${cat.id}`}
+              className={`text-sm font-sans transition-colors py-1.5 ${
+                isActive
+                  ? "font-bold text-[#0C0000]"
+                  : "font-medium text-text-dark-gray hover:text-primary"
+              }`}
+            >
+              {cat.label}
+            </Link>
+          );
+        })}
       </div>
 
       {/* ── Mobile Header ────────────────────────────── */}
       <div className="md:hidden">
-        <div className="flex items-center justify-between h-13.5 px-4 border-b border-gray-100 relative">
+        <div className="flex items-center justify-between h-13.5 px-4 relative">
           {/* Hamburger */}
           <div className="flex gap-2 items-center">
             <button className="p-1.5">
@@ -139,7 +152,7 @@ export default function Navbar() {
         </div>
 
         {/* Mobile Search */}
-        <div className="px-4 py-2.5 border-b border-gray-100">
+        <div className="px-4 py-2.5 ">
           <label className="flex items-center gap-2.5 h-9 bg-white border border-gray-200 rounded-md px-4 cursor-text">
             <svg
               width="20"
