@@ -10,7 +10,7 @@ const categories = [
     icon: "/categories/wedding-icon.png",
     cardBg: "#E4F5EF",
     mobileBg: "#D4EFE9",
-    href: "/discover?category=weddings",
+    href: "/shop/categories/weddings",
   },
   {
     id: 2,
@@ -20,7 +20,7 @@ const categories = [
     icon: "/categories/conference-icon.png",
     cardBg: "#FCF3E3",
     mobileBg: "#FAD9CE",
-    href: "/discover?category=conferences",
+    href: "/shop/categories/conferences",
   },
   {
     id: 3,
@@ -30,7 +30,7 @@ const categories = [
     icon: "/categories/parties-icon.png",
     cardBg: "#F9CFDE",
     mobileBg: "#EAD9F7",
-    href: "/discover?category=parties",
+    href: "/shop/categories/parties",
   },
   {
     id: 4,
@@ -40,7 +40,7 @@ const categories = [
     icon: "/categories/birthday-icon.png",
     cardBg: "#EEE5F3",
     mobileBg: "#FEF0C2",
-    href: "/discover?category=birthdays",
+    href: "/shop/categories/birthdays",
   },
   {
     id: 5,
@@ -50,7 +50,7 @@ const categories = [
     icon: "/categories/event-icon.png",
     cardBg: "#DCECF7",
     mobileBg: "#E0EAF4",
-    href: "/discover?category=corporate",
+    href: "/shop/categories/corporate-events",
   },
 ];
 
