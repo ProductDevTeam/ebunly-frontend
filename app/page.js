@@ -1,4 +1,4 @@
-import Navbar from "@/components/common/navbar";
+import NavbarServer from "@/components/common/navbar-server";
 import Footer from "@/components/common/footer";
 import ScrollReveal from "@/components/common/scroll-reveal";
 import HeroSection from "@/components/shared/home/hero";
@@ -82,11 +82,11 @@ const perfectForYouProducts = [
   },
 ];
 
-export default function HomePage() {
+export default async function HomePage() {
   return (
     <div className="min-h-screen font-sans">
       <ScrollReveal />
-      <Navbar />
+      <NavbarServer />
       <main className="bg-white">
         <HeroSection />
         <GiftBasketsSection />
