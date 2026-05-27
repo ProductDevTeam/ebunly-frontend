@@ -1,12 +1,15 @@
 import Image from "next/image";
 import Link from "next/link";
 
-export default function SubCatCard({ cat }) {
+export default function SubCatCard({ cat, categorySlug }) {
+  const imageSrc =
+    typeof cat.image === "object" ? cat.image?.url ?? "/product.png" : cat.image;
+
   return (
-    <Link href={`/shop/subcategory/${cat.id}`} className="block">
+    <Link href={`/shop/categories/${categorySlug}/${cat.slug}`} className="block">
       <div className="relative rounded-[20px] overflow-hidden h-50 md:h-86.5">
         <Image
-          src={cat.image}
+          src={imageSrc}
           alt={cat.name}
           fill
           className="object-cover"

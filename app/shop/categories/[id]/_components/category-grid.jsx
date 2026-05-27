@@ -11,14 +11,14 @@ export default async function CategoryGrid({ categorySlug }) {
     <div className="max-w-7xl mx-auto px-4 md:px-6 pb-16">
       <div className="grid grid-cols-2 md:grid-cols-4 gap-2 mb-6">
         {row1.map((cat) => (
-          <SubCatCard key={cat.id} cat={cat} />
+          <SubCatCard key={cat.id} cat={cat} categorySlug={categorySlug} />
         ))}
       </div>
       {row2.length > 0 && (
         <div className="flex flex-wrap justify-center gap-2">
           {row2.map((cat) => (
             <div key={cat.id} className="w-[calc(50%-4px)] md:w-[calc(25%-6px)] shrink-0">
-              <SubCatCard cat={cat} />
+              <SubCatCard cat={cat} categorySlug={categorySlug} />
             </div>
           ))}
         </div>
