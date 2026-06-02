@@ -1,15 +1,15 @@
 import { getProductsBySubcategory, getSubFilters } from "@/lib/api/products";
 import ProductsClient from "./products-client";
 
-export default async function ProductsFetcher({ categorySlug, subcategorySlug }) {
-  const [products, subFilters] = await Promise.all([
-    getProductsBySubcategory(categorySlug, subcategorySlug),
-    getSubFilters(subcategorySlug),
-  ]);
+export default async function ProductsFetcher({ subcategorySlug, subcategoryName }) {
+  const { products, totalPages } = await getProductsBySubcategory(subcategoryName);
+  const subFilters = getSubFilters(subcategorySlug);
 
   return (
     <ProductsClient
-      products={products}
+      initialProducts={products}
+      initialTotalPages={totalPages}
+      subcategoryName={subcategoryName}
       subFilters={subFilters}
     />
   );

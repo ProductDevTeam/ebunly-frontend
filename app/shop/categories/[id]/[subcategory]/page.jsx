@@ -129,7 +129,7 @@ export default async function SubcategoryPage({ params }) {
       {/* ── Products section ────────────────────────────── */}
       <main>
         <Suspense fallback={<ProductsSkeleton />}>
-          <ProductsFetcher categorySlug={id} subcategorySlug={subcategory} />
+          <ProductsFetcher subcategorySlug={subcategory} subcategoryName={subLabel} />
         </Suspense>
       </main>
 
