@@ -42,3 +42,5 @@ next-env.d.ts
 
 # dev tools (local only)
 /app/dev/
+categories.js
+products.js
