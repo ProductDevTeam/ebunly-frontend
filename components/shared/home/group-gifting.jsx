@@ -10,7 +10,6 @@ export default function GroupGiftingSection() {
           className="reveal rounded-3xl overflow-hidden flex flex-col flex-col-reverse md:flex-row"
           style={{
             background: "#FFFFFF",
-            boxShadow: "0 1px 12px 0 rgba(0,0,0,0.06)",
           }}
         >
           {/* ── Yellow illustration block ───── */}

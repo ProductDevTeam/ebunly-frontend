@@ -4,7 +4,7 @@ import Link from "next/link";
 import NavbarServer from "@/components/common/navbar-server";
 import Footer from "@/components/common/footer";
 import ScrollReveal from "@/components/common/scroll-reveal";
-import { getCategoryBySlug, getSubcategoryInfo } from "@/lib/api/categories";
+import { getCategoryBySlug, getTypeInfo } from "@/lib/api/categories";
 import ProductsFetcher from "./_components/products-fetcher";
 import ProductsSkeleton from "./_components/products-skeleton";
 
@@ -15,15 +15,15 @@ function formatSlug(slug) {
 }
 
 export async function generateMetadata({ params }) {
-  const { id, subcategory } = await params;
-  const [category, subInfo] = await Promise.all([
+  const { id, type } = await params;
+  const [category, typeInfo] = await Promise.all([
     getCategoryBySlug(id),
-    getSubcategoryInfo(id, subcategory),
+    getTypeInfo(id, type),
   ]);
-  const label = subInfo?.name ?? formatSlug(subcategory);
+  const label = typeInfo?.name ?? formatSlug(type);
   const catLabel = category?.label ?? formatSlug(id);
   const description =
-    subInfo?.desc ??
+    typeInfo?.desc ??
     `Shop ${label} on Ebunly — curated products for every occasion.`;
   return {
     title: `${label} | ${catLabel} | Ebunly`,
@@ -31,7 +31,7 @@ export async function generateMetadata({ params }) {
     openGraph: {
       title: `${label} | ${catLabel} | Ebunly`,
       description,
-      url: `https://ebunly.com/shop/categories/${id}/${subcategory}`,
+      url: `https://ebunly.com/shop/categories/${id}/${type}`,
       siteName: "Ebunly",
       type: "website",
     },
@@ -41,23 +41,23 @@ export async function generateMetadata({ params }) {
       description,
     },
     alternates: {
-      canonical: `https://ebunly.com/shop/categories/${id}/${subcategory}`,
+      canonical: `https://ebunly.com/shop/categories/${id}/${type}`,
     },
   };
 }
 
-export default async function SubcategoryPage({ params }) {
-  const { id, subcategory } = await params;
+export default async function TypePage({ params }) {
+  const { id, type } = await params;
 
-  const [category, subInfo] = await Promise.all([
+  const [category, typeInfo] = await Promise.all([
     getCategoryBySlug(id),
-    getSubcategoryInfo(id, subcategory),
+    getTypeInfo(id, type),
   ]);
 
   const categoryLabel = category?.label ?? formatSlug(id);
-  const subLabel = subInfo?.name ?? formatSlug(subcategory);
+  const typeLabel = typeInfo?.name ?? formatSlug(type);
   const description =
-    subInfo?.desc ??
+    typeInfo?.desc ??
     "Discover carefully curated products for every style and budget.";
 
   return (
@@ -94,7 +94,7 @@ export default async function SubcategoryPage({ params }) {
               {categoryLabel}
             </Link>
             <span>&gt;</span>
-            <span>{subLabel}</span>
+            <span>{typeLabel}</span>
           </nav>
 
           {/* Title + description */}
@@ -103,7 +103,7 @@ export default async function SubcategoryPage({ params }) {
               className="font-semibold font-sans text-[#0C0000] text-[22px] md:text-[32px]"
               style={{ lineHeight: "96%", letterSpacing: "-0.05em" }}
             >
-              {subLabel}
+              {typeLabel}
             </h1>
             <p
               className="font-sans font-normal text-[#0C0000] text-[14px] md:text-[16px] mt-4 max-w-110 mx-auto"
@@ -129,7 +129,7 @@ export default async function SubcategoryPage({ params }) {
       {/* ── Products section ────────────────────────────── */}
       <main>
         <Suspense fallback={<ProductsSkeleton />}>
-          <ProductsFetcher subcategorySlug={subcategory} subcategoryName={subLabel} />
+          <ProductsFetcher typeName={typeLabel} />
         </Suspense>
       </main>
 
