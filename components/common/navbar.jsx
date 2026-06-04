@@ -16,7 +16,10 @@ const FALLBACK_CATEGORIES = [
   { id: "personalized-gifts", label: "Personalized Gifts" },
 ];
 
-export default function Navbar({ categories = FALLBACK_CATEGORIES }) {
+export default function Navbar({
+  categories = FALLBACK_CATEGORIES,
+  showMobileSearch = true,
+}) {
   const [search, setSearch] = useState("");
   const pathname = usePathname();
 
@@ -91,14 +94,14 @@ export default function Navbar({ categories = FALLBACK_CATEGORIES }) {
       </div>
 
       {/* ── Desktop Secondary Nav ────────────────────── */}
-      <div className="hidden md:flex items-center justify-center gap-8 h-9 ">
+      <div className="hidden md:flex items-center justify-start lg:justify-center gap-8 h-9 px-6 overflow-x-auto whitespace-nowrap [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
         {categories.map((cat) => {
           const isActive = pathname === `/shop/categories/${cat.id}`;
           return (
             <Link
               key={cat.id}
               href={`/shop/categories/${cat.id}`}
-              className={`text-sm font-sans transition-colors py-1.5 ${
+              className={`shrink-0 text-sm font-sans transition-colors py-1.5 ${
                 isActive
                   ? "font-bold text-[#0C0000]"
                   : "font-medium text-text-dark-gray hover:text-primary"
@@ -152,28 +155,30 @@ export default function Navbar({ categories = FALLBACK_CATEGORIES }) {
         </div>
 
         {/* Mobile Search */}
-        <div className="px-4 py-2.5 ">
-          <label className="flex items-center gap-2.5 h-9 bg-white border border-gray-200 rounded-md px-4 cursor-text">
-            <svg
-              width="20"
-              height="20"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="#9CA3AF"
-              strokeWidth="2.5"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
-              <circle cx="11" cy="11" r="8" />
-              <path d="m21 21-4.35-4.35" />
-            </svg>
-            <input
-              type="text"
-              placeholder="Search for anything..."
-              className="flex-1 text-sm text-gray-900 placeholder:text-gray-400 bg-transparent focus:outline-none"
-            />
-          </label>
-        </div>
+        {showMobileSearch && (
+          <div className="px-4 py-2.5 ">
+            <label className="flex items-center gap-2.5 h-9 bg-white border border-gray-200 rounded-md px-4 cursor-text">
+              <svg
+                width="20"
+                height="20"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="#9CA3AF"
+                strokeWidth="2.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <circle cx="11" cy="11" r="8" />
+                <path d="m21 21-4.35-4.35" />
+              </svg>
+              <input
+                type="text"
+                placeholder="Search for anything..."
+                className="flex-1 text-sm text-gray-900 placeholder:text-gray-400 bg-transparent focus:outline-none"
+              />
+            </label>
+          </div>
+        )}
       </div>
     </header>
   );

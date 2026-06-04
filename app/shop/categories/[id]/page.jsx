@@ -60,17 +60,17 @@ export default async function CategoryPage({ params }) {
     "Show up in style with fashionable items and accessories for you and your loved ones";
 
   return (
-    <div
-      className="min-h-screen font-sans"
-      style={{
-        background: "linear-gradient(180deg, #EEE5F3 0%, #FFFFFF 100%)",
-      }}
-    >
+    <div className="min-h-screen font-sans bg-white">
       <ScrollReveal />
-      <NavbarServer />
 
-      <main>
-        {/* ── Hero — rendered instantly from cached category data ── */}
+      {/* ── Gradient hero area ───────────────────────────── */}
+      <div
+        style={{
+          background: "linear-gradient(180deg, #EEE5F3 0%, #FFFFFF 100%)",
+        }}
+      >
+        <NavbarServer />
+
         <div className="relative max-w-7xl mx-auto mt-5">
           <div className="hidden md:block absolute left-[8%] top-[32%] z-10 pointer-events-none">
             <Image src="/star.svg" width={30} height={30} alt="" />
@@ -101,8 +101,10 @@ export default async function CategoryPage({ params }) {
             />
           </div>
         </div>
+      </div>
 
-        {/* ── Subcategory Grid — skeleton shown while data loads ── */}
+      {/* ── Type grid ───────────────────────────────────── */}
+      <main>
         <Suspense fallback={<CategoryGridSkeleton />}>
           <CategoryGrid categorySlug={id} />
         </Suspense>

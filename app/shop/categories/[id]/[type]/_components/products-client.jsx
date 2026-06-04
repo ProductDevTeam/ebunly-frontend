@@ -18,9 +18,13 @@ function getPageNumbers(current, total) {
 function normalizeProduct(p) {
   let image = "/product.png";
   if (Array.isArray(p.images) && p.images[0]) {
-    image = typeof p.images[0] === "string" ? p.images[0] : (p.images[0].url ?? "/product.png");
+    image =
+      typeof p.images[0] === "string"
+        ? p.images[0]
+        : (p.images[0].url ?? "/product.png");
   } else if (p.image) {
-    image = typeof p.image === "string" ? p.image : (p.image.url ?? "/product.png");
+    image =
+      typeof p.image === "string" ? p.image : (p.image.url ?? "/product.png");
   }
   return {
     id: p._id ?? p.id ?? "",
@@ -36,20 +40,21 @@ function parseResponse(json) {
   const items = Array.isArray(raw)
     ? raw
     : Array.isArray(raw.products)
-    ? raw.products
-    : Array.isArray(raw.items)
-    ? raw.items
-    : [];
+      ? raw.products
+      : Array.isArray(raw.items)
+        ? raw.items
+        : [];
   const meta = raw.pagination ?? raw.meta ?? {};
   const total = meta.total ?? meta.totalItems ?? items.length;
-  const totalPages = meta.totalPages ?? meta.pages ?? (Math.ceil(total / LIMIT) || 1);
+  const totalPages =
+    meta.totalPages ?? meta.pages ?? (Math.ceil(total / LIMIT) || 1);
   return { products: items.map(normalizeProduct), totalPages };
 }
 
 export default function ProductsClient({
   initialProducts,
   initialTotalPages,
-  subcategoryName,
+  typeName,
   subFilters,
 }) {
   const [filters, setFilters] = useState({
@@ -64,13 +69,27 @@ export default function ProductsClient({
   const [fetchedTotalPages, setFetchedTotalPages] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
 
-  const { activeFilter, priceSort, discounts, madeInNaija, page: currentPage } = filters;
+  const {
+    activeFilter,
+    priceSort,
+    discounts,
+    madeInNaija,
+    page: currentPage,
+  } = filters;
   const isDefault =
-    activeFilter === "all" && !priceSort && !discounts && !madeInNaija && currentPage === 1;
+    activeFilter === "all" &&
+    !priceSort &&
+    !discounts &&
+    !madeInNaija &&
+    currentPage === 1;
 
   // Fall back to server-provided data when no filters are active
-  const products = isDefault || fetchedProducts === null ? initialProducts : fetchedProducts;
-  const totalPages = isDefault || fetchedTotalPages === null ? initialTotalPages : fetchedTotalPages;
+  const products =
+    isDefault || fetchedProducts === null ? initialProducts : fetchedProducts;
+  const totalPages =
+    isDefault || fetchedTotalPages === null
+      ? initialTotalPages
+      : fetchedTotalPages;
 
   useEffect(() => {
     if (isDefault) return;
@@ -78,10 +97,11 @@ export default function ProductsClient({
     const ctrl = new AbortController();
 
     const params = new URLSearchParams({
-      subcategory: activeFilter === "all" ? subcategoryName : activeFilter,
       page: String(currentPage),
       limit: String(LIMIT),
     });
+    params.set("type", typeName);
+    if (activeFilter !== "all") params.set("subcategory", activeFilter);
     if (priceSort) {
       params.set("sortBy", "basePrice");
       params.set("sortOrder", "asc");
@@ -91,7 +111,9 @@ export default function ProductsClient({
     }
     if (madeInNaija) params.set("madeInNigeria", "true");
 
-    fetch(`${API_URL}?${params}`, { signal: ctrl.signal })
+    fetch(`${API_URL}?${params.toString().replace(/\+/g, "%20")}`, {
+      signal: ctrl.signal,
+    })
       .then((r) => r.json())
       .then((json) => {
         const { products: p, totalPages: t } = parseResponse(json);
@@ -104,7 +126,16 @@ export default function ProductsClient({
       });
 
     return () => ctrl.abort();
-  }, [filters, subcategoryName, isDefault, activeFilter, currentPage, priceSort, discounts, madeInNaija]);
+  }, [
+    filters,
+    typeName,
+    isDefault,
+    activeFilter,
+    currentPage,
+    priceSort,
+    discounts,
+    madeInNaija,
+  ]);
 
   // Compute whether the next filter object will require a fetch
   const applyFilters = (next) => {
@@ -154,8 +185,8 @@ export default function ProductsClient({
     <div className="max-w-7xl mx-auto px-4 md:px-6 py-6 md:py-10">
       <div className="flex gap-5 lg:gap-8">
         {/* ── Desktop Sidebar ──────────────────────────────── */}
-        <aside className="hidden md:block shrink-0" style={{ width: "195px" }}>
-          <div className="bg-white rounded-2xl px-3 py-4 overflow-hidden shadow-[0_1px_6px_rgba(0,0,0,0.07)]">
+        <aside className="hidden md:block shrink-0" style={{ width: "200px" }}>
+          <div className="bg-white rounded-2xl pl-9 py-4 overflow-hidden shadow-[0_1px_6px_rgba(0,0,0,0.07)]">
             <p className="text-[14px] font-normal text-[#0C0000] mb-3">
               Categories
             </p>
@@ -163,10 +194,10 @@ export default function ProductsClient({
               <li>
                 <button
                   onClick={() => handleFilterChange("all")}
-                  className={`w-[60%] text-center px-3 py-1.5 rounded-full text-[13px] font-medium transition-colors ${
+                  className={`whitespace-nowrap text-center px-3 py-1.5 rounded-full text-[13px] font-medium transition-colors ${
                     activeFilter === "all"
-                      ? "bg-[#0C0000] text-white"
-                      : "bg-[#F5F5F5] text-[#0C0000]"
+                      ? "bg-[#000000] text-white"
+                      : "bg-[#F8F8F8] text-[#0C0000]"
                   }`}
                 >
                   All Products
@@ -176,7 +207,7 @@ export default function ProductsClient({
                 <li key={f}>
                   <button
                     onClick={() => handleFilterChange(f)}
-                    className={`w-[60%] text-center px-3 py-1.5 rounded-full text-[13px] font-medium transition-colors ${
+                    className={`whitespace-nowrap text-center px-3 py-1.5 rounded-full text-[13px] font-medium transition-colors ${
                       activeFilter === f
                         ? "bg-[#0C0000] text-white"
                         : "bg-[#F5F5F5] text-[#0C0000]"
