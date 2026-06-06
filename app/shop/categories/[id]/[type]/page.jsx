@@ -57,6 +57,7 @@ export default async function TypePage({ params }) {
   const categoryLabel = category?.label ?? formatSlug(id);
   const typeLabel = typeInfo?.name ?? formatSlug(type);
   const description =
+    typeInfo?.pageDescription ??
     typeInfo?.desc ??
     "Discover carefully curated products for every style and budget.";
 
