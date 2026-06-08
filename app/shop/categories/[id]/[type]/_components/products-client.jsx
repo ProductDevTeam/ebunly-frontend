@@ -100,7 +100,7 @@ export default function ProductsClient({
       page: String(currentPage),
       limit: String(LIMIT),
     });
-    params.set("type", typeName);
+    params.set("subcategory", typeName);
     if (activeFilter !== "all") params.set("subcategory", activeFilter);
     if (priceSort) {
       params.set("sortBy", "basePrice");
@@ -203,20 +203,23 @@ export default function ProductsClient({
                   All Products
                 </button>
               </li>
-              {subFilters.map((f) => (
-                <li key={f}>
-                  <button
-                    onClick={() => handleFilterChange(f)}
-                    className={`whitespace-nowrap text-center px-3 py-1.5 rounded-full text-[13px] font-medium transition-colors ${
-                      activeFilter === f
-                        ? "bg-[#0C0000] text-white"
-                        : "bg-[#F5F5F5] text-[#0C0000]"
-                    }`}
-                  >
-                    {f}
-                  </button>
-                </li>
-              ))}
+              {subFilters.map((f) => {
+                const label = typeof f === "string" ? f : f.name;
+                return (
+                  <li key={label}>
+                    <button
+                      onClick={() => handleFilterChange(label)}
+                      className={`whitespace-nowrap text-center px-3 py-1.5 rounded-full text-[13px] font-medium transition-colors ${
+                        activeFilter === label
+                          ? "bg-[#0C0000] text-white"
+                          : "bg-[#F5F5F5] text-[#0C0000]"
+                      }`}
+                    >
+                      {label}
+                    </button>
+                  </li>
+                );
+              })}
             </ul>
           </div>
         </aside>
@@ -234,17 +237,20 @@ export default function ProductsClient({
               >
                 All Products
               </button>
-              {subFilters.map((f) => (
-                <button
-                  key={f}
-                  onClick={() => handleFilterChange(f)}
-                  className={`flex-none px-3.5 py-1.5 rounded-full text-[12px] font-medium border transition-colors ${
-                    activeFilter === f ? chipOn : chipOff
-                  }`}
-                >
-                  {f}
-                </button>
-              ))}
+              {subFilters.map((f) => {
+                const label = typeof f === "string" ? f : f.name;
+                return (
+                  <button
+                    key={label}
+                    onClick={() => handleFilterChange(label)}
+                    className={`flex-none px-3.5 py-1.5 rounded-full text-[12px] font-medium border transition-colors ${
+                      activeFilter === label ? chipOn : chipOff
+                    }`}
+                  >
+                    {label}
+                  </button>
+                );
+              })}
             </div>
           )}
 
