@@ -1,9 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useSyncExternalStore } from "react";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
+
+import { useAuthStore, getDisplayName } from "@/hooks/use-auth-store";
 
 const FALLBACK_CATEGORIES = [
   { id: "fashion-accessories", label: "Fashion & Accessories" },
@@ -22,6 +24,17 @@ export default function Navbar({
 }) {
   const [search, setSearch] = useState("");
   const pathname = usePathname();
+
+  // Persisted auth state hydrates on the client only — render the
+  // logged-out markup during SSR/first paint to avoid a hydration mismatch.
+  const hydrated = useSyncExternalStore(
+    () => () => {},
+    () => true,
+    () => false,
+  );
+  const user = useAuthStore((s) => s.user);
+  const loggedInUser = hydrated ? user : null;
+  const displayName = getDisplayName(loggedInUser);
 
   return (
     <header className="w-full font-sans">
@@ -81,14 +94,23 @@ export default function Navbar({
             <button className="p-1.5">
               <Image src="/icons/shop.svg" width={24} height={24} alt="Shop" />
             </button>
-            <button className="p-1.5">
+            <Link
+              href={loggedInUser ? "/profile" : "/login"}
+              className="flex items-center gap-1.5 p-1.5"
+              aria-label={loggedInUser ? displayName : "Sign in"}
+            >
               <Image
                 src="/icons/profile.svg"
                 width={24}
                 height={24}
                 alt="Profile"
               />
-            </button>
+              {loggedInUser && (
+                <span className="max-w-[120px] truncate text-sm font-medium text-gray-900">
+                  {displayName}
+                </span>
+              )}
+            </Link>
           </div>
         </div>
       </div>
@@ -143,14 +165,18 @@ export default function Navbar({
             <button className="p-1.5">
               <Image src="/icons/shop.svg" width={24} height={24} alt="Shop" />
             </button>
-            <button className="p-1.5">
+            <Link
+              href={loggedInUser ? "/profile" : "/login"}
+              className="p-1.5"
+              aria-label={loggedInUser ? displayName : "Sign in"}
+            >
               <Image
                 src="/icons/profile.svg"
                 width={24}
                 height={24}
                 alt="Profile"
               />
-            </button>
+            </Link>
           </div>
         </div>
 
