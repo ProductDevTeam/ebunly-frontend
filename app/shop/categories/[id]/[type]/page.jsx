@@ -5,6 +5,7 @@ import NavbarServer from "@/components/common/navbar-server";
 import Footer from "@/components/common/footer";
 import ScrollReveal from "@/components/common/scroll-reveal";
 import { getCategoryBySlug, getTypeInfo } from "@/lib/api/categories";
+import { getTypePageDescription } from "@/lib/api/products";
 import ProductsFetcher from "./_components/products-fetcher";
 import ProductsSkeleton from "./_components/products-skeleton";
 
@@ -16,13 +17,16 @@ function formatSlug(slug) {
 
 export async function generateMetadata({ params }) {
   const { id, type } = await params;
-  const [category, typeInfo] = await Promise.all([
+  const typeNameGuess = formatSlug(type);
+  const [category, typeInfo, pageDesc] = await Promise.all([
     getCategoryBySlug(id),
     getTypeInfo(id, type),
+    getTypePageDescription(typeNameGuess),
   ]);
-  const label = typeInfo?.name ?? formatSlug(type);
+  const label = typeInfo?.name ?? typeNameGuess;
   const catLabel = category?.label ?? formatSlug(id);
   const description =
+    pageDesc ??
     typeInfo?.desc ??
     `Shop ${label} on Ebunly — curated products for every occasion.`;
   return {
@@ -49,15 +53,17 @@ export async function generateMetadata({ params }) {
 export default async function TypePage({ params }) {
   const { id, type } = await params;
 
-  const [category, typeInfo] = await Promise.all([
+  const typeNameGuess = formatSlug(type);
+  const [category, typeInfo, pageDesc] = await Promise.all([
     getCategoryBySlug(id),
     getTypeInfo(id, type),
+    getTypePageDescription(typeNameGuess),
   ]);
 
   const categoryLabel = category?.label ?? formatSlug(id);
-  const typeLabel = typeInfo?.name ?? formatSlug(type);
+  const typeLabel = typeInfo?.name ?? typeNameGuess;
   const description =
-    typeInfo?.pageDescription ??
+    pageDesc ??
     typeInfo?.desc ??
     "Discover carefully curated products for every style and budget.";
 

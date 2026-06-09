@@ -108,7 +108,7 @@ function EnterCodeContent() {
       {
         onSuccess: () => {
           sessionStorage.removeItem("verify_email");
-          router.push("/home");
+          router.push("/");
         },
         onError: (err) => {
           notifyError(

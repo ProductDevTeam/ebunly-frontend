@@ -47,7 +47,7 @@ export default function SignUpPage() {
         googleAuth(idToken, {
           onSuccess: () => {
             notifySuccess("Account created with Google!", "Welcome to Ebunly");
-            setTimeout(() => router.push("/home"), 800);
+            setTimeout(() => router.push("/"), 800);
           },
           onError: (err) => {
             notifyError(

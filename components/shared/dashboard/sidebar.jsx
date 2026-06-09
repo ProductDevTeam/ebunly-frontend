@@ -23,7 +23,7 @@ export default function Sidebar({ isOpen, setIsOpen, visible = true }) {
   const cartCount = useCartCount();
 
   const pathname = usePathname();
-  const isHome = pathname === "/home";
+  const isHome = pathname === "/";
   const isActive = (href) =>
     pathname === href || pathname.startsWith(href + "/");
 
@@ -32,7 +32,7 @@ export default function Sidebar({ isOpen, setIsOpen, visible = true }) {
       icon: "/icons/home.svg",
       iconActive: "/icons/home-2.svg",
       label: "Home",
-      href: "/home",
+      href: "/",
     },
     {
       icon: "/icons/shop-2.svg",

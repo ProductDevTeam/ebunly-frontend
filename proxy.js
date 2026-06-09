@@ -211,7 +211,7 @@ export async function proxy(request) {
   // 3. Redirect authenticated users away from guest-only pages
   if (isGuestOnlyPage(pathname) && token) {
     return applySecurityHeaders(
-      NextResponse.redirect(new URL("/home", request.url)),
+      NextResponse.redirect(new URL("/", request.url)),
     );
   }
 
@@ -223,7 +223,7 @@ export async function proxy(request) {
 export const config = {
   matcher: [
     "/proxy/:path*",
-    "/home/:path*",
+    "/:path*",
     "/profile/:path*",
     "/orders/:path*",
     "/wishlist/:path*",
