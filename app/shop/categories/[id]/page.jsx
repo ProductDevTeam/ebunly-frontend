@@ -17,6 +17,7 @@ export async function generateMetadata({ params }) {
     decodeURIComponent(id).replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
 
   const description =
+    category?.pageDescription ??
     category?.description ??
     "Browse curated gifts and accessories on Ebunly.";
 
@@ -56,6 +57,7 @@ export default async function CategoryPage({ params }) {
       : "Fashion & Accessories");
 
   const description =
+    category?.pageDescription ??
     category?.description ??
     "Show up in style with fashionable items and accessories for you and your loved ones";
 
