@@ -7,10 +7,16 @@ export default function ProductOptions({
   selectedOptions,
   onOptionChange,
 }) {
-  // Generate quantity options based on min/max
+  // Generate quantity options based on min/max (with safe fallbacks)
+  const minQuantity = product.minQuantity ?? 1;
+  const maxQuantity = product.maxQuantity ?? minQuantity;
+  const quantityCount = Math.max(
+    1,
+    Math.min(maxQuantity - minQuantity + 1, 10),
+  );
   const quantityOptions = Array.from(
-    { length: Math.min(product.maxQuantity, 10) },
-    (_, i) => i + product.minQuantity,
+    { length: quantityCount },
+    (_, i) => i + minQuantity,
   );
 
   return (
@@ -38,7 +44,9 @@ export default function ProductOptions({
       </div>
 
       {/* Dynamic Variants */}
-      {product.variants?.map((variant) => (
+      {product.variants
+        ?.filter((variant) => variant.options?.length > 0)
+        .map((variant) => (
         <div key={variant.name} className="flex items-center justify-between">
           <span className="text-sm text-gray-600">{variant.name}</span>
           <div className="relative">

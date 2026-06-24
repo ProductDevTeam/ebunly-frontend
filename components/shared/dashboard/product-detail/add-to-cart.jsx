@@ -54,7 +54,7 @@ export default function AddToCartSection({
   };
 
   return (
-    <div className="fixed bottom-16 left-0 right-0 bg-white border-t border-gray-200 shadow-lg z-40 lg:hidden">
+    <div className="sticky bottom-0 left-0 right-0 bg-white border-t border-gray-200 shadow-lg z-40 lg:hidden">
       <div className="flex justify-between px-4 py-2.5 items-center">
         {/* Price */}
         <div className="flex flex-col justify-between">
@@ -62,7 +62,7 @@ export default function AddToCartSection({
             <span className="text-2xl font-medium text-gray-900">
               ₦
               {(
-                product.basePrice *
+                (product.basePrice ?? 0) *
                 Math.max(
                   cartItem ? quantity : (selectedOptions?.quantity ?? 1),
                   1,

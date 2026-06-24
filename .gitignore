@@ -44,3 +44,5 @@ next-env.d.ts
 /app/dev/
 /categories.js
 /products.js
+apiFilteringDocs.md
+README.md

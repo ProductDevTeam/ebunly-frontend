@@ -5,6 +5,9 @@ import { motion, AnimatePresence } from "framer-motion";
 
 export default function ProductDescription({ description }) {
   const [isExpanded, setIsExpanded] = useState(false);
+
+  if (!description?.trim()) return null;
+
   const maxLength = 150;
   const shouldTruncate = description.length > maxLength;
 

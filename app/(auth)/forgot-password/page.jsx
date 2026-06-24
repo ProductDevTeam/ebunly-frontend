@@ -2,15 +2,13 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import Link from "next/link";
-import Image from "next/image";
+import Navbar from "@/components/common/navbar";
 import { useForgotPassword } from "@/hooks/use-auth";
 import { validateEmail } from "@/utils/input-validation";
 import {
   AuthButton,
   AuthFooter,
   AuthInput,
-  BackButton,
 } from "@/components/common/auth/input";
 
 export default function ForgotPasswordPage() {
@@ -46,67 +44,49 @@ export default function ForgotPasswordPage() {
   };
 
   return (
-    <div className="bg-[#FEEEE9] min-h-screen md:flex md:items-center md:justify-center">
-      {/* Logo (Desktop Only) */}
-      <Link
-        href="/"
-        className="hidden md:flex items-center gap-2 absolute top-6 left-20"
-      >
-        <Image
-          src="/logo.svg"
-          alt="Ebunly Logo"
-          width={100}
-          height={100}
-          className="object-contain"
-        />
-      </Link>
+    <div className="min-h-screen font-sans">
+      {/* Header — same as login */}
+      <Navbar showMobileSearch={false} />
 
-      <div className="flex items-center justify-center w-full">
-        <div className="h-screen md:h-auto bg-white flex flex-col px-6 py-6 font-sans w-full md:max-w-md mx-auto justify-between rounded-3xl pt-4 md:pt-10 md:shadow-xl">
-          {/* Top Section */}
-          <div className="flex flex-col gap-5 pb-4">
-            <div>
-              <BackButton onClick={() => router.back()} />
-            </div>
-
-            <div className="max-w-2xs text-center mx-auto">
-              <h1 className="font-semibold text-[36px] text-gray-900 text-center tracking-tighter">
-                Forgot password?
-              </h1>
-              <p className="paragraph text-black text-sm text-center tracking-tighter">
-                Don&apos;t worry! Please enter the email associated with your
-                account.
-              </p>
-            </div>
-
-            <form
-              onSubmit={handleSubmit}
-              noValidate
-              className="flex flex-col gap-4"
-            >
-              <AuthInput
-                label="Email address"
-                name="email"
-                type="email"
-                placeholder="Enter your email address"
-                value={email}
-                onChange={(e) => {
-                  setEmail(e.target.value);
-                  if (error) setError("");
-                }}
-                error={error}
-                autoComplete="email"
-              />
-
-              {serverError && (
-                <p className="text-sm text-red-500 text-center">
-                  {serverError}
-                </p>
-              )}
-
-              <AuthButton isLoading={isPending}>Send code</AuthButton>
-            </form>
+      <div className="md:flex md:items-start md:justify-center md:py-10">
+        <div className="w-full px-6 pb-10 pt-6 md:w-135.75 md:bg-white md:px-9.5 md:pb-11 md:pt-15">
+          {/* Heading */}
+          <div className="text-left md:text-center">
+            <h1 className="text-[38px] font-bold leading-[1.1] tracking-tight text-[#1A1A1A] md:text-[36px]">
+              Forgot password?
+            </h1>
+            <p className="mt-2 text-[15px] tracking-tight text-[#1A1A1A] md:mx-auto md:max-w-70 md:text-base md:text-[#333]">
+              Don&apos;t worry! Please enter the email associated with your
+              account.
+            </p>
           </div>
+
+          {/* Form */}
+          <form
+            onSubmit={handleSubmit}
+            noValidate
+            className="mt-7 flex flex-col gap-4 md:mt-9"
+          >
+            <AuthInput
+              label="Email address"
+              name="email"
+              type="email"
+              placeholder="Enter your email address"
+              value={email}
+              onChange={(e) => {
+                setEmail(e.target.value);
+                if (error) setError("");
+              }}
+              error={error}
+              autoComplete="email"
+            />
+
+            {serverError && (
+              <p className="text-sm text-red-500 text-center">{serverError}</p>
+            )}
+
+            <AuthButton isLoading={isPending}>Send code</AuthButton>
+          </form>
 
           {/* Footer */}
           <AuthFooter

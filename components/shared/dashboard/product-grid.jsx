@@ -96,7 +96,7 @@ function ProductCard({ product, index }) {
     "/product.png";
 
   return (
-    <Link href={`/discover/${product._id}`} className="block">
+    <Link href={`/products/${product.slug}`} className="block">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}

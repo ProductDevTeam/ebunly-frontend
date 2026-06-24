@@ -11,13 +11,15 @@ import ProductDescription from "@/components/shared/dashboard/product-detail/des
 import RelatedProducts from "@/components/shared/dashboard/product-detail/related";
 import AddToCartSection from "@/components/shared/dashboard/product-detail/add-to-cart";
 import AddToCartDesktop from "@/components/shared/dashboard/product-detail/desktop-cart";
+import Breadcrumb from "@/components/common/breadcrumb";
 
-export default function ProductDetailClient({ product }) {
+export default function ProductDetailClient({ product, breadcrumb = [] }) {
   const router = useRouter();
 
-  const images = product.images?.map((img) => img.url) || ["/product.png"];
-  console.log("ProductDetailClient render", { product });
-  console.log("images[0]", product.images?.[0]);
+  const resolvedImages = (product.images ?? [])
+    .map((img) => (typeof img === "string" ? img : img?.url))
+    .filter(Boolean);
+  const images = resolvedImages.length > 0 ? resolvedImages : ["/product.png"];
   const variantDefaults = {};
   product.variants?.forEach((variant) => {
     if (variant.options?.length > 0) {
@@ -65,49 +67,77 @@ export default function ProductDetailClient({ product }) {
 
   const deliveryDate = getDeliveryDate();
 
-  return (
-    <div className="min-h-screen bg-gray-50 font-sans">
-      {/* Header */}
-      <header className="sticky top-0 z-50 bg-white border-b border-gray-200">
-        {/* Optional: Add back button and favorite */}
-      </header>
+  // Key Info — prefer backend keyInfo[]; otherwise derive from real product fields
+  const keyInfoRows =
+    product.keyInfo?.length > 0
+      ? product.keyInfo
+      : [
+          product.weight && {
+            label: "Weight",
+            value: String(product.weight),
+          },
+          product.color && { label: "Color", value: product.color },
+          product.materials?.length > 0 && {
+            label: "Materials",
+            value: product.materials.join(", "),
+          },
+        ].filter(Boolean);
 
-      {/* Main Content */}
-      <main className="pb-10 pt-2 flex flex-col lg:flex-row lg:items-start lg:gap-8 lg:px-8 lg:max-w-7xl lg:mx-auto">
+  return (
+    <div className="font-sans">
+      {/* Breadcrumb — hidden for now (kept for later use) */}
+      <div className="hidden bg-white border-b border-gray-200">
+        <div className="lg:max-w-7xl lg:mx-auto px-4 lg:px-8 py-3">
+          <Breadcrumb items={breadcrumb} />
+        </div>
+      </div>
+
+      {/* Main Content — container aligned with the header (max-w-7xl, px-4 md:px-6) */}
+      <main className="pt-6 pb-10 flex flex-col lg:flex-row lg:items-start lg:gap-8 px-4 md:px-6 max-w-7xl mx-auto">
         {/* Image Gallery */}
         <div className="lg:w-1/2 lg:sticky lg:top-6">
           <ImageGallery images={images} />
         </div>
 
         {/* Product Info */}
-        <div className="lg:w-1/2 bg-white mt-6 lg:mt-0">
+        <div className="lg:w-1/2 bg-transparent mt-6 lg:mt-0">
           {/* Badges & Title */}
-          <div className="px-4 pt-4 pb-2">
-            <div className="flex items-center space-x-2 mb-2">
-              {product.discountPercentage > 0 && (
-                <span className="px-2 py-1 bg-gray-200 text-black text-xs font-semibold rounded">
-                  {product.discountPercentage}% off
-                </span>
-              )}
-              {product.isBestSeller && (
-                <span className="px-2 py-1 bg-gray-200 text-black text-xs font-semibold rounded">
-                  Best Seller
-                </span>
-              )}
-              {product.isMadeInNigeria && (
-                <span className="px-2 py-1 bg-green-100 text-green-800 text-xs font-semibold rounded">
-                  Made in Nigeria
-                </span>
-              )}
-            </div>
+          <div className="pt-4 pb-2">
+            {(product.discountPercentage > 0 ||
+              product.isBestSeller ||
+              product.isMadeInNigeria) && (
+              <div className="flex items-center space-x-2 mb-2">
+                {product.discountPercentage > 0 && (
+                  <span className="px-2 py-1 bg-gray-200 text-black text-xs font-semibold rounded">
+                    {product.discountPercentage}% off
+                  </span>
+                )}
+                {product.isBestSeller && (
+                  <span className="px-2 py-1 bg-gray-200 text-black text-xs font-semibold rounded">
+                    Best Seller
+                  </span>
+                )}
+                {product.isMadeInNigeria && (
+                  <span className="px-2 py-1 bg-green-100 text-green-800 text-xs font-semibold rounded">
+                    Made in Nigeria
+                  </span>
+                )}
+              </div>
+            )}
 
             <h1 className="text-lg font-bold text-gray-900 leading-snug">
               {product.name}
             </h1>
+
+            {product.basePrice != null && (
+              <p className="mt-2 text-2xl font-semibold text-gray-900">
+                ₦{Number(product.basePrice).toLocaleString()}
+              </p>
+            )}
           </div>
 
           {/* Info Sections */}
-          <div className="px-4 py-2 pb-8 md:pb-0 space-y-0">
+          <div className="py-2 pb-8 md:pb-0 space-y-0">
             <ProductOptions
               product={product}
               selectedOptions={selectedOptions}
@@ -137,31 +167,19 @@ export default function ProductDetailClient({ product }) {
               />
             </div>
 
-            {product.keyInfo?.length > 0 && (
-              <ProductKeyInfo keyInfo={product.keyInfo} />
-            )}
+            {keyInfoRows.length > 0 && <ProductKeyInfo keyInfo={keyInfoRows} />}
 
-            <ProductDescription
-              description={
-                product.description || product.shortDescription || ""
-              }
-            />
+            {(product.description || product.shortDescription) && (
+              <ProductDescription
+                description={product.description || product.shortDescription}
+              />
+            )}
           </div>
         </div>
-
-        {product.relatedProducts?.length > 0 && (
-          <RelatedProducts
-            products={product.relatedProducts}
-            className="block md:hidden"
-          />
-        )}
       </main>
 
       {product.relatedProducts?.length > 0 && (
-        <RelatedProducts
-          products={product.relatedProducts}
-          className="hidden md:block"
-        />
+        <RelatedProducts products={product.relatedProducts} />
       )}
 
       {/* Mobile-only fixed bottom bar — untouched */}
