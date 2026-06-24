@@ -6,6 +6,7 @@ import Link from "next/link";
 import Image from "next/image";
 
 import { useAuthStore, getDisplayName } from "@/hooks/use-auth-store";
+import { useCartStore } from "@/hooks/use-cart-store";
 
 const FALLBACK_CATEGORIES = [
   { id: "fashion-accessories", label: "Fashion & Accessories" },
@@ -36,11 +37,17 @@ export default function Navbar({
   const loggedInUser = hydrated ? user : null;
   const displayName = getDisplayName(loggedInUser);
 
+  // Cart badge — gate behind `hydrated` so SSR (empty) matches first client paint.
+  const cartItemsCount = useCartStore((s) =>
+    s.items.reduce((n, i) => n + i.quantity, 0),
+  );
+  const cartCount = hydrated ? cartItemsCount : 0;
+
   return (
     <header className="w-full font-sans">
       {/* ── Desktop Main Row ─────────────────────────── */}
       <div className="hidden md:block ">
-        <div className="max-w-7xl flex items-center justify-around h-17 mx-auto px-6 gap-4">
+        <div className="max-w-7xl flex items-center justify-between h-17 mx-auto px-6 gap-4">
           {/* Logo */}
           <Link
             href="/"
@@ -91,9 +98,14 @@ export default function Navbar({
                 alt="Wishlist"
               />
             </button>
-            <button className="p-1.5">
-              <Image src="/icons/shop.svg" width={24} height={24} alt="Shop" />
-            </button>
+            <Link href="/cart" className="relative p-1.5" aria-label="Basket">
+              <Image src="/icons/shop.svg" width={24} height={24} alt="Basket" />
+              {cartCount > 0 && (
+                <span className="absolute -top-0.5 -right-0.5 min-w-[16px] h-4 px-1 rounded-full bg-primary text-white text-[10px] font-semibold leading-none flex items-center justify-center">
+                  {cartCount > 99 ? "99+" : cartCount}
+                </span>
+              )}
+            </Link>
             <Link
               href={loggedInUser ? "/profile" : "/login"}
               className="flex items-center gap-1.5 p-1.5"
@@ -162,9 +174,14 @@ export default function Navbar({
                 alt="Wishlist"
               />
             </button>
-            <button className="p-1.5">
-              <Image src="/icons/shop.svg" width={24} height={24} alt="Shop" />
-            </button>
+            <Link href="/cart" className="relative p-1.5" aria-label="Basket">
+              <Image src="/icons/shop.svg" width={24} height={24} alt="Basket" />
+              {cartCount > 0 && (
+                <span className="absolute -top-0.5 -right-0.5 min-w-[16px] h-4 px-1 rounded-full bg-primary text-white text-[10px] font-semibold leading-none flex items-center justify-center">
+                  {cartCount > 99 ? "99+" : cartCount}
+                </span>
+              )}
+            </Link>
             <Link
               href={loggedInUser ? "/profile" : "/login"}
               className="p-1.5"

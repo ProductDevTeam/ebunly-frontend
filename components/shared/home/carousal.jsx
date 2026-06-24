@@ -113,7 +113,7 @@ const PerfectForYouSection = ({ products = [] }) => {
                   >
                     {/* Card */}
                     <div className="mb-3 relative w-full rounded-2xl overflow-hidden bg-gray-100 aspect-square group">
-                      <Link href={`/discover/${product.slug}`}>
+                      <Link href={`/products/${product.slug}`}>
                         <Image
                           src={product.image}
                           alt={product.name}

@@ -2,8 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
-import Link from "next/link";
-import Image from "next/image";
+import Navbar from "@/components/common/navbar";
 import { useSignUp, useGoogleAuth } from "@/hooks/use-auth";
 import { useNotification } from "@/components/common/notification-provider";
 import {
@@ -121,40 +120,18 @@ export default function SignUpPage() {
 
   return (
     <>
-      <div className="bg-[#FEEEE9] min-h-screen md:flex md:items-center md:justify-center">
-        {/* Logo (Desktop Only) */}
-        <Link
-          href="/"
-          className="hidden md:flex items-center gap-2 absolute top-6 left-20"
-        >
-          <Image
-            src="/logo.svg"
-            alt="Ebunly Logo"
-            width={100}
-            height={100}
-            className="object-contain"
-          />
-        </Link>
+      <div className="min-h-screen font-sans">
+        {/* Header — same as login */}
+        <Navbar showMobileSearch={false} />
 
-        <div className="flex items-center justify-center w-full">
-          <div
-            className="
-            h-screen md:h-[85vh]
-            bg-white flex flex-col
-            px-6 py-6 md:px-10 md:py-8
-            font-sans w-full
-            md:max-w-lg mx-auto
-            justify-between rounded-3xl
-            pt-4 md:pt-8
-            md:shadow-xl
-          "
-          >
+        <div className="md:flex md:items-start md:justify-center md:py-10">
+          <div className="w-full px-6 pb-10 pt-6 md:w-135.75 md:bg-white md:px-9.5 md:pb-11 md:pt-15">
             {/* Heading */}
-            <div className="max-w-2xs text-center mx-auto">
-              <h1 className="font-semibold text-[36px] text-gray-900 text-center tracking-tighter">
+            <div className="text-left md:text-center">
+              <h1 className="text-[38px] font-bold leading-[1.1] tracking-tight text-[#1A1A1A] md:text-[36px]">
                 Sign up
               </h1>
-              <p className="text-black text-sm text-center tracking-tighter">
+              <p className="mt-2 text-[15px] tracking-tight text-[#1A1A1A] md:mx-auto md:max-w-70 md:text-base md:text-[#333]">
                 Create a free Ebunly Account &amp; gift to your heart&apos;s
                 content
               </p>
@@ -164,7 +141,7 @@ export default function SignUpPage() {
             <form
               onSubmit={handleSubmit}
               noValidate
-              className="flex flex-col gap-3 flex-1 mt-4 md:mt-3"
+              className="mt-7 flex flex-col gap-3 md:mt-9"
             >
               {/* Name row — side by side on desktop */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">

@@ -23,7 +23,7 @@ export default function Footer() {
       </div>
 
       {/* ── Main content ─────────────────────────────── */}
-      <div className="relative z-10 max-w-7xl mx-auto px-5 md:px-10 pt-10 md:pt-14">
+      <div className="relative z-10 max-w-7xl mx-auto px-4 md:px-6 pt-10 md:pt-14">
         <div className="flex flex-col md:flex-row md:justify-between gap-8 md:gap-12">
           {/* Left: Brand block */}
           <div className="flex flex-col gap-1.5">

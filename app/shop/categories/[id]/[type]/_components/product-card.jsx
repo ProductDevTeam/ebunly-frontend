@@ -12,7 +12,7 @@ export default function ProductCard({ product }) {
     <div>
       {/* Image area */}
       <div className="relative rounded-2xl overflow-hidden bg-[#F5F5F5] aspect-square mb-2.5">
-        <Link href={`/shop/product/${product.slug}`}>
+        <Link href={`/products/${product.slug}`}>
           <Image
             src={product.image}
             alt={product.name}
