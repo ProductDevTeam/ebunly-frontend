@@ -94,13 +94,13 @@ export default function ProductDetailClient({ product, breadcrumb = [] }) {
 
       {/* Main Content — container aligned with the header (max-w-7xl, px-4 md:px-6) */}
       <main className="pt-6 pb-10 flex flex-col lg:flex-row lg:items-start lg:gap-8 px-4 md:px-6 max-w-7xl mx-auto">
-        {/* Image Gallery */}
-        <div className="lg:w-1/2 lg:sticky lg:top-6">
+        {/* Image Gallery — scrolls with the page */}
+        <div className="lg:w-6/7">
           <ImageGallery images={images} />
         </div>
 
-        {/* Product Info */}
-        <div className="lg:w-1/2 bg-transparent mt-6 lg:mt-0">
+        {/* Product Info — pinned while the gallery scrolls */}
+        <div className="lg:w-1/2 bg-transparent mt-6 lg:mt-0 lg:sticky lg:top-6">
           {/* Badges & Title */}
           <div className="pt-4 pb-2">
             {(product.discountPercentage > 0 ||
@@ -108,17 +108,17 @@ export default function ProductDetailClient({ product, breadcrumb = [] }) {
               product.isMadeInNigeria) && (
               <div className="flex items-center space-x-2 mb-2">
                 {product.discountPercentage > 0 && (
-                  <span className="px-2 py-1 bg-gray-200 text-black text-xs font-semibold rounded">
+                  <span className="px-3 py-1 bg-[#0C0000] text-white text-xs font-semibold rounded-full">
                     {product.discountPercentage}% off
                   </span>
                 )}
                 {product.isBestSeller && (
-                  <span className="px-2 py-1 bg-gray-200 text-black text-xs font-semibold rounded">
+                  <span className="px-3 py-1 bg-[#0C0000] text-white text-xs font-semibold rounded-full">
                     Best Seller
                   </span>
                 )}
                 {product.isMadeInNigeria && (
-                  <span className="px-2 py-1 bg-green-100 text-green-800 text-xs font-semibold rounded">
+                  <span className="px-3 py-1 bg-green-100 text-green-800 text-xs font-semibold rounded-full">
                     Made in Nigeria
                   </span>
                 )}

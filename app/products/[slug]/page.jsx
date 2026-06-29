@@ -4,6 +4,7 @@ import NavbarServer from "@/components/common/navbar-server";
 import Footer from "@/components/common/footer";
 import { getProductBySlug } from "@/lib/products";
 import { getProductBreadcrumb } from "@/lib/api/categories";
+import { applyMockProductFallbacks } from "@/lib/mock-product";
 
 export async function generateMetadata({ params }) {
   const resolvedParams = await params;
@@ -42,11 +43,12 @@ export default async function ProductPage({ params }) {
   }
 
   const breadcrumb = await getProductBreadcrumb(product);
+  const displayProduct = applyMockProductFallbacks(product);
 
   return (
     <div className="min-h-screen font-sans bg-white md:bg-[linear-gradient(180deg,#EEE5F3_0%,#FFFFFF_100%)] md:bg-no-repeat md:bg-[length:100%_420px]">
       <NavbarServer showMobileSearch={false} />
-      <ProductDetailClient product={product} breadcrumb={breadcrumb} />
+      <ProductDetailClient product={displayProduct} breadcrumb={breadcrumb} />
       <Footer />
     </div>
   );
