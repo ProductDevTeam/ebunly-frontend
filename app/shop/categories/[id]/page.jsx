@@ -5,7 +5,9 @@ import GroupGiftingSection from "@/components/shared/home/group-gifting";
 import ScrollReveal from "@/components/common/scroll-reveal";
 import CategoryGrid from "./_components/category-grid";
 import CategoryGridSkeleton from "./_components/category-grid-skeleton";
-import { getCategoryBySlug } from "@/lib/api/categories";
+import ProductsSkeleton from "@/app/shop/categories/[id]/[type]/_components/products-skeleton";
+import { getCategoryBySlug, getSubcategoriesBySlug } from "@/lib/api/categories";
+import CategoryProductsFetcher from "./_components/category-products-fetcher";
 import Image from "next/image";
 
 export async function generateMetadata({ params }) {
@@ -61,6 +63,9 @@ export default async function CategoryPage({ params }) {
     category?.description ??
     "Show up in style with fashionable items and accessories for you and your loved ones";
 
+  const subcategories = await getSubcategoriesBySlug(id);
+  const hasSubcategories = subcategories.length > 0;
+
   return (
     <div className="min-h-screen font-sans bg-white">
       <ScrollReveal />
@@ -107,9 +112,15 @@ export default async function CategoryPage({ params }) {
 
       {/* ── Type grid ───────────────────────────────────── */}
       <main>
-        <Suspense fallback={<CategoryGridSkeleton />}>
-          <CategoryGrid categorySlug={id} />
-        </Suspense>
+        {hasSubcategories ? (
+          <Suspense fallback={<CategoryGridSkeleton />}>
+            <CategoryGrid categorySlug={id} />
+          </Suspense>
+        ) : (
+          <Suspense fallback={<ProductsSkeleton />}>
+            <CategoryProductsFetcher categoryName={label} />
+          </Suspense>
+        )}
       </main>
 
       <GroupGiftingSection />

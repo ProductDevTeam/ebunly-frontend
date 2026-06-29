@@ -1,7 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 
-export default function SubCatCard({ cat, categorySlug }) {
+export default function SubCatCard({ cat, categorySlug, hasChildren = false }) {
   const imageSrc =
     typeof cat.image === "object" ? cat.image?.url ?? "/product.png" : cat.image;
 
@@ -22,6 +22,13 @@ export default function SubCatCard({ cat, categorySlug }) {
               "linear-gradient(180deg, rgba(0,0,0,0) 0%, #000000 94.56%)",
           }}
         />
+        {hasChildren && (
+          <div className="absolute top-3 right-3 w-7 h-7 rounded-full bg-white/80 flex items-center justify-center">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <path d="m9 18 6-6-6-6"/>
+            </svg>
+          </div>
+        )}
         <div className="absolute bottom-0 left-0 p-3">
           <p className="font-semibold text-white text-[14px] leading-tight">
             {cat.name}
