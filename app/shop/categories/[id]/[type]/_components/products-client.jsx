@@ -55,6 +55,7 @@ export default function ProductsClient({
   initialProducts,
   initialTotalPages,
   typeName,
+  coreCategory,
   subFilters,
 }) {
   const [filters, setFilters] = useState({
@@ -100,8 +101,11 @@ export default function ProductsClient({
       page: String(currentPage),
       limit: String(LIMIT),
     });
-    params.set("subcategory", typeName);
-    if (activeFilter !== "all") params.set("subcategory", activeFilter);
+    if (coreCategory && activeFilter === "all") {
+      params.set("coreCategory", coreCategory);
+    } else {
+      params.set("subcategory", activeFilter !== "all" ? activeFilter : typeName);
+    }
     if (priceSort) {
       params.set("sortBy", "basePrice");
       params.set("sortOrder", "asc");
@@ -129,6 +133,7 @@ export default function ProductsClient({
   }, [
     filters,
     typeName,
+    coreCategory,
     isDefault,
     activeFilter,
     currentPage,
