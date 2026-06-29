@@ -16,17 +16,19 @@ export default function ProductPersonalization({
       {/* Toggle Button */}
       <button
         onClick={onToggle}
-        className="w-full px-4 py-3 flex items-center justify-center space-x-2 text-orange-600 hover:bg-orange-50 transition-colors"
+        className="mt-3 w-full px-5 py-4 flex items-center justify-center gap-2 rounded-2xl bg-white text-gray-900 hover:bg-gray-100 transition-colors"
       >
         {personalization.enabled ? (
           <>
             <X className="w-4 h-4" />
-            <span className="text-sm font-medium">Remove Personalization</span>
+            <span className="text-base font-semibold">
+              Remove Personalization
+            </span>
           </>
         ) : (
           <>
             <Plus className="w-4 h-4" />
-            <span className="text-sm font-medium">Add Personalization</span>
+            <span className="text-base font-semibold">Add Personalization</span>
           </>
         )}
       </button>

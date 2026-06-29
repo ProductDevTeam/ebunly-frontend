@@ -41,7 +41,7 @@ export default function ProductDescription({ description }) {
         {shouldTruncate && (
           <button
             onClick={() => setIsExpanded(!isExpanded)}
-            className="text-orange-600 bg-orange-50 font-medium mt-2 py-2 px-3 hover:underline inline-flex items-center"
+            className="text-[#F85826] bg-[#FFF7F5] rounded-3xl font-medium mt-2 py-2 px-3 inline-flex items-center"
           >
             {isExpanded ? "Read Less" : "Read More"}
           </button>
