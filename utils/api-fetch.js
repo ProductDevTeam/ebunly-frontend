@@ -53,3 +53,33 @@ export const apiPost = (path, body) =>
   apiFetch(path, { method: "POST", body: JSON.stringify(body) });
 export const apiPatch = (path, body) =>
   apiFetch(path, { method: "PATCH", body: JSON.stringify(body) });
+export const apiPut = (path, body) =>
+  apiFetch(path, { method: "PUT", body: JSON.stringify(body) });
+export const apiDelete = (path) => apiFetch(path, { method: "DELETE" });
+
+/**
+ * Multipart PUT — sends FormData (e.g. profile update with an avatar file).
+ * Deliberately omits Content-Type so the browser sets the multipart boundary;
+ * the proxy now preserves whatever Content-Type the request carries.
+ */
+export async function apiPutForm(path, formData) {
+  const url = `/proxy/${path}`;
+  const csrfToken = getCsrfToken();
+
+  const res = await fetch(url, {
+    method: "PUT",
+    body: formData,
+    headers: {
+      ...(csrfToken ? { "X-CSRF-Token": csrfToken } : {}),
+    },
+    credentials: "include",
+  });
+
+  const json = await res.json().catch(() => null);
+
+  if (!res.ok || json?.success === false) {
+    throw new Error(parseApiError(json, res.status));
+  }
+
+  return json;
+}

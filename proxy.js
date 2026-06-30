@@ -136,7 +136,12 @@ async function handleProxy(request, pathname) {
   const token = getToken(request);
 
   const forwardHeaders = new Headers();
-  forwardHeaders.set("Content-Type", "application/json");
+  // Preserve the incoming Content-Type so multipart/form-data boundaries
+  // survive (e.g. the avatar upload on PUT /profile). JSON callers still send
+  // application/json, so existing requests are unaffected.
+  const incomingContentType = request.headers.get("content-type");
+  if (incomingContentType)
+    forwardHeaders.set("Content-Type", incomingContentType);
   forwardHeaders.set("Accept", "application/json");
   forwardHeaders.set("X-Forwarded-For", ip);
   forwardHeaders.set("X-Forwarded-Host", request.headers.get("host") || "");
@@ -147,9 +152,11 @@ async function handleProxy(request, pathname) {
   if (csrfToken) forwardHeaders.set("X-CSRF-Token", csrfToken);
 
   try {
+    // Forward raw bytes rather than re-serialising as text — works for JSON
+    // and binary/multipart bodies alike without mangling the boundary.
     const body =
       request.method !== "GET" && request.method !== "HEAD"
-        ? await request.text()
+        ? await request.arrayBuffer()
         : undefined;
 
     const apiResponse = await fetch(destination, {

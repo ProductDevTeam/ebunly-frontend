@@ -1,80 +1,32 @@
 "use client";
 
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { apiGet, apiPost, apiPatch } from "@/utils/api-fetch";
+import { apiGet, apiPutForm } from "@/utils/api-fetch";
 
 // ── Input sanitisation ─────────────────────────────────────────────────────
 const sanitiseText = (value) => (value ?? "").trim();
-const sanitiseEmail = (email) => (email ?? "").trim().toLowerCase();
 
 // ── Query keys ─────────────────────────────────────────────────────────────
 export const profileKeys = {
   me: ["profile", "me"],
 };
 
-// ── Rate limiter for change-password ──────────────────────────────────────
-const CP_LIMIT = {
-  maxAttempts: 3,
-  windowMs: 30 * 60 * 1000,
-  lockMs: 30 * 60 * 1000,
-};
-
-function checkChangePasswordLimit() {
-  const key = "rl_changePassword";
-  const now = Date.now();
-  try {
-    const raw = sessionStorage.getItem(key);
-    const store = raw ? JSON.parse(raw) : null;
-
-    if (store?.lockedUntil && now < store.lockedUntil) {
-      const mins = Math.ceil((store.lockedUntil - now) / 60000);
-      throw new Error(
-        `Too many attempts. Please try again in ${mins} minute${mins !== 1 ? "s" : ""}.`,
-      );
-    }
-
-    if (store?.firstAttempt && now - store.firstAttempt > CP_LIMIT.windowMs) {
-      sessionStorage.removeItem(key);
-    }
-
-    const fresh = (sessionStorage.getItem(key)
-      ? JSON.parse(sessionStorage.getItem(key))
-      : null) || { count: 0, firstAttempt: now };
-
-    if (fresh.count + 1 > CP_LIMIT.maxAttempts) {
-      sessionStorage.setItem(
-        key,
-        JSON.stringify({ ...fresh, lockedUntil: now + CP_LIMIT.lockMs }),
-      );
-      throw new Error("Too many attempts. Please try again in 30 minutes.");
-    }
-
-    sessionStorage.setItem(
-      key,
-      JSON.stringify({
-        count: fresh.count + 1,
-        firstAttempt: fresh.firstAttempt ?? now,
-      }),
-    );
-  } catch (e) {
-    if (e.message.includes("attempt")) throw e;
-    // sessionStorage unavailable — fail open
-  }
-}
-
-// ─────────────────────────────────────────────────────────────────────────────
-// GET /auth/me
-// ─────────────────────────────────────────────────────────────────────────────
-async function fetchMe() {
-  return apiGet("auth/me");
-}
-
-function hasAuthToken() {
+// ── Auth token presence (cookie set client-side on login) ──────────────────
+export function hasAuthToken() {
   if (typeof document === "undefined") return false;
   return (
     document.cookie.includes("token=") ||
     document.cookie.includes("accessToken=")
   );
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// GET /profile  — current user profile
+// Response: { success, data: { id, email, firstName, lastName, phone,
+//             profilePicture, dateOfBirth, role, address, memberSince } }
+// ─────────────────────────────────────────────────────────────────────────────
+async function fetchMe() {
+  return apiGet("profile");
 }
 
 export function useMe() {
@@ -96,18 +48,46 @@ export function useMe() {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// PATCH /auth/profile
+// PUT /profile  — multipart update (profile fields + optional avatar + password)
+// Fields: firstName, lastName, phone, dateOfBirth, profilePicture (File),
+//         address (JSON string), currentPassword, newPassword
 // ─────────────────────────────────────────────────────────────────────────────
-async function updateProfileApi(data) {
-  const payload = {
-    firstName: sanitiseText(data.firstName),
-    lastName: sanitiseText(data.lastName),
-    email: sanitiseEmail(data.email),
-    phone: sanitiseText(data.phone ?? ""),
-    country: sanitiseText(data.country ?? ""),
-    ...(data.avatarUrl !== undefined ? { avatarUrl: data.avatarUrl } : {}),
+function buildProfileFormData(data) {
+  const fd = new FormData();
+
+  const append = (key, value) => {
+    if (value !== undefined && value !== null && value !== "") {
+      fd.append(key, value);
+    }
   };
-  return apiPatch("auth/profile", payload);
+
+  append("firstName", sanitiseText(data.firstName));
+  append("lastName", sanitiseText(data.lastName));
+  append("phone", sanitiseText(data.phone));
+  append("dateOfBirth", data.dateOfBirth);
+
+  // Avatar — only when a real File is supplied
+  if (data.profilePicture instanceof File) {
+    fd.append("profilePicture", data.profilePicture);
+  }
+
+  // Address object → JSON string (per Swagger)
+  if (data.address && typeof data.address === "object") {
+    fd.append("address", JSON.stringify(data.address));
+  }
+
+  // Optional password change — both required together
+  if (data.newPassword) {
+    append("currentPassword", data.currentPassword);
+    append("newPassword", data.newPassword);
+  }
+
+  return fd;
+}
+
+async function updateProfileApi(data) {
+  const fd = buildProfileFormData(data);
+  return apiPutForm("profile", fd);
 }
 
 export function useUpdateProfile() {
@@ -115,47 +95,12 @@ export function useUpdateProfile() {
   return useMutation({
     mutationFn: updateProfileApi,
     onSuccess: (responseData) => {
-      // Optimistic cache update
+      // Optimistic cache update, then re-fetch to confirm server state
       queryClient.setQueryData(profileKeys.me, (old) => {
-        if (!old) return old;
-        return { ...old, data: { ...old.data, ...responseData.data } };
+        if (!old) return responseData;
+        return { ...old, data: { ...old.data, ...responseData?.data } };
       });
-      // Re-fetch to confirm server state
       queryClient.invalidateQueries({ queryKey: profileKeys.me });
-    },
-  });
-}
-
-// ─────────────────────────────────────────────────────────────────────────────
-// POST /auth/change-password
-// ─────────────────────────────────────────────────────────────────────────────
-async function changePasswordApi(data) {
-  checkChangePasswordLimit();
-
-  if (!data.currentPassword) throw new Error("Current password is required.");
-  if (!data.newPassword) throw new Error("New password is required.");
-  if (data.newPassword.length < 8)
-    throw new Error("New password must be at least 8 characters.");
-  if (data.newPassword === data.currentPassword)
-    throw new Error("New password must differ from your current password.");
-  if (data.newPassword !== data.confirmPassword)
-    throw new Error("Passwords do not match.");
-
-  return apiPost("auth/change-password", {
-    currentPassword: data.currentPassword,
-    newPassword: data.newPassword,
-  });
-}
-
-export function useChangePassword() {
-  return useMutation({
-    mutationFn: changePasswordApi,
-    onSuccess: () => {
-      try {
-        sessionStorage.removeItem("rl_changePassword");
-      } catch {
-        /* noop */
-      }
     },
   });
 }

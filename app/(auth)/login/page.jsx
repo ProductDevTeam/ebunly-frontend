@@ -8,6 +8,7 @@ import { Eye, EyeOff } from "lucide-react";
 import Navbar from "@/components/common/navbar";
 import { useLogin, useGoogleAuth } from "@/hooks/use-auth";
 import { useAuthStore } from "@/hooks/use-auth-store";
+import { useMergeGuestCart } from "@/hooks/use-cart";
 import { useNotification } from "@/components/common/notification-provider";
 import { validateEmail, validatePassword } from "@/utils/input-validation";
 
@@ -20,6 +21,7 @@ export default function LoginPage() {
   const { mutate: googleAuth, isPending: isGooglePending } = useGoogleAuth();
   const { error: notifyError, success: notifySuccess } = useNotification();
   const setUser = useAuthStore((s) => s.setUser);
+  const mergeGuestCart = useMergeGuestCart();
 
   const googleBtnRef = useRef(null);
 
@@ -47,6 +49,7 @@ export default function LoginPage() {
         googleAuth(idToken, {
           onSuccess: (data) => {
             setUser(extractUser(data));
+            mergeGuestCart();
             notifySuccess("Welcome back! Redirecting...", "Logged in");
             router.push("/");
           },
@@ -67,7 +70,7 @@ export default function LoginPage() {
         size: "large",
       });
     }
-  }, [googleAuth, notifyError, notifySuccess, router, setUser]);
+  }, [googleAuth, notifyError, notifySuccess, router, setUser, mergeGuestCart]);
 
   const handleGoogleLogin = useCallback(() => {
     const button = googleBtnRef.current?.querySelector('div[role="button"]');
@@ -129,6 +132,7 @@ export default function LoginPage() {
       {
         onSuccess: (data) => {
           setUser(extractUser(data));
+          mergeGuestCart();
           notifySuccess("Welcome back! Redirecting...", "Logged in");
           router.push("/");
         },
