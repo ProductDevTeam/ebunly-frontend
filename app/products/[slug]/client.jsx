@@ -34,25 +34,25 @@ export default function ProductDetailClient({ product, breadcrumb = [] }) {
 
   const [personalization, setPersonalization] = useState({
     enabled: false,
-    data: {},
+    type: null,
+    extraPrice: 0,
+    text: "",
+    textColor: "Black",
   });
-
-  const [isFavorite, setIsFavorite] = useState(false);
 
   const handleOptionChange = (option, value) => {
     setSelectedOptions((prev) => ({ ...prev, [option]: value }));
   };
 
-  const handlePersonalizationToggle = () => {
-    setPersonalization((prev) => ({ ...prev, enabled: !prev.enabled }));
-  };
-
-  const handlePersonalizationChange = (field, value) => {
-    setPersonalization((prev) => ({
-      ...prev,
-      data: { ...prev.data, [field]: value },
-    }));
-  };
+  // Personalization data passed to the cart — only once a type is selected.
+  const personalizationData =
+    personalization.enabled && personalization.type
+      ? {
+          text: personalization.text,
+          textColor: personalization.textColor,
+          type: personalization.type,
+        }
+      : null;
 
   const getDeliveryDate = () => {
     if (!product.estimatedDeliveryDays) return null;
@@ -96,7 +96,7 @@ export default function ProductDetailClient({ product, breadcrumb = [] }) {
       <main className="pt-6 pb-10 flex flex-col lg:flex-row lg:items-start lg:gap-8 px-4 md:px-6 max-w-7xl mx-auto">
         {/* Image Gallery — scrolls with the page */}
         <div className="lg:w-6/7">
-          <ImageGallery images={images} />
+          <ImageGallery images={images} product={product} />
         </div>
 
         {/* Product Info — pinned while the gallery scrolls */}
@@ -144,24 +144,19 @@ export default function ProductDetailClient({ product, breadcrumb = [] }) {
               onOptionChange={handleOptionChange}
             />
 
-            {product.isPersonalizable &&
-              product.personalizationOptions?.length > 0 && (
-                <ProductPersonalization
-                  personalization={personalization}
-                  options={product.personalizationOptions}
-                  onToggle={handlePersonalizationToggle}
-                  onChange={handlePersonalizationChange}
-                />
-              )}
+            {product.isPersonalizable && (
+              <ProductPersonalization
+                value={personalization}
+                onChange={setPersonalization}
+              />
+            )}
 
             {/* ── Desktop Add to Cart (shown before key info) ── */}
             <div className="py-4">
               <AddToCartDesktop
                 product={product}
                 selectedOptions={selectedOptions}
-                personalization={
-                  personalization.enabled ? personalization.data : null
-                }
+                personalization={personalizationData}
                 onOptionChange={handleOptionChange}
                 deliveryDate={deliveryDate}
               />
@@ -186,7 +181,7 @@ export default function ProductDetailClient({ product, breadcrumb = [] }) {
       <AddToCartSection
         product={product}
         selectedOptions={selectedOptions}
-        personalization={personalization.enabled ? personalization.data : null}
+        personalization={personalizationData}
         deliveryDate={deliveryDate}
         onOptionChange={handleOptionChange}
       />

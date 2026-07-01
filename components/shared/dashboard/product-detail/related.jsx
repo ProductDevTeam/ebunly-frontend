@@ -6,9 +6,13 @@ import clsx from "clsx";
 import { useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 
+import FavoriteButton from "@/components/common/favorite-button";
+import { useWishlist } from "@/hooks/use-wishlist";
+
 export default function RelatedProducts({ products, className = "" }) {
   const [activeCard, setActiveCard] = useState(null);
   const scrollRef = useRef(null);
+  const { toggle: toggleFavorite } = useWishlist();
 
   const scroll = (dir) => {
     const el = scrollRef.current;
@@ -132,6 +136,11 @@ export default function RelatedProducts({ products, className = "" }) {
                         animate={{ y: 0 }}
                         exit={{ y: "100%" }}
                         transition={{ duration: 0.24, ease: [0.4, 0, 0.2, 1] }}
+                        onClick={(e) => {
+                          e.preventDefault();
+                          toggleFavorite(product);
+                          setActiveCard(null);
+                        }}
                         className="w-full bg-white text-[#444] text-[13px] font-medium py-3 text-center"
                       >
                         Add to favorites
@@ -160,14 +169,7 @@ export default function RelatedProducts({ products, className = "" }) {
                     ₦{product.price.toLocaleString()}
                   </p>
                 </div>
-                <button className="p-1.5">
-                  <Image
-                    src="/icons/heart.svg"
-                    width={22}
-                    height={20}
-                    alt="Wishlist"
-                  />
-                </button>
+                <FavoriteButton product={product} size={22} />
               </div>
             </div>
           );

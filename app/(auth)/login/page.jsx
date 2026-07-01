@@ -15,6 +15,15 @@ import { validateEmail, validatePassword } from "@/utils/input-validation";
 // Pull the user object out of whatever shape the API returns.
 const extractUser = (data) => data?.data?.user ?? data?.user ?? null;
 
+// Where to send the user after login — honour the `redirect` param the proxy
+// (and the favorites gate) append when bouncing a guest off a protected page.
+const getRedirectTarget = () => {
+  if (typeof window === "undefined") return "/";
+  const target = new URLSearchParams(window.location.search).get("redirect");
+  // Only allow same-origin relative paths.
+  return target && target.startsWith("/") ? target : "/";
+};
+
 export default function LoginPage() {
   const router = useRouter();
   const { mutate: login, isPending } = useLogin();
@@ -51,7 +60,7 @@ export default function LoginPage() {
             setUser(extractUser(data));
             mergeGuestCart();
             notifySuccess("Welcome back! Redirecting...", "Logged in");
-            router.push("/");
+            router.push(getRedirectTarget());
           },
           onError: (err) => {
             notifyError(
@@ -134,7 +143,7 @@ export default function LoginPage() {
           setUser(extractUser(data));
           mergeGuestCart();
           notifySuccess("Welcome back! Redirecting...", "Logged in");
-          router.push("/");
+          router.push(getRedirectTarget());
         },
         onError: (err) => {
           const message = err?.message || "";

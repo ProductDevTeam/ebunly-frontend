@@ -3,19 +3,28 @@
 import { useState, useRef } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { Eye, EyeOff, Calendar, Camera, Loader2, ChevronRight, LogOut } from "lucide-react";
+import {
+  Eye,
+  EyeOff,
+  Calendar,
+  Loader2,
+  ChevronRight,
+  ChevronDown,
+  LogOut,
+} from "lucide-react";
 
 import { useMe, useUpdateProfile } from "@/hooks/use-profile";
 import { useLogout } from "@/hooks/use-logout";
 import { useNotification } from "@/components/common/notification-provider";
 
-// "2012-06-01T..." → "June 2012"
-function formatMemberSince(value) {
-  if (!value) return null;
-  const d = new Date(value);
-  if (Number.isNaN(d.getTime())) return null;
-  return d.toLocaleDateString("en-US", { month: "long", year: "numeric" });
-}
+// Local display-currency options. Cosmetic for now — the profile API has no
+// currency field, so this isn't persisted (only NGN has a flag asset).
+const CURRENCIES = [
+  { code: "NGN", flag: "/flags/ng.svg" },
+  { code: "USD" },
+  { code: "GBP" },
+  { code: "EUR" },
+];
 
 // A single "Name" field maps to firstName + lastName.
 function splitName(full) {
@@ -31,11 +40,15 @@ function initialsOf(name) {
   return (parts[0][0] + (parts[1]?.[0] ?? "")).toUpperCase();
 }
 
-// ── Avatar with upload overlay (desktop card) ───────────────────────────────
+// ── Avatar — lavender halo, whole circle is the upload trigger (Figma shows
+// no camera badge, so keep the control invisible but preserve upload). ───────
 function Avatar({ name, src, onUpload, isUploading }) {
   return (
-    <div className="relative w-28.75 h-28.75">
-      <div className="w-full h-full rounded-full overflow-hidden bg-[#E9DDF7] flex items-center justify-center">
+    <label
+      className="relative w-28.75 h-28.75 rounded-full bg-[#F0E9FB] p-1.5 cursor-pointer block"
+      title="Change photo"
+    >
+      <div className="w-full h-full rounded-full overflow-hidden bg-[#E4D8F7] flex items-center justify-center relative">
         {src ? (
           <Image
             src={src}
@@ -50,34 +63,98 @@ function Avatar({ name, src, onUpload, isUploading }) {
             {initialsOf(name)}
           </span>
         )}
-      </div>
-      <label
-        className="absolute bottom-0 right-0 w-9 h-9 rounded-full bg-primary border-[3px] border-white flex items-center justify-center cursor-pointer hover:brightness-105 transition"
-        title="Change photo"
-      >
-        {isUploading ? (
-          <Loader2 className="w-4 h-4 text-white animate-spin" />
-        ) : (
-          <Camera className="w-4 h-4 text-white" />
+        {isUploading && (
+          <div className="absolute inset-0 bg-black/30 flex items-center justify-center">
+            <Loader2 className="w-5 h-5 text-white animate-spin" />
+          </div>
         )}
-        <input
-          type="file"
-          accept="image/*"
-          className="hidden"
-          onChange={onUpload}
+      </div>
+      <input
+        type="file"
+        accept="image/*"
+        className="hidden"
+        onChange={onUpload}
+      />
+    </label>
+  );
+}
+
+// ── Currency selector pill (local/cosmetic) ─────────────────────────────────
+function CurrencyPill() {
+  const [open, setOpen] = useState(false);
+  const [code, setCode] = useState("NGN");
+  const current = CURRENCIES.find((c) => c.code === code) ?? CURRENCIES[0];
+
+  return (
+    <div className="relative mt-4">
+      <button
+        type="button"
+        onClick={() => setOpen((o) => !o)}
+        className="flex items-center gap-2 bg-white rounded-full pl-2.5 pr-3 py-1.5 shadow-sm"
+      >
+        {current.flag ? (
+          <span className="relative w-4.5 h-4.5 rounded-full overflow-hidden">
+            <Image src={current.flag} alt="" fill className="object-cover" />
+          </span>
+        ) : (
+          <span className="w-4.5 h-4.5 rounded-full bg-gray-200 text-[9px] font-bold text-gray-600 flex items-center justify-center">
+            {current.code[0]}
+          </span>
+        )}
+        <span className="text-sm font-semibold text-gray-900">
+          {current.code}
+        </span>
+        <ChevronDown
+          className={`w-4 h-4 text-gray-500 transition-transform ${open ? "rotate-180" : ""}`}
         />
-      </label>
+      </button>
+
+      {open && (
+        <>
+          <div className="fixed inset-0 z-10" onClick={() => setOpen(false)} />
+          <div className="absolute left-1/2 -translate-x-1/2 top-full mt-2 z-20 w-32 bg-white border border-gray-100 rounded-xl shadow-lg overflow-hidden py-1">
+            {CURRENCIES.map((c) => (
+              <button
+                key={c.code}
+                type="button"
+                onClick={() => {
+                  setCode(c.code);
+                  setOpen(false);
+                }}
+                className={`w-full flex items-center gap-2 px-3 py-2 text-sm hover:bg-gray-50 transition-colors ${
+                  c.code === code
+                    ? "text-gray-900 font-semibold"
+                    : "text-gray-600"
+                }`}
+              >
+                {c.flag ? (
+                  <span className="relative w-4.5 h-4.5 rounded-full overflow-hidden shrink-0">
+                    <Image src={c.flag} alt="" fill className="object-cover" />
+                  </span>
+                ) : (
+                  <span className="w-4.5 h-4.5 rounded-full bg-gray-200 text-[9px] font-bold text-gray-600 flex items-center justify-center shrink-0">
+                    {c.code[0]}
+                  </span>
+                )}
+                {c.code}
+              </button>
+            ))}
+          </div>
+        </>
+      )}
     </div>
   );
 }
 
-export default function ProfileClient() {
-  const { data, isLoading } = useMe();
+export default function ProfileClient({ mockUser = null }) {
+  const previewMode = !!mockUser;
+  const { data, isLoading: meLoading } = useMe();
   const { mutate: updateProfile, isPending: isSaving } = useUpdateProfile();
   const logout = useLogout();
   const { success: notifySuccess, error: notifyError } = useNotification();
 
-  const user = data?.data;
+  const user = mockUser ?? data?.data;
+  const isLoading = previewMode ? false : meLoading;
   const dateRef = useRef(null);
 
   const [form, setForm] = useState({
@@ -143,6 +220,11 @@ export default function ProfileClient() {
       return;
     }
 
+    if (previewMode) {
+      notifySuccess("Preview mode — changes aren't saved.", "UI preview");
+      return;
+    }
+
     const { firstName, lastName } = splitName(form.name);
 
     updateProfile(
@@ -167,7 +249,6 @@ export default function ProfileClient() {
     );
   };
 
-  const memberSince = formatMemberSince(user?.memberSince);
   const avatarSrc = avatarPreview || user?.profilePicture || null;
 
   // ── Field styles ──────────────────────────────────────────────────────────
@@ -184,23 +265,28 @@ export default function ProfileClient() {
 
       <div className="md:flex md:gap-10 lg:gap-16 md:items-stretch">
         {/* ── Desktop profile card ───────────────────────────── */}
-        <aside className="hidden md:flex md:flex-col md:items-center md:justify-between md:w-[40%] lg:w-100 shrink-0 border border-gray-200 rounded-[28px] p-10">
-          <div className="flex flex-col items-center pt-6">
-            <Avatar
-              name={form.name}
-              src={avatarSrc}
-              onUpload={handleAvatar}
-              isUploading={isSaving && !!avatarFile}
-            />
-            <h2 className="mt-6 text-[28px] font-medium leading-tight text-center text-gray-900 max-w-[14ch]">
-              {form.name || "—"}
-            </h2>
-          </div>
-          {memberSince && (
-            <p className="text-sm text-gray-400 pb-4">
-              Member since {memberSince}
-            </p>
-          )}
+        <aside
+          className="hidden md:flex md:flex-col md:items-center md:w-[40%] lg:w-100 shrink-0 rounded-[28px] px-10 pt-16 pb-10 relative overflow-hidden"
+          style={{
+            background:
+              "radial-gradient(130px 120px at 82% 14%, rgba(248,88,38,0.16), transparent 70%), radial-gradient(150px 150px at 16% 68%, rgba(248,88,38,0.13), transparent 72%), linear-gradient(180deg, #FDEBE4 0%, #FFF6F2 100%)",
+          }}
+        >
+          <Avatar
+            name={form.name}
+            src={avatarSrc}
+            onUpload={handleAvatar}
+            isUploading={isSaving && !!avatarFile}
+          />
+          <h2 className="mt-5 text-[28px] font-bold leading-tight text-center text-gray-900 max-w-[14ch]">
+            {form.name || "—"}
+          </h2>
+          <CurrencyPill />
+
+          {/* Brand mark — anchored to the bottom, partly clipped by the card */}
+          <span className="pointer-events-none absolute -bottom-8 left-1/2 -translate-x-1/2 w-40 h-40 opacity-90">
+            <Image src="/star.svg" alt="" fill className="object-contain" />
+          </span>
         </aside>
 
         {/* ── Form ───────────────────────────────────────────── */}
@@ -330,12 +416,12 @@ export default function ProfileClient() {
                 <Loader2 className="w-4 h-4 animate-spin" /> Saving...
               </span>
             ) : (
-              "Save Changes"
+              "Update Profile"
             )}
           </button>
 
-          {/* Account actions (user-requested; not in the Figma) */}
-          <div className="pt-2 space-y-1">
+          {/* Account actions — mobile only (desktop uses the header dropdown) */}
+          <div className="pt-2 space-y-1 md:hidden">
             <Link
               href="/profile/orders"
               className="flex items-center justify-between py-3 text-gray-900 hover:text-primary transition-colors"

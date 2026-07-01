@@ -4,12 +4,19 @@ import { useState, useSyncExternalStore } from "react";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
-import { ChevronDown, User, Package, LogOut } from "lucide-react";
+import { ChevronDown } from "lucide-react";
 
 import { useAuthStore, getDisplayName } from "@/hooks/use-auth-store";
-import { hasAuthToken } from "@/hooks/use-profile";
+import { hasAuthToken, useMe } from "@/hooks/use-profile";
 import { useCart } from "@/hooks/use-cart";
+import { useWishlist } from "@/hooks/use-wishlist";
 import { useLogout } from "@/hooks/use-logout";
+
+function accountInitials(name) {
+  const parts = (name ?? "").trim().split(/\s+/).filter(Boolean);
+  if (!parts.length) return "?";
+  return (parts[0][0] + (parts[1]?.[0] ?? "")).toUpperCase();
+}
 
 const FALLBACK_CATEGORIES = [
   { id: "fashion-accessories", label: "Fashion & Accessories" },
@@ -49,6 +56,19 @@ export default function Navbar({
   // for guests. Gate behind `hydrated` so SSR (empty) matches first paint.
   const cart = useCart();
   const cartCount = hydrated ? cart.totalCount() : 0;
+
+  // Favorites badge — local wishlist store, gated on hydration.
+  const wishlist = useWishlist();
+  const wishCount = hydrated ? wishlist.count() : 0;
+
+  // Full name + avatar for the account dropdown (fetched profile).
+  const { data: meData } = useMe();
+  const profile = meData?.data;
+  const fullName =
+    (profile
+      ? `${profile.firstName ?? ""} ${profile.lastName ?? ""}`.trim()
+      : "") || displayName;
+  const avatarUrl = profile?.profilePicture || null;
 
   return (
     <header className="w-full font-sans">
@@ -96,15 +116,24 @@ export default function Navbar({
 
           {/* Right actions */}
           <div className="flex items-center gap-1.5 shrink-0 ">
-            {/* User */}
-            <button className="p-1.5">
+            {/* Favorites */}
+            <Link
+              href="/favorites"
+              className="relative p-1.5"
+              aria-label="Favorites"
+            >
               <Image
                 src="/icons/heart.svg"
                 width={22}
                 height={20}
-                alt="Wishlist"
+                alt="Favorites"
               />
-            </button>
+              {wishCount > 0 && (
+                <span className="absolute -top-0.5 -right-0.5 min-w-[16px] h-4 px-1 rounded-full bg-primary text-white text-[10px] font-semibold leading-none flex items-center justify-center">
+                  {wishCount > 99 ? "99+" : wishCount}
+                </span>
+              )}
+            </Link>
             <Link href="/cart" className="relative p-1.5" aria-label="Basket">
               <Image src="/icons/shop.svg" width={24} height={24} alt="Basket" />
               {cartCount > 0 && (
@@ -143,29 +172,60 @@ export default function Navbar({
                       className="fixed inset-0 z-10"
                       onClick={() => setAccountOpen(false)}
                     />
-                    <div className="absolute right-0 top-full mt-2 z-20 w-52 bg-white border border-gray-200 rounded-xl shadow-lg overflow-hidden py-1">
+                    <div className="absolute right-0 top-full mt-2 z-20 w-64 bg-white border border-gray-100 rounded-2xl shadow-xl overflow-hidden py-1.5">
+                      {/* Profile header */}
                       <Link
                         href="/profile"
                         onClick={() => setAccountOpen(false)}
-                        className="flex items-center gap-2.5 px-4 py-2.5 text-sm text-gray-900 hover:bg-gray-50 transition-colors"
+                        className="flex items-center gap-3 px-4 py-3 hover:bg-gray-50 transition-colors"
                       >
-                        <User className="w-4 h-4 text-gray-500" /> Your Profile
+                        <span className="relative w-10 h-10 rounded-full overflow-hidden bg-[#E4D8F7] flex items-center justify-center shrink-0">
+                          {avatarUrl ? (
+                            <Image
+                              src={avatarUrl}
+                              alt=""
+                              fill
+                              unoptimized
+                              className="object-cover"
+                            />
+                          ) : (
+                            <span className="text-sm font-semibold text-[#7C5DB0]">
+                              {accountInitials(fullName)}
+                            </span>
+                          )}
+                        </span>
+                        <span className="min-w-0">
+                          <span className="block text-sm font-bold text-gray-900 truncate">
+                            {fullName}
+                          </span>
+                          <span className="block text-xs text-gray-500">
+                            View your profile
+                          </span>
+                        </span>
                       </Link>
+
+                      <div className="h-px bg-gray-100 my-1" />
+
+                      {/* My orders */}
                       <Link
                         href="/profile/orders"
                         onClick={() => setAccountOpen(false)}
-                        className="flex items-center gap-2.5 px-4 py-2.5 text-sm text-gray-900 hover:bg-gray-50 transition-colors"
+                        className="flex items-center gap-3 px-4 py-2.5 text-[15px] text-gray-800 hover:bg-gray-50 transition-colors"
                       >
-                        <Package className="w-4 h-4 text-gray-500" /> Your Orders
+                        <span className="w-9 h-9 rounded-full bg-[#FFF1EC] shrink-0" />
+                        My orders
                       </Link>
+
+                      {/* Sign out */}
                       <button
                         onClick={() => {
                           setAccountOpen(false);
                           logout();
                         }}
-                        className="w-full flex items-center gap-2.5 px-4 py-2.5 text-sm text-red-500 hover:bg-red-50 transition-colors border-t border-gray-100 mt-1"
+                        className="w-full flex items-center gap-3 px-4 py-2.5 text-[15px] text-gray-800 hover:bg-gray-50 transition-colors text-left"
                       >
-                        <LogOut className="w-4 h-4" /> Log Out
+                        <span className="w-9 h-9 rounded-full bg-[#FFF1EC] shrink-0" />
+                        Sign out
                       </button>
                     </div>
                   </>
@@ -228,14 +288,23 @@ export default function Navbar({
 
           {/* Right icons */}
           <div className="flex items-center gap-1">
-            <button className="p-1.5">
+            <Link
+              href="/favorites"
+              className="relative p-1.5"
+              aria-label="Favorites"
+            >
               <Image
                 src="/icons/heart.svg"
                 width={22}
                 height={20}
-                alt="Wishlist"
+                alt="Favorites"
               />
-            </button>
+              {wishCount > 0 && (
+                <span className="absolute -top-0.5 -right-0.5 min-w-[16px] h-4 px-1 rounded-full bg-primary text-white text-[10px] font-semibold leading-none flex items-center justify-center">
+                  {wishCount > 99 ? "99+" : wishCount}
+                </span>
+              )}
+            </Link>
             <Link href="/cart" className="relative p-1.5" aria-label="Basket">
               <Image src="/icons/shop.svg" width={24} height={24} alt="Basket" />
               {cartCount > 0 && (

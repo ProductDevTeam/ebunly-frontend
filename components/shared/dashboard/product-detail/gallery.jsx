@@ -3,11 +3,13 @@
 import { useState, useRef } from "react";
 import Image from "next/image";
 import { Heart, ChevronLeft, ChevronRight } from "lucide-react";
+import { useWishlist } from "@/hooks/use-wishlist";
 
-export default function ImageGallery({ images }) {
+export default function ImageGallery({ images, product }) {
   const [activeIndex, setActiveIndex] = useState(0);
-  const [liked, setLiked] = useState(false);
   const scrollRef = useRef(null);
+  const { hydrated, has, toggle } = useWishlist();
+  const liked = hydrated && has(product?.id ?? product?._id);
 
   const handleScroll = () => {
     if (scrollRef.current) {
@@ -105,7 +107,7 @@ export default function ImageGallery({ images }) {
 
           {/* Favorite button */}
           <button
-            onClick={() => setLiked((v) => !v)}
+            onClick={() => toggle(product)}
             aria-label={liked ? "Remove from favorites" : "Add to favorites"}
             className="absolute right-3 top-3 z-10 flex h-10 w-10 items-center justify-center rounded-full bg-white shadow-md transition-transform hover:scale-105"
           >

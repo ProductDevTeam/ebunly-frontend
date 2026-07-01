@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useQueryClient } from "@tanstack/react-query";
 import { useAuthStore } from "@/hooks/use-auth-store";
 import { useCartStore } from "@/hooks/use-cart-store";
+import { useWishlistStore } from "@/hooks/use-wishlist-store";
 
 // Clears a client-readable cookie by name across the common paths.
 function clearCookie(name) {
@@ -25,13 +26,15 @@ export function useLogout() {
   const queryClient = useQueryClient();
   const clearUser = useAuthStore((s) => s.clearUser);
   const clearCart = useCartStore((s) => s.clearCart);
+  const clearWishlist = useWishlistStore((s) => s.clear);
 
   return useCallback(() => {
     clearCookie("token");
     clearCookie("accessToken");
     clearUser();
     clearCart();
+    clearWishlist();
     queryClient.clear();
     router.replace("/login");
-  }, [clearUser, clearCart, queryClient, router]);
+  }, [clearUser, clearCart, clearWishlist, queryClient, router]);
 }

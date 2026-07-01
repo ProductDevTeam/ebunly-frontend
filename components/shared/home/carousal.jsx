@@ -5,6 +5,9 @@ import Link from "next/link";
 import { AnimatePresence, motion } from "framer-motion";
 import { useRef, useState } from "react";
 
+import FavoriteButton from "@/components/common/favorite-button";
+import { useWishlist } from "@/hooks/use-wishlist";
+
 const SKELETON_COUNT = 5;
 
 const SkeletonCard = () => (
@@ -18,6 +21,7 @@ const SkeletonCard = () => (
 const PerfectForYouSection = ({ products = [] }) => {
   const scrollRef = useRef(null);
   const [activeCard, setActiveCard] = useState(null);
+  const { toggle: toggleFavorite } = useWishlist();
 
   const scroll = (dir) => {
     const el = scrollRef.current;
@@ -167,6 +171,11 @@ const PerfectForYouSection = ({ products = [] }) => {
                                 duration: 0.24,
                                 ease: [0.4, 0, 0.2, 1],
                               }}
+                              onClick={(e) => {
+                                e.preventDefault();
+                                toggleFavorite(product);
+                                setActiveCard(null);
+                              }}
                               className="w-full bg-white text-[#444] text-[13px] font-medium py-3 text-center"
                             >
                               Add to favorites
@@ -198,14 +207,7 @@ const PerfectForYouSection = ({ products = [] }) => {
                           ₦{product.price.toLocaleString()}
                         </p>
                       </div>
-                      <button className="p-1.5">
-                        <Image
-                          src="/icons/heart.svg"
-                          width={22}
-                          height={20}
-                          alt="Wishlist"
-                        />
-                      </button>
+                      <FavoriteButton product={product} size={22} />
                     </div>
                   </div>
                 );
