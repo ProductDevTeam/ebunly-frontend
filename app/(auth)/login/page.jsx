@@ -8,11 +8,21 @@ import { Eye, EyeOff } from "lucide-react";
 import Navbar from "@/components/common/navbar";
 import { useLogin, useGoogleAuth } from "@/hooks/use-auth";
 import { useAuthStore } from "@/hooks/use-auth-store";
+import { useMergeGuestCart } from "@/hooks/use-cart";
 import { useNotification } from "@/components/common/notification-provider";
 import { validateEmail, validatePassword } from "@/utils/input-validation";
 
 // Pull the user object out of whatever shape the API returns.
 const extractUser = (data) => data?.data?.user ?? data?.user ?? null;
+
+// Where to send the user after login — honour the `redirect` param the proxy
+// (and the favorites gate) append when bouncing a guest off a protected page.
+const getRedirectTarget = () => {
+  if (typeof window === "undefined") return "/";
+  const target = new URLSearchParams(window.location.search).get("redirect");
+  // Only allow same-origin relative paths.
+  return target && target.startsWith("/") ? target : "/";
+};
 
 export default function LoginPage() {
   const router = useRouter();
@@ -20,6 +30,7 @@ export default function LoginPage() {
   const { mutate: googleAuth, isPending: isGooglePending } = useGoogleAuth();
   const { error: notifyError, success: notifySuccess } = useNotification();
   const setUser = useAuthStore((s) => s.setUser);
+  const mergeGuestCart = useMergeGuestCart();
 
   const googleBtnRef = useRef(null);
 
@@ -47,8 +58,9 @@ export default function LoginPage() {
         googleAuth(idToken, {
           onSuccess: (data) => {
             setUser(extractUser(data));
+            mergeGuestCart();
             notifySuccess("Welcome back! Redirecting...", "Logged in");
-            router.push("/");
+            router.push(getRedirectTarget());
           },
           onError: (err) => {
             notifyError(
@@ -67,7 +79,7 @@ export default function LoginPage() {
         size: "large",
       });
     }
-  }, [googleAuth, notifyError, notifySuccess, router, setUser]);
+  }, [googleAuth, notifyError, notifySuccess, router, setUser, mergeGuestCart]);
 
   const handleGoogleLogin = useCallback(() => {
     const button = googleBtnRef.current?.querySelector('div[role="button"]');
@@ -129,8 +141,9 @@ export default function LoginPage() {
       {
         onSuccess: (data) => {
           setUser(extractUser(data));
+          mergeGuestCart();
           notifySuccess("Welcome back! Redirecting...", "Logged in");
-          router.push("/");
+          router.push(getRedirectTarget());
         },
         onError: (err) => {
           const message = err?.message || "";

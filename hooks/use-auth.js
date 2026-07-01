@@ -140,16 +140,31 @@ async function verifyCodeApi(data) {
 export function useSignUp() {
   return useMutation({ mutationFn: signUpApi });
 }
+// Pull the auth token out of whatever shape the API returns and persist it as a
+// client-readable cookie. The proxy gates protected routes on this `token`
+// cookie, so setting it reliably is what keeps the navbar and route guard in
+// sync (fixes the "logged in but profile bounces to /login" bug).
+function extractToken(data) {
+  return (
+    data?.data?.token ??
+    data?.token ??
+    data?.accessToken ??
+    data?.data?.accessToken ??
+    null
+  );
+}
+
+function persistAuthToken(data) {
+  const token = extractToken(data);
+  if (!token) return;
+  const secure = location.protocol === "https:" ? "; Secure" : "";
+  document.cookie = `token=${token}; path=/; max-age=${7 * 24 * 60 * 60}; SameSite=Lax${secure}`;
+}
+
 export function useLogin() {
   return useMutation({
     mutationFn: loginApi,
-    onSuccess: (data) => {
-      const token = data?.data?.token;
-      if (token) {
-        const secure = location.protocol === "https:" ? "; Secure" : "";
-        document.cookie = `token=${token}; path=/; max-age=${7 * 24 * 60 * 60}; SameSite=Lax${secure}`;
-      }
-    },
+    onSuccess: persistAuthToken,
   });
 }
 async function googleAuthApi(idToken) {
@@ -160,13 +175,7 @@ async function googleAuthApi(idToken) {
 export function useGoogleAuth() {
   return useMutation({
     mutationFn: googleAuthApi,
-    onSuccess: (data) => {
-      const token = data?.data?.token;
-      if (token) {
-        const secure = location.protocol === "https:" ? "; Secure" : "";
-        document.cookie = `token=${token}; path=/; max-age=${7 * 24 * 60 * 60}; SameSite=Lax${secure}`;
-      }
-    },
+    onSuccess: persistAuthToken,
   });
 }
 export function useForgotPassword() {

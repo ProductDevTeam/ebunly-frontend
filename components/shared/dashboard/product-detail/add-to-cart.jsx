@@ -1,9 +1,8 @@
 "use client";
 
-import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Truck, Plus, Minus, ShoppingCart } from "lucide-react";
-import { useCartStore } from "@/hooks/use-cart-store";
+import { useCart } from "@/hooks/use-cart";
 import { useNotification } from "@/components/common/notification-provider";
 
 export default function AddToCartSection({
@@ -13,13 +12,9 @@ export default function AddToCartSection({
   deliveryDate,
   onOptionChange,
 }) {
-  const { addItem, increment, decrement, getCartItem } = useCartStore();
+  const { addItem, increment, decrement, getCartItem, hydrated } = useCart();
   const { notify } = useNotification();
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
+  const mounted = hydrated;
 
   if (!product) return null;
 

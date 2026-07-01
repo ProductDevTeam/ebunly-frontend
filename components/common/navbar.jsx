@@ -4,9 +4,19 @@ import { useState, useSyncExternalStore } from "react";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
+import { ChevronDown } from "lucide-react";
 
 import { useAuthStore, getDisplayName } from "@/hooks/use-auth-store";
-import { useCartStore } from "@/hooks/use-cart-store";
+import { hasAuthToken, useMe } from "@/hooks/use-profile";
+import { useCart } from "@/hooks/use-cart";
+import { useWishlist } from "@/hooks/use-wishlist";
+import { useLogout } from "@/hooks/use-logout";
+
+function accountInitials(name) {
+  const parts = (name ?? "").trim().split(/\s+/).filter(Boolean);
+  if (!parts.length) return "?";
+  return (parts[0][0] + (parts[1]?.[0] ?? "")).toUpperCase();
+}
 
 const FALLBACK_CATEGORIES = [
   { id: "fashion-accessories", label: "Fashion & Accessories" },
@@ -24,7 +34,9 @@ export default function Navbar({
   showMobileSearch = true,
 }) {
   const [search, setSearch] = useState("");
+  const [accountOpen, setAccountOpen] = useState(false);
   const pathname = usePathname();
+  const logout = useLogout();
 
   // Persisted auth state hydrates on the client only — render the
   // logged-out markup during SSR/first paint to avoid a hydration mismatch.
@@ -34,14 +46,29 @@ export default function Navbar({
     () => false,
   );
   const user = useAuthStore((s) => s.user);
-  const loggedInUser = hydrated ? user : null;
+  // Treat as logged in only when the persisted user AND the auth cookie agree —
+  // the cookie is what the proxy gates protected routes on, so this keeps the
+  // navbar and route guard from drifting (fixes the profile→login bounce).
+  const loggedInUser = hydrated && user && hasAuthToken() ? user : null;
   const displayName = getDisplayName(loggedInUser);
 
-  // Cart badge — gate behind `hydrated` so SSR (empty) matches first client paint.
-  const cartItemsCount = useCartStore((s) =>
-    s.items.reduce((n, i) => n + i.quantity, 0),
-  );
-  const cartCount = hydrated ? cartItemsCount : 0;
+  // Cart badge — facade routes to the server cart when logged in, local store
+  // for guests. Gate behind `hydrated` so SSR (empty) matches first paint.
+  const cart = useCart();
+  const cartCount = hydrated ? cart.totalCount() : 0;
+
+  // Favorites badge — local wishlist store, gated on hydration.
+  const wishlist = useWishlist();
+  const wishCount = hydrated ? wishlist.count() : 0;
+
+  // Full name + avatar for the account dropdown (fetched profile).
+  const { data: meData } = useMe();
+  const profile = meData?.data;
+  const fullName =
+    (profile
+      ? `${profile.firstName ?? ""} ${profile.lastName ?? ""}`.trim()
+      : "") || displayName;
+  const avatarUrl = profile?.profilePicture || null;
 
   return (
     <header className="w-full font-sans">
@@ -89,15 +116,24 @@ export default function Navbar({
 
           {/* Right actions */}
           <div className="flex items-center gap-1.5 shrink-0 ">
-            {/* User */}
-            <button className="p-1.5">
+            {/* Favorites */}
+            <Link
+              href="/favorites"
+              className="relative p-1.5"
+              aria-label="Favorites"
+            >
               <Image
                 src="/icons/heart.svg"
                 width={22}
                 height={20}
-                alt="Wishlist"
+                alt="Favorites"
               />
-            </button>
+              {wishCount > 0 && (
+                <span className="absolute -top-0.5 -right-0.5 min-w-[16px] h-4 px-1 rounded-full bg-primary text-white text-[10px] font-semibold leading-none flex items-center justify-center">
+                  {wishCount > 99 ? "99+" : wishCount}
+                </span>
+              )}
+            </Link>
             <Link href="/cart" className="relative p-1.5" aria-label="Basket">
               <Image src="/icons/shop.svg" width={24} height={24} alt="Basket" />
               {cartCount > 0 && (
@@ -106,23 +142,109 @@ export default function Navbar({
                 </span>
               )}
             </Link>
-            <Link
-              href={loggedInUser ? "/profile" : "/login"}
-              className="flex items-center gap-1.5 p-1.5"
-              aria-label={loggedInUser ? displayName : "Sign in"}
-            >
-              <Image
-                src="/icons/profile.svg"
-                width={24}
-                height={24}
-                alt="Profile"
-              />
-              {loggedInUser && (
-                <span className="max-w-[120px] truncate text-sm font-medium text-gray-900">
-                  {displayName}
-                </span>
-              )}
-            </Link>
+            {loggedInUser ? (
+              <div className="relative">
+                <button
+                  onClick={() => setAccountOpen((o) => !o)}
+                  className="flex items-center gap-1.5 p-1.5"
+                  aria-label={displayName}
+                  aria-expanded={accountOpen}
+                >
+                  <Image
+                    src="/icons/profile.svg"
+                    width={24}
+                    height={24}
+                    alt="Profile"
+                  />
+                  <span className="max-w-[120px] truncate text-sm font-medium text-gray-900">
+                    {displayName}
+                  </span>
+                  <ChevronDown
+                    className={`w-4 h-4 text-gray-500 transition-transform ${
+                      accountOpen ? "rotate-180" : ""
+                    }`}
+                  />
+                </button>
+
+                {accountOpen && (
+                  <>
+                    <div
+                      className="fixed inset-0 z-10"
+                      onClick={() => setAccountOpen(false)}
+                    />
+                    <div className="absolute right-0 top-full mt-2 z-20 w-64 bg-white border border-gray-100 rounded-2xl shadow-xl overflow-hidden py-1.5">
+                      {/* Profile header */}
+                      <Link
+                        href="/profile"
+                        onClick={() => setAccountOpen(false)}
+                        className="flex items-center gap-3 px-4 py-3 hover:bg-gray-50 transition-colors"
+                      >
+                        <span className="relative w-10 h-10 rounded-full overflow-hidden bg-[#E4D8F7] flex items-center justify-center shrink-0">
+                          {avatarUrl ? (
+                            <Image
+                              src={avatarUrl}
+                              alt=""
+                              fill
+                              unoptimized
+                              className="object-cover"
+                            />
+                          ) : (
+                            <span className="text-sm font-semibold text-[#7C5DB0]">
+                              {accountInitials(fullName)}
+                            </span>
+                          )}
+                        </span>
+                        <span className="min-w-0">
+                          <span className="block text-sm font-bold text-gray-900 truncate">
+                            {fullName}
+                          </span>
+                          <span className="block text-xs text-gray-500">
+                            View your profile
+                          </span>
+                        </span>
+                      </Link>
+
+                      <div className="h-px bg-gray-100 my-1" />
+
+                      {/* My orders */}
+                      <Link
+                        href="/profile/orders"
+                        onClick={() => setAccountOpen(false)}
+                        className="flex items-center gap-3 px-4 py-2.5 text-[15px] text-gray-800 hover:bg-gray-50 transition-colors"
+                      >
+                        <span className="w-9 h-9 rounded-full bg-[#FFF1EC] shrink-0" />
+                        My orders
+                      </Link>
+
+                      {/* Sign out */}
+                      <button
+                        onClick={() => {
+                          setAccountOpen(false);
+                          logout();
+                        }}
+                        className="w-full flex items-center gap-3 px-4 py-2.5 text-[15px] text-gray-800 hover:bg-gray-50 transition-colors text-left"
+                      >
+                        <span className="w-9 h-9 rounded-full bg-[#FFF1EC] shrink-0" />
+                        Sign out
+                      </button>
+                    </div>
+                  </>
+                )}
+              </div>
+            ) : (
+              <Link
+                href="/login"
+                className="flex items-center gap-1.5 p-1.5"
+                aria-label="Sign in"
+              >
+                <Image
+                  src="/icons/profile.svg"
+                  width={24}
+                  height={24}
+                  alt="Profile"
+                />
+              </Link>
+            )}
           </div>
         </div>
       </div>
@@ -166,14 +288,23 @@ export default function Navbar({
 
           {/* Right icons */}
           <div className="flex items-center gap-1">
-            <button className="p-1.5">
+            <Link
+              href="/favorites"
+              className="relative p-1.5"
+              aria-label="Favorites"
+            >
               <Image
                 src="/icons/heart.svg"
                 width={22}
                 height={20}
-                alt="Wishlist"
+                alt="Favorites"
               />
-            </button>
+              {wishCount > 0 && (
+                <span className="absolute -top-0.5 -right-0.5 min-w-[16px] h-4 px-1 rounded-full bg-primary text-white text-[10px] font-semibold leading-none flex items-center justify-center">
+                  {wishCount > 99 ? "99+" : wishCount}
+                </span>
+              )}
+            </Link>
             <Link href="/cart" className="relative p-1.5" aria-label="Basket">
               <Image src="/icons/shop.svg" width={24} height={24} alt="Basket" />
               {cartCount > 0 && (

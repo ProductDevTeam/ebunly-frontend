@@ -12,7 +12,13 @@ const PUBLIC_ROUTES = new Set([
 ]);
 
 // App pages that require the user to be logged in
-const PROTECTED_PAGES = ["/profile", "/orders", "/wishlist", "/checkout"];
+const PROTECTED_PAGES = [
+  "/profile",
+  "/orders",
+  "/wishlist",
+  "/favorites",
+  "/checkout",
+];
 
 // App pages only accessible when NOT logged in
 const GUEST_ONLY_PAGES = ["/login", "/sign-up", "/forgot-password", "/verify"];
@@ -102,6 +108,30 @@ function pruneRateLimitStore() {
   }
 }
 
+// ── Upstream fetch with retry ──────────────────────────────────────────────
+// Node's fetch (undici) pools connections. When the upstream (e.g. a Render
+// instance that spun down while idle) destroys a keep-alive/HTTP2 session, a
+// reused pooled socket fails immediately with "fetch failed" /
+// ERR_HTTP2_INVALID_SESSION. Retrying transparently opens a fresh connection
+// and also rides out cold-start latency. We only retry idempotent-safe
+// transient network errors — never a real HTTP response.
+async function fetchWithRetry(destination, options, retries = 2) {
+  for (let attempt = 0; ; attempt++) {
+    try {
+      return await fetch(destination, options);
+    } catch (err) {
+      const transient =
+        err?.cause?.code === "ERR_HTTP2_INVALID_SESSION" ||
+        err?.cause?.code === "UND_ERR_SOCKET" ||
+        err?.cause?.code === "ECONNRESET" ||
+        err?.name === "TypeError"; // "fetch failed" wrapper
+      if (!transient || attempt >= retries) throw err;
+      // Small backoff so the pool can discard the dead socket.
+      await new Promise((r) => setTimeout(r, 150 * (attempt + 1)));
+    }
+  }
+}
+
 // ── Proxy handler ──────────────────────────────────────────────────────────
 async function handleProxy(request, pathname) {
   // Strip /proxy prefix
@@ -136,7 +166,12 @@ async function handleProxy(request, pathname) {
   const token = getToken(request);
 
   const forwardHeaders = new Headers();
-  forwardHeaders.set("Content-Type", "application/json");
+  // Preserve the incoming Content-Type so multipart/form-data boundaries
+  // survive (e.g. the avatar upload on PUT /profile). JSON callers still send
+  // application/json, so existing requests are unaffected.
+  const incomingContentType = request.headers.get("content-type");
+  if (incomingContentType)
+    forwardHeaders.set("Content-Type", incomingContentType);
   forwardHeaders.set("Accept", "application/json");
   forwardHeaders.set("X-Forwarded-For", ip);
   forwardHeaders.set("X-Forwarded-Host", request.headers.get("host") || "");
@@ -147,12 +182,14 @@ async function handleProxy(request, pathname) {
   if (csrfToken) forwardHeaders.set("X-CSRF-Token", csrfToken);
 
   try {
+    // Forward raw bytes rather than re-serialising as text — works for JSON
+    // and binary/multipart bodies alike without mangling the boundary.
     const body =
       request.method !== "GET" && request.method !== "HEAD"
-        ? await request.text()
+        ? await request.arrayBuffer()
         : undefined;
 
-    const apiResponse = await fetch(destination, {
+    const apiResponse = await fetchWithRetry(destination, {
       method: request.method,
       headers: forwardHeaders,
       body,
@@ -227,6 +264,7 @@ export const config = {
     "/profile/:path*",
     "/orders/:path*",
     "/wishlist/:path*",
+    "/favorites/:path*",
     "/checkout/:path*",
     "/login",
     "/sign-up",

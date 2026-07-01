@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Trash2,
@@ -15,11 +16,11 @@ import {
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { useCartStore } from "@/hooks/use-cart-store";
+import { useCart } from "@/hooks/use-cart";
+import CheckoutModal from "@/components/cart/checkout-modal";
 
-function CartItem({ item }) {
-  const { increment, decrement, removeItem } = useCartStore();
-  const imageUrl = item.images?.[0]?.url ?? "/product.png";
+function CartItem({ item, onIncrement, onDecrement, onRemove }) {
+  const imageUrl = item.images?.[0]?.url ?? item.images?.[0] ?? "/product.png";
   const discountPct =
     item.compareAtPrice > item.basePrice
       ? Math.round(
@@ -51,7 +52,7 @@ function CartItem({ item }) {
             {item.name}
           </h3>
           <button
-            onClick={() => removeItem(item.cartItemId)}
+            onClick={() => onRemove(item.cartItemId)}
             className="text-gray-400 hover:text-red-500 transition-colors flex-shrink-0 p-0.5"
           >
             <X className="w-4 h-4" />
@@ -87,7 +88,7 @@ function CartItem({ item }) {
 
           <div className="flex items-center bg-gray-100 rounded-xl overflow-hidden">
             <button
-              onClick={() => decrement(item.cartItemId)}
+              onClick={() => onDecrement(item.cartItemId)}
               className="px-2.5 py-1.5 text-gray-600 hover:text-gray-900 hover:bg-gray-200 transition-colors"
             >
               <Minus className="w-3.5 h-3.5" />
@@ -96,7 +97,7 @@ function CartItem({ item }) {
               {item.quantity}
             </span>
             <button
-              onClick={() => increment(item.cartItemId)}
+              onClick={() => onIncrement(item.cartItemId)}
               disabled={item.quantity >= (item.maxQuantity ?? 1000)}
               className="px-2.5 py-1.5 text-gray-600 hover:text-gray-900 hover:bg-gray-200 disabled:opacity-40 transition-colors"
             >
@@ -264,9 +265,32 @@ function EmptyCart() {
 }
 
 export default function CartClient() {
-  const { items, clearCart, subtotal } = useCartStore();
+  const router = useRouter();
+  const {
+    items,
+    clearCart,
+    subtotal,
+    increment,
+    decrement,
+    removeItem,
+    isLoggedIn,
+  } = useCart();
   const [promoCode, setPromoCode] = useState(null);
+  const [checkoutOpen, setCheckoutOpen] = useState(false);
   const total = subtotal();
+
+  const handleCheckout = () => {
+    if (!isLoggedIn) {
+      router.push("/login?redirect=/cart");
+      return;
+    }
+    setCheckoutOpen(true);
+  };
+
+  const handleCheckoutSuccess = () => {
+    setCheckoutOpen(false);
+    router.push("/profile/orders");
+  };
 
   return (
     <div className="font-sans">
@@ -298,7 +322,13 @@ export default function CartClient() {
           <div className="space-y-3">
             <AnimatePresence mode="popLayout">
               {items.map((item) => (
-                <CartItem key={item.cartItemId} item={item} />
+                <CartItem
+                  key={item.cartItemId}
+                  item={item}
+                  onIncrement={increment}
+                  onDecrement={decrement}
+                  onRemove={removeItem}
+                />
               ))}
             </AnimatePresence>
             <button
@@ -323,7 +353,7 @@ export default function CartClient() {
             <OrderSummary
               subtotal={total}
               promoCode={promoCode}
-              onCheckout={() => console.log("checkout")}
+              onCheckout={handleCheckout}
             />
             <div className="flex items-start gap-2.5 bg-orange-50 border border-orange-100 rounded-2xl p-4">
               <Truck className="w-4 h-4 text-orange-500 mt-0.5 flex-shrink-0" />
@@ -347,7 +377,7 @@ export default function CartClient() {
             </div>
             <motion.button
               whileTap={{ scale: 0.97 }}
-              onClick={() => console.log("checkout")}
+              onClick={handleCheckout}
               className="bg-orange-600 hover:bg-orange-700 text-white font-bold py-3 px-6 rounded-xl shadow-lg shadow-orange-600/20 transition-colors flex items-center gap-1.5"
             >
               Checkout <ChevronRight className="w-4 h-4" />
@@ -356,6 +386,12 @@ export default function CartClient() {
           <div style={{ height: "env(safe-area-inset-bottom)" }} />
         </div>
       )}
+
+      <CheckoutModal
+        open={checkoutOpen}
+        onClose={() => setCheckoutOpen(false)}
+        onSuccess={handleCheckoutSuccess}
+      />
     </div>
   );
 }

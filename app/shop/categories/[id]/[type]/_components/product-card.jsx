@@ -5,8 +5,12 @@ import Link from "next/link";
 import { useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 
+import FavoriteButton from "@/components/common/favorite-button";
+import { useWishlist } from "@/hooks/use-wishlist";
+
 export default function ProductCard({ product }) {
   const [isActive, setIsActive] = useState(false);
+  const { toggle: toggleFavorite } = useWishlist();
 
   return (
     <div>
@@ -57,6 +61,11 @@ export default function ProductCard({ product }) {
                 animate={{ y: 0 }}
                 exit={{ y: "100%" }}
                 transition={{ duration: 0.22, ease: [0.4, 0, 0.2, 1] }}
+                onClick={(e) => {
+                  e.preventDefault();
+                  toggleFavorite(product);
+                  setIsActive(false);
+                }}
                 className="w-full bg-white text-[#444] text-[12px] font-medium py-2.5 text-center"
               >
                 Add to favorites
@@ -88,15 +97,7 @@ export default function ProductCard({ product }) {
             ₦{product.price.toLocaleString()}
           </p>
         </div>
-        <button className="p-1.5 shrink-0" aria-label="Save to wishlist">
-          <Image
-            src="/icons/heart.svg"
-            width={20}
-            height={18}
-            alt=""
-            unoptimized
-          />
-        </button>
+        <FavoriteButton product={product} size={20} />
       </div>
     </div>
   );
