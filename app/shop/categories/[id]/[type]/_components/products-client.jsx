@@ -56,6 +56,7 @@ export default function ProductsClient({
   initialTotalPages,
   typeName,
   coreCategory,
+  occasionTags,
   subFilters,
 }) {
   const [filters, setFilters] = useState({
@@ -101,7 +102,9 @@ export default function ProductsClient({
       page: String(currentPage),
       limit: String(LIMIT),
     });
-    if (coreCategory && activeFilter === "all") {
+    if (occasionTags?.length) {
+      params.set("occasionTags", occasionTags.join(","));
+    } else if (coreCategory && activeFilter === "all") {
       params.set("coreCategory", coreCategory);
     } else {
       params.set("subcategory", activeFilter !== "all" ? activeFilter : typeName);
@@ -134,6 +137,7 @@ export default function ProductsClient({
     filters,
     typeName,
     coreCategory,
+    occasionTags,
     isDefault,
     activeFilter,
     currentPage,
