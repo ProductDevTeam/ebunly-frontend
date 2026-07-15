@@ -7,10 +7,20 @@ import { AnimatePresence, motion } from "framer-motion";
 
 import FavoriteButton from "@/components/common/favorite-button";
 import { useWishlist } from "@/hooks/use-wishlist";
+import { useCart, toCartProduct } from "@/hooks/use-cart";
+import { useNotification } from "@/components/common/notification-provider";
 
 export default function ProductCard({ product }) {
   const [isActive, setIsActive] = useState(false);
   const { toggle: toggleFavorite } = useWishlist();
+  const { addItem } = useCart();
+  const { success: notifySuccess } = useNotification();
+
+  const handleAddToCart = () => {
+    addItem(toCartProduct(product), 1, {}, null);
+    notifySuccess(`${product.name} added to your cart.`, "Added to cart");
+    setIsActive(false);
+  };
 
   return (
     <div>
@@ -75,6 +85,10 @@ export default function ProductCard({ product }) {
                 animate={{ y: 0 }}
                 exit={{ y: "100%" }}
                 transition={{ duration: 0.22, ease: [0.4, 0, 0.2, 1] }}
+                onClick={(e) => {
+                  e.preventDefault();
+                  handleAddToCart();
+                }}
                 className="w-full bg-[#F85826] text-white text-[13px] font-semibold py-2.5"
               >
                 Add to cart

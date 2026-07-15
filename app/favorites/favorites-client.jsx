@@ -6,20 +6,8 @@ import { Plus, Heart } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
 import { useWishlist } from "@/hooks/use-wishlist";
-import { useCart } from "@/hooks/use-cart";
+import { useCart, toCartProduct } from "@/hooks/use-cart";
 import { useNotification } from "@/components/common/notification-provider";
-
-function toCartProduct(item) {
-  return {
-    _id: item.id,
-    name: item.name,
-    basePrice: item.price,
-    images: [item.image],
-    slug: item.slug,
-    minQuantity: 1,
-    maxQuantity: 1000,
-  };
-}
 
 function FavoriteCard({ item, onAddToCart, onRemove }) {
   return (

@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense, useState, useCallback, useEffect } from "react";
+import { Suspense, useState, useCallback } from "react";
 import { useSearchParams } from "next/navigation";
 import FilterBar from "@/components/shared/dashboard/filterbar";
 import ProductGrid from "@/components/shared/dashboard/product-grid";
@@ -13,6 +13,7 @@ const DEFAULT_FILTERS = {
   category: "",
   search: "",
   occasions: [],
+  recipients: [],
   giftTypes: [],
   minPrice: undefined,
   maxPrice: undefined,
@@ -23,21 +24,45 @@ const DEFAULT_FILTERS = {
   limit: 12,
 };
 
+// Build the initial filter set from the URL, so links like
+// /discover?recipients=Women or /discover?maxPrice=3000 land pre-filtered.
+function filtersFromSearchParams(searchParams) {
+  const num = (key) => {
+    const raw = searchParams.get(key);
+    return raw !== null && raw !== "" && !isNaN(Number(raw))
+      ? Number(raw)
+      : undefined;
+  };
+
+  return {
+    ...DEFAULT_FILTERS,
+    category: searchParams.get("category") ?? "",
+    search: searchParams.get("search") ?? "",
+    occasions: searchParams.getAll("occasions"),
+    recipients: searchParams.getAll("recipients"),
+    giftTypes: searchParams.getAll("giftTypes"),
+    minPrice: num("minPrice"),
+    maxPrice: num("maxPrice"),
+  };
+}
+
 function DiscoverInner() {
   const searchParams = useSearchParams();
-  const urlSearch = searchParams.get("search") ?? "";
+  // Stable key so we re-sync only when the query string really changes.
+  const urlKey = searchParams.toString();
 
-  const [filters, setFilters] = useState({
-    ...DEFAULT_FILTERS,
-    search: urlSearch,
-  });
+  const [filters, setFilters] = useState(() =>
+    filtersFromSearchParams(searchParams),
+  );
   const [restoredFilters, setRestoredFilters] = useState(null);
 
-  useEffect(() => {
-    if (urlSearch) {
-      setFilters((prev) => ({ ...prev, search: urlSearch, page: 1 }));
-    }
-  }, [urlSearch]);
+  // Re-sync filters when the URL changes (set during render, not in an effect,
+  // to avoid cascading renders).
+  const [seenUrlKey, setSeenUrlKey] = useState(urlKey);
+  if (urlKey !== seenUrlKey) {
+    setSeenUrlKey(urlKey);
+    setFilters(filtersFromSearchParams(new URLSearchParams(urlKey)));
+  }
 
   const { saveToHistory } = useSearchHistory();
   const { data, isLoading, isError, error } = useProducts(filters);

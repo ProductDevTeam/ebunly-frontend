@@ -5,7 +5,6 @@ import Link from "next/link";
 import { Loader2, ShoppingBag } from "lucide-react";
 
 import { useOrders, useCancelOrder, groupOrdersByYear } from "@/hooks/use-orders";
-import { MOCK_ORDERS } from "@/lib/mock-orders";
 import { useNotification } from "@/components/common/notification-provider";
 
 function statusColor(status) {
@@ -89,8 +88,7 @@ export default function OrdersClient() {
         notifyError(err.message || "Could not cancel order.", "Error"),
     });
 
-  // Fall back to mock data only when the API returns nothing yet.
-  const orders = data && data.length > 0 ? data : !isLoading ? MOCK_ORDERS : [];
+  const orders = data ?? [];
   const grouped = groupOrdersByYear(orders);
 
   return (
