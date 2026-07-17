@@ -1,4 +1,5 @@
 import Image from "next/image";
+import Link from "next/link";
 
 const HeroSection = () => {
   return (
@@ -23,9 +24,12 @@ const HeroSection = () => {
             beautifully wrapped and <br className="block md:hidden" /> ready to
             send.
           </p>
-          <button className="hero-animate-cta w-fit self-center md:self-start bg-[#F85826] text-white px-7 py-3 md:px-6.5 rounded-full font-semibold text-[15px] md:text-base shadow-md hover:shadow-lg hover:scale-[1.04] active:scale-[0.96] transition-all font-sans cursor-pointer">
+          <Link
+            href="/discover?recipients=Women"
+            className="hero-animate-cta w-fit self-center md:self-start bg-[#F85826] text-white px-7 py-3 md:px-6.5 rounded-full font-semibold text-[15px] md:text-base shadow-md hover:shadow-lg hover:scale-[1.04] active:scale-[0.96] transition-all font-sans cursor-pointer"
+          >
             Shop for her
-          </button>
+          </Link>
         </div>
 
         {/* Image block */}

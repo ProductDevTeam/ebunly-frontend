@@ -7,6 +7,8 @@ import { useRef, useState } from "react";
 
 import FavoriteButton from "@/components/common/favorite-button";
 import { useWishlist } from "@/hooks/use-wishlist";
+import { useCart, toCartProduct } from "@/hooks/use-cart";
+import { useNotification } from "@/components/common/notification-provider";
 
 const SKELETON_COUNT = 5;
 
@@ -22,6 +24,14 @@ const PerfectForYouSection = ({ products = [] }) => {
   const scrollRef = useRef(null);
   const [activeCard, setActiveCard] = useState(null);
   const { toggle: toggleFavorite } = useWishlist();
+  const { addItem } = useCart();
+  const { success: notifySuccess } = useNotification();
+
+  const handleAddToCart = (product) => {
+    addItem(toCartProduct(product), 1, {}, null);
+    notifySuccess(`${product.name} added to your cart.`, "Added to cart");
+    setActiveCard(null);
+  };
 
   const scroll = (dir) => {
     const el = scrollRef.current;
@@ -187,6 +197,10 @@ const PerfectForYouSection = ({ products = [] }) => {
                               transition={{
                                 duration: 0.24,
                                 ease: [0.4, 0, 0.2, 1],
+                              }}
+                              onClick={(e) => {
+                                e.preventDefault();
+                                handleAddToCart(product);
                               }}
                               className="w-full bg-[#F85826] text-white text-[14px] font-semibold py-3"
                             >

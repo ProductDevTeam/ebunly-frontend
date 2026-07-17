@@ -15,6 +15,27 @@ import {
 
 export const cartKeys = { all: ["cart"] };
 
+/**
+ * Normalise any product-ish shape (card item `{id,name,price,image}` or a full
+ * API product `{_id,name,basePrice,images}`) into what the cart expects.
+ */
+export function toCartProduct(p) {
+  if (!p) return null;
+  const id = p._id ?? p.id;
+  const images = p.images ?? (p.image ? [p.image] : []);
+  return {
+    _id: id,
+    name: p.name,
+    basePrice: p.basePrice ?? p.price ?? 0,
+    compareAtPrice: p.compareAtPrice,
+    images,
+    slug: p.slug ?? id,
+    minQuantity: p.minQuantity ?? 1,
+    maxQuantity: p.maxQuantity ?? 1000,
+    estimatedDeliveryDays: p.estimatedDeliveryDays,
+  };
+}
+
 // ── Mapping between the local store shape and the Swagger shape ─────────────
 function toServerVariants(variants) {
   return Object.entries(variants ?? {})

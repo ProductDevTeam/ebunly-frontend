@@ -1,33 +1,35 @@
 import Link from "next/link";
 import Image from "next/image";
 
+// `budget=` was never read by /discover — the products API filters on
+// minPrice / maxPrice, which /discover now hydrates from the URL.
 const budgets = [
   {
     id: 1,
     amount: "₦3K",
     label: "& under",
-    href: "/discover?budget=3000",
+    href: "/discover?maxPrice=3000",
     dark: false,
   },
   {
     id: 2,
     amount: "₦5K",
     label: "& under",
-    href: "/discover?budget=5000",
+    href: "/discover?maxPrice=5000",
     dark: false,
   },
   {
     id: 3,
     amount: "₦10K",
     label: "& under",
-    href: "/discover?budget=10000",
+    href: "/discover?maxPrice=10000",
     dark: false,
   },
   {
     id: 4,
     amount: "₦10K+",
     label: "& above",
-    href: "/discover?budget=10000plus",
+    href: "/discover?minPrice=10000",
     dark: true,
   },
 ];

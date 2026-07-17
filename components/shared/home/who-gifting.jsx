@@ -1,26 +1,28 @@
 import Link from "next/link";
 import Image from "next/image";
 
+// There are no `for-her`/`for-him`… categories — recipients are a product
+// filter (`recipients=` on GET /products), so these link into /discover.
 const recipients = [
   {
     id: 1,
     label: "For Her",
     sub: "Jewellery, Beauty & More",
-    href: "/shop/categories/for-her",
+    href: "/discover?recipients=Women",
     image: "/categories/for-her.jpg",
   },
   {
     id: 2,
     label: "For Him",
     sub: "Stylish & Thoughtful",
-    href: "/shop/categories/for-him",
+    href: "/discover?recipients=Men",
     image: "/categories/for-him.jpg",
   },
   {
     id: 3,
     label: "For Couples",
     sub: "Gifts they'll both love",
-    href: "/shop/categories/for-couples",
+    href: "/discover?recipients=Couples",
     image: "/categories/for-couples.jpg",
     mobileBtn: true,
     mobileBtnImage: "/categories/couples.png",
@@ -29,7 +31,7 @@ const recipients = [
     id: 4,
     label: "For Babies",
     sub: "Newborn to Toddler",
-    href: "/shop/categories/for-babies",
+    href: "/discover?recipients=Babies",
     image: "/categories/for-babies.jpg",
     mobileBtn: true,
     mobileBtnImage: "/categories/babies.png",

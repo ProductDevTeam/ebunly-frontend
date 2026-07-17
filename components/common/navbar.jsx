@@ -18,6 +18,69 @@ function accountInitials(name) {
   return (parts[0][0] + (parts[1]?.[0] ?? "")).toUpperCase();
 }
 
+/** Shared account dropdown — rendered on both desktop and mobile. */
+function AccountDropdown({ fullName, avatarUrl, onClose, onLogout }) {
+  return (
+    <>
+      <div className="fixed inset-0 z-10" onClick={onClose} />
+      <div className="absolute right-0 top-full mt-2 z-20 w-64 bg-white border border-gray-100 rounded-2xl shadow-xl overflow-hidden py-1.5">
+        {/* Profile header */}
+        <Link
+          href="/profile"
+          onClick={onClose}
+          className="flex items-center gap-3 px-4 py-3 hover:bg-gray-50 transition-colors"
+        >
+          <span className="relative w-10 h-10 rounded-full overflow-hidden bg-[#E4D8F7] flex items-center justify-center shrink-0">
+            {avatarUrl ? (
+              <Image
+                src={avatarUrl}
+                alt=""
+                fill
+                unoptimized
+                className="object-cover"
+              />
+            ) : (
+              <span className="text-sm font-semibold text-[#7C5DB0]">
+                {accountInitials(fullName)}
+              </span>
+            )}
+          </span>
+          <span className="min-w-0">
+            <span className="block text-sm font-bold text-gray-900 truncate">
+              {fullName}
+            </span>
+            <span className="block text-xs text-gray-500">
+              View your profile
+            </span>
+          </span>
+        </Link>
+
+        <div className="h-px bg-gray-100 my-1" />
+
+        <Link
+          href="/profile/orders"
+          onClick={onClose}
+          className="flex items-center gap-3 px-4 py-2.5 text-[15px] text-gray-800 hover:bg-gray-50 transition-colors"
+        >
+          <span className="w-9 h-9 rounded-full bg-[#FFF1EC] shrink-0" />
+          My orders
+        </Link>
+
+        <button
+          onClick={() => {
+            onClose();
+            onLogout();
+          }}
+          className="w-full flex items-center gap-3 px-4 py-2.5 text-[15px] text-gray-800 hover:bg-gray-50 transition-colors text-left"
+        >
+          <span className="w-9 h-9 rounded-full bg-[#FFF1EC] shrink-0" />
+          Sign out
+        </button>
+      </div>
+    </>
+  );
+}
+
 const FALLBACK_CATEGORIES = [
   { id: "fashion-accessories", label: "Fashion & Accessories" },
   { id: "beauty-self-care", label: "Beauty & Self Care" },
@@ -167,68 +230,12 @@ export default function Navbar({
                 </button>
 
                 {accountOpen && (
-                  <>
-                    <div
-                      className="fixed inset-0 z-10"
-                      onClick={() => setAccountOpen(false)}
-                    />
-                    <div className="absolute right-0 top-full mt-2 z-20 w-64 bg-white border border-gray-100 rounded-2xl shadow-xl overflow-hidden py-1.5">
-                      {/* Profile header */}
-                      <Link
-                        href="/profile"
-                        onClick={() => setAccountOpen(false)}
-                        className="flex items-center gap-3 px-4 py-3 hover:bg-gray-50 transition-colors"
-                      >
-                        <span className="relative w-10 h-10 rounded-full overflow-hidden bg-[#E4D8F7] flex items-center justify-center shrink-0">
-                          {avatarUrl ? (
-                            <Image
-                              src={avatarUrl}
-                              alt=""
-                              fill
-                              unoptimized
-                              className="object-cover"
-                            />
-                          ) : (
-                            <span className="text-sm font-semibold text-[#7C5DB0]">
-                              {accountInitials(fullName)}
-                            </span>
-                          )}
-                        </span>
-                        <span className="min-w-0">
-                          <span className="block text-sm font-bold text-gray-900 truncate">
-                            {fullName}
-                          </span>
-                          <span className="block text-xs text-gray-500">
-                            View your profile
-                          </span>
-                        </span>
-                      </Link>
-
-                      <div className="h-px bg-gray-100 my-1" />
-
-                      {/* My orders */}
-                      <Link
-                        href="/profile/orders"
-                        onClick={() => setAccountOpen(false)}
-                        className="flex items-center gap-3 px-4 py-2.5 text-[15px] text-gray-800 hover:bg-gray-50 transition-colors"
-                      >
-                        <span className="w-9 h-9 rounded-full bg-[#FFF1EC] shrink-0" />
-                        My orders
-                      </Link>
-
-                      {/* Sign out */}
-                      <button
-                        onClick={() => {
-                          setAccountOpen(false);
-                          logout();
-                        }}
-                        className="w-full flex items-center gap-3 px-4 py-2.5 text-[15px] text-gray-800 hover:bg-gray-50 transition-colors text-left"
-                      >
-                        <span className="w-9 h-9 rounded-full bg-[#FFF1EC] shrink-0" />
-                        Sign out
-                      </button>
-                    </div>
-                  </>
+                  <AccountDropdown
+                    fullName={fullName}
+                    avatarUrl={avatarUrl}
+                    onClose={() => setAccountOpen(false)}
+                    onLogout={logout}
+                  />
                 )}
               </div>
             ) : (
@@ -313,18 +320,41 @@ export default function Navbar({
                 </span>
               )}
             </Link>
-            <Link
-              href={loggedInUser ? "/profile" : "/login"}
-              className="p-1.5"
-              aria-label={loggedInUser ? displayName : "Sign in"}
-            >
-              <Image
-                src="/icons/profile.svg"
-                width={24}
-                height={24}
-                alt="Profile"
-              />
-            </Link>
+            {loggedInUser ? (
+              <div className="relative">
+                <button
+                  onClick={() => setAccountOpen((o) => !o)}
+                  className="p-1.5 flex items-center"
+                  aria-label={displayName}
+                  aria-expanded={accountOpen}
+                >
+                  <Image
+                    src="/icons/profile.svg"
+                    width={24}
+                    height={24}
+                    alt="Profile"
+                  />
+                </button>
+
+                {accountOpen && (
+                  <AccountDropdown
+                    fullName={fullName}
+                    avatarUrl={avatarUrl}
+                    onClose={() => setAccountOpen(false)}
+                    onLogout={logout}
+                  />
+                )}
+              </div>
+            ) : (
+              <Link href="/login" className="p-1.5" aria-label="Sign in">
+                <Image
+                  src="/icons/profile.svg"
+                  width={24}
+                  height={24}
+                  alt="Profile"
+                />
+              </Link>
+            )}
           </div>
         </div>
 
