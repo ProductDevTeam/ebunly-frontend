@@ -13,6 +13,13 @@
 # testing
 /coverage
 
+# figma replication screenshots (shoot.mjs fallback output dir)
+/.screenshots/
+
+# designer's Figma exports — local only; design/STATUS.md tracks them and IS committed
+/design/screenshots/*
+!/design/screenshots/.gitkeep
+
 # next.js
 /.next/
 /out/
@@ -46,3 +53,9 @@ next-env.d.ts
 /products.js
 apiFilteringDocs.md
 README.md
+# ...but the bare pattern above matches at any depth, so re-include this one:
+!design/README.md
+.claude/commands/figma.md
+.claude/skills/figma-replicate/SKILL.md
+.gitignore
+.gitignore

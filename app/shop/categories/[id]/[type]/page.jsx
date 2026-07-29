@@ -68,27 +68,28 @@ export default async function TypePage({ params }) {
     "Discover carefully curated products for every style and budget.";
 
   return (
-    <div className="min-h-screen font-sans bg-white">
+    <div className="min-h-screen font-sans bg-[#FDFBF9]">
       <ScrollReveal />
 
-      {/* ── Gradient hero area ───────────────────────────── */}
-      <div
-        style={{
-          background: "linear-gradient(180deg, #EEE5F3 0%, #FFFFFF 100%)",
-        }}
-      >
-        <NavbarServer />
+      {/* Hero: the desktop export carries the lilac gradient, the mobile one is
+          flat #FDFBF9 — so the gradient is applied from md up only. */}
+      <div className="bg-[#FDFBF9] md:bg-[linear-gradient(180deg,#EEE5F3_0%,#FDFBF9_100%)]">
+        <NavbarServer showMobileSearch={false} />
 
-        <div className="relative max-w-7xl mx-auto">
+        <div className="relative w-full max-w-[1200px] mx-auto px-4 xl:px-0">
           {/* Decorative star left */}
-          <div className="hidden md:block absolute left-[8%] top-[30%] z-10 pointer-events-none">
+          <div className="hidden md:block absolute left-[6%] top-[30%] z-10 pointer-events-none">
             <Image src="/star.svg" width={28} height={28} alt="" />
           </div>
 
           {/* Breadcrumb */}
           <nav
-            className="flex flex-wrap items-center justify-center gap-x-1.5 gap-y-1 pt-6 px-4 md:px-6 font-sans font-normal text-[12px] md:text-[12px] text-[#0C0000]"
-            style={{ lineHeight: "140%", letterSpacing: "-0.01em" }}
+            className="flex flex-wrap items-center gap-x-1.5 gap-y-1 pt-6 text-[12px] md:justify-center"
+            style={{
+              lineHeight: "140%",
+              letterSpacing: "-0.01em",
+              color: "#6E6659",
+            }}
           >
             <Link href="/" className="transition-colors hover:text-primary">
               Home
@@ -105,23 +106,27 @@ export default async function TypePage({ params }) {
           </nav>
 
           {/* Title + description */}
-          <div className="text-center pt-4 pb-8 md:pb-12 px-4 md:px-6">
+          <div className="pt-3 pb-7 md:pt-4 md:pb-10 md:text-center">
             <h1
-              className="font-semibold font-sans text-[#0C0000] text-[22px] md:text-[32px]"
-              style={{ lineHeight: "96%", letterSpacing: "-0.05em" }}
+              className="font-semibold font-sans text-[#24201C] text-[24px] md:text-[32px]"
+              style={{ lineHeight: "110%", letterSpacing: "-0.03em" }}
             >
               {typeLabel}
             </h1>
             <p
-              className="font-sans font-normal text-[#0C0000] text-[14px] md:text-[16px] mt-4 max-w-110 mx-auto"
-              style={{ lineHeight: "140%", letterSpacing: "-0.01em" }}
+              className="mt-2 md:mt-3 text-[15px] md:text-[16px] md:max-w-[440px] md:mx-auto"
+              style={{
+                lineHeight: "140%",
+                letterSpacing: "-0.01em",
+                color: "#6E6659",
+              }}
             >
               {description}
             </p>
           </div>
 
           {/* Decorative star right */}
-          <div className="hidden md:block absolute right-[15%] top-[55%] z-10 pointer-events-none">
+          <div className="hidden md:block absolute right-[12%] top-[55%] z-10 pointer-events-none">
             <Image
               src="/star.svg"
               width={48}

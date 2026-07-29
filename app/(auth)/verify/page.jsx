@@ -5,17 +5,22 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import { useVerifyCode } from "@/hooks/use-auth";
+import { useAuthStore } from "@/hooks/use-auth-store";
+import { hasAuthToken } from "@/hooks/use-profile";
 import { useNotification } from "@/components/common/notification-provider";
 import { AuthButton, BackButton } from "@/components/common/auth/input";
 
 const CODE_LENGTH = 6;
 const RESEND_SECONDS = 20;
 
+const extractUser = (data) => data?.data?.user ?? data?.user ?? null;
+
 function EnterCodeContent() {
   const router = useRouter();
 
   const { mutate: verifyCode, isPending } = useVerifyCode();
   const { error: notifyError } = useNotification();
+  const setUser = useAuthStore((s) => s.setUser);
 
   const [email, setEmail] = useState("");
   const [digits, setDigits] = useState(Array(CODE_LENGTH).fill(""));
@@ -106,9 +111,16 @@ function EnterCodeContent() {
     verifyCode(
       { email, otp: code },
       {
-        onSuccess: () => {
+        onSuccess: (data) => {
           sessionStorage.removeItem("verify_email");
-          router.push("/");
+
+          const user = extractUser(data);
+          if (user) setUser(user);
+
+          // `persistAuthToken` has already run at this point. If verification
+          // didn't hand back a token there is no session to land on, so send
+          // them to sign in rather than to a homepage that looks logged out.
+          router.push(hasAuthToken() ? "/" : "/login");
         },
         onError: (err) => {
           notifyError(

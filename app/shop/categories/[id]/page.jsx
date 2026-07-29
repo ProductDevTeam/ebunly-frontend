@@ -8,6 +8,7 @@ import CategoryGridSkeleton from "./_components/category-grid-skeleton";
 import ProductsSkeleton from "@/app/shop/categories/[id]/[type]/_components/products-skeleton";
 import { getCategoryBySlug, getSubcategoriesBySlug } from "@/lib/api/categories";
 import CategoryProductsFetcher from "./_components/category-products-fetcher";
+import { HERO_GRADIENT } from "./_components/hero-gradient";
 import Image from "next/image";
 
 export async function generateMetadata({ params }) {
@@ -71,11 +72,7 @@ export default async function CategoryPage({ params }) {
       <ScrollReveal />
 
       {/* ── Gradient hero area ───────────────────────────── */}
-      <div
-        style={{
-          background: "linear-gradient(180deg, #EEE5F3 0%, #FFFFFF 100%)",
-        }}
-      >
+      <div style={{ background: HERO_GRADIENT }}>
         <NavbarServer />
 
         <div className="relative max-w-7xl mx-auto mt-5">

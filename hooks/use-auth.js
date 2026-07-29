@@ -182,5 +182,8 @@ export function useForgotPassword() {
   return useMutation({ mutationFn: forgotPasswordApi });
 }
 export function useVerifyCode() {
-  return useMutation({ mutationFn: verifyCodeApi });
+  // Verifying an email logs the user in when the API returns a token. Without
+  // this the new account lands on the homepage with no `token` cookie, so the
+  // navbar renders the logged-out state and the account icon goes to /login.
+  return useMutation({ mutationFn: verifyCodeApi, onSuccess: persistAuthToken });
 }

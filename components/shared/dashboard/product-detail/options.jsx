@@ -1,83 +1,73 @@
 "use client";
 
-import { ChevronDown } from "lucide-react";
+/*
+ * Variation groups (LENGTH, COLOR, …) — uppercase label over a pill row.
+ * Selected pills use the peach treatment; quantity now sits beside Add to Cart.
+ */
+const PEACH = "#FAECE7";
+const PEACH_BORDER = "#993C1D";
+const PEACH_INK = "#712B13";
+const HAIRLINE = "#EBE5E0";
+const INK = "#24201C";
+/* The uppercase micro-labels are a colder grey than body muted text. */
+const LABEL = "#707070";
 
 export default function ProductOptions({
   product,
   selectedOptions,
   onOptionChange,
 }) {
-  // Generate quantity options based on min/max (with safe fallbacks)
-  const minQuantity = product.minQuantity ?? 1;
-  const maxQuantity = product.maxQuantity ?? minQuantity;
-  const quantityCount = Math.max(
-    1,
-    Math.min(maxQuantity - minQuantity + 1, 10),
-  );
-  const quantityOptions = Array.from(
-    { length: quantityCount },
-    (_, i) => i + minQuantity,
-  );
+  const variants = product.variants?.filter((v) => v.options?.length > 0) ?? [];
 
-  const cardClass =
-    "flex items-center justify-between rounded-2xl bg-white px-5 py-4";
-  const selectClass =
-    "appearance-none bg-transparent pr-6 text-base font-semibold text-gray-900 text-right cursor-pointer focus:outline-none";
+  if (variants.length === 0) return null;
 
   return (
-    <div className="space-y-3">
-      {/* Quantity */}
-      <div className={cardClass}>
-        <span className="text-base text-gray-500">Quantity</span>
-        <div className="relative flex items-center">
-          <select
-            value={selectedOptions.quantity}
-            onChange={(e) => onOptionChange("quantity", Number(e.target.value))}
-            className={selectClass}
-          >
-            {quantityOptions.map((qty) => (
-              <option key={qty} value={qty}>
-                {qty}
-              </option>
-            ))}
-          </select>
-          <ChevronDown
-            className="pointer-events-none absolute right-0 h-4 w-4 text-gray-900"
-            strokeWidth={3}
-          />
-        </div>
-      </div>
+    <div className="space-y-4">
+      {variants.map((variant) => {
+        const key = variant.name.toLowerCase();
+        const current = selectedOptions[key] ?? variant.options[0];
 
-      {/* Dynamic Variants (editable options only) */}
-      {product.variants
-        ?.filter((variant) => variant.options?.length > 0)
-        .map((variant) => (
-          <div key={variant.name} className={cardClass}>
-            <span className="text-base text-gray-500">{variant.name}</span>
-            <div className="relative flex items-center">
-              <select
-                value={
-                  selectedOptions[variant.name.toLowerCase()] ||
-                  variant.options[0]
-                }
-                onChange={(e) =>
-                  onOptionChange(variant.name.toLowerCase(), e.target.value)
-                }
-                className={selectClass}
-              >
-                {variant.options.map((option) => (
-                  <option key={option} value={option}>
+        return (
+          <div key={variant.name}>
+            <p
+              className="text-[11px] font-medium tracking-[0.04em]"
+              style={{ color: LABEL }}
+            >
+              {variant.name.toUpperCase()}
+            </p>
+
+            <div className="mt-2 flex flex-wrap gap-2">
+              {variant.options.map((option) => {
+                const active = option === current;
+                return (
+                  <button
+                    key={option}
+                    type="button"
+                    onClick={() => onOptionChange(key, option)}
+                    aria-pressed={active}
+                    className="h-8 rounded-full border px-3 text-[12px] transition-colors"
+                    style={
+                      active
+                        ? {
+                            backgroundColor: PEACH,
+                            borderColor: PEACH_BORDER,
+                            color: PEACH_INK,
+                          }
+                        : {
+                            backgroundColor: "#FFFFFF",
+                            borderColor: HAIRLINE,
+                            color: INK,
+                          }
+                    }
+                  >
                     {option}
-                  </option>
-                ))}
-              </select>
-              <ChevronDown
-                className="pointer-events-none absolute right-0 h-4 w-4 text-gray-900"
-                strokeWidth={3}
-              />
+                  </button>
+                );
+              })}
             </div>
           </div>
-        ))}
+        );
+      })}
     </div>
   );
 }

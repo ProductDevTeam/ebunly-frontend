@@ -1,6 +1,6 @@
 import NavbarServer from "@/components/common/navbar-server";
 import Footer from "@/components/common/footer";
-import ProfileClient from "@/app/profile/profile-client";
+import ProfileEntryClient from "@/app/profile/profile-entry-client";
 
 export const metadata = {
   title: "UI Test · Profile | Ebunly",
@@ -22,9 +22,9 @@ const MOCK_USER = {
 
 export default function ProfileUiTestPage() {
   return (
-    <div className="min-h-screen font-sans bg-white">
+    <div className="min-h-screen font-sans bg-[#FDFBF9]">
       <NavbarServer showMobileSearch={false} />
-      <ProfileClient mockUser={MOCK_USER} />
+      <ProfileEntryClient mockUser={MOCK_USER} />
       <Footer />
     </div>
   );

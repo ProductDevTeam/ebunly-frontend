@@ -50,7 +50,7 @@ function FavoriteCard({ item, onAddToCart, onRemove }) {
           className="p-1.5 shrink-0"
           aria-label={`Remove ${item.name} from favorites`}
         >
-          <Heart className="w-5.5 h-5.5 text-[#F85826] fill-[#F85826]" />
+          <Heart className="w-5.5 h-5.5 text-[#D85A30] fill-[#D85A30]" />
         </button>
       </div>
     </motion.div>
@@ -98,7 +98,7 @@ export default function FavoritesClient() {
       ) : items.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-20 text-center">
           <div className="w-20 h-20 bg-[#FFF1EC] rounded-full flex items-center justify-center mb-4">
-            <Heart className="w-9 h-9 text-[#F85826]" />
+            <Heart className="w-9 h-9 text-[#D85A30]" />
           </div>
           <h2 className="text-xl font-bold text-gray-900 mb-1">
             No favorites yet

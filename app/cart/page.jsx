@@ -8,7 +8,7 @@ export const metadata = {
 
 export default function CartPage() {
   return (
-    <div className="min-h-screen font-sans bg-gray-50">
+    <div className="min-h-screen font-sans bg-[#FDFBF9]">
       <NavbarServer showMobileSearch={false} />
       <CartClient />
       <Footer />

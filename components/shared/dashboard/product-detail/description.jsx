@@ -12,8 +12,8 @@ export default function ProductDescription({ description }) {
   const shouldTruncate = description.length > maxLength;
 
   return (
-    <div className=" py-1">
-      <div className="text-sm text-gray-700 leading-relaxed">
+    <div>
+      <div className="text-[13px] leading-[150%] text-[#24201C]">
         <AnimatePresence mode="wait">
           {isExpanded || !shouldTruncate ? (
             <motion.p
@@ -41,7 +41,7 @@ export default function ProductDescription({ description }) {
         {shouldTruncate && (
           <button
             onClick={() => setIsExpanded(!isExpanded)}
-            className="text-[#F85826] bg-[#FFF7F5] rounded-3xl font-medium mt-2 py-2 px-3 inline-flex items-center"
+            className="mt-3 inline-flex h-9 items-center rounded-full bg-[#FAECE7] px-4 text-[13px] font-medium text-[#D85A30]"
           >
             {isExpanded ? "Read Less" : "Read More"}
           </button>

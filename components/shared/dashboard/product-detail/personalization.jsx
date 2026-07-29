@@ -1,153 +1,158 @@
 "use client";
 
-import { motion } from "framer-motion";
-import { Plus } from "lucide-react";
+import { useState } from "react";
 
-// Temporary mock personalization types + colors until the backend provides them.
-const DEFAULT_TYPES = [
-  { name: "Engraving", extraPrice: 2500 },
-  { name: "Embroidery", extraPrice: 3500 },
-];
-const DEFAULT_COLORS = ["Black", "White", "Gold", "Silver", "Rose Gold"];
-
-const EMPTY = {
-  enabled: false,
-  type: null,
-  extraPrice: 0,
-  text: "",
-  textColor: "Black",
-};
-
-/**
- * Personalization — three states driven purely by the `value` object:
- *   A. closed        (!enabled)                → "Add Personalization"
- *   B. choosing type (enabled && !type)        → list of types + "Select"
- *   C. summary/edit  (enabled && type)         → inline-editable Text / Text Color / Type
+/*
+ * ADD PERSONALIZATION — the four states specced in
+ * `design screenshots/Components - Personalization Feature Key Info.png`:
+ *
+ *   1. idle       no type picked        → label + type pills only
+ *   2. empty      type picked, no text  → pills + input + helper + Confirm (disabled)
+ *   3. filled     type picked, text     → input border goes brand, Confirm enabled
+ *   4. confirmed  confirmed             → `Engraving: "…"` summary + Edit
+ *
+ * Active type pills are solid #D85A30 with white text — unlike variation and
+ * add-on pills, which use the peach treatment. They are also the one pill in
+ * the system that is a rounded rect (36px tall, 8px radius) rather than a
+ * capsule; both the sheet and the product page draw them that way.
+ *
+ * Fields here are borderless white on the card's own surface, and take a brand
+ * border once they carry a value or focus — the sheet draws the same rule for
+ * the wishlist name field.
  */
+const BRAND = "#D85A30";
+const HAIRLINE = "#EBE5E0";
+const INK = "#24201C";
+const MUTED = "#6E6659";
+/* The uppercase micro-labels are a colder grey than body muted text. */
+const LABEL = "#707070";
+
+const DEFAULT_TYPES = [
+  { name: "Engraving", extraDays: 2 },
+  { name: "Print-on", extraDays: 0 },
+  { name: "Sticker", extraDays: 0 },
+];
+
 export default function ProductPersonalization({
-  value = EMPTY,
-  onChange,
   types = DEFAULT_TYPES,
-  colors = DEFAULT_COLORS,
+  value,
+  onChange,
 }) {
-  const set = (patch) => onChange?.({ ...value, ...patch });
+  const { type = null, text = "", confirmed = false } = value ?? {};
+  const [draft, setDraft] = useState(text);
 
-  // ── A. Closed ──────────────────────────────────────────────────────────────
-  if (!value.enabled) {
+  const set = (patch) => onChange?.({ type, text, confirmed, ...patch });
+
+  const selected = types.find((t) => t.name === type) ?? null;
+  const canConfirm = draft.trim().length > 0;
+
+  // ── 4. Confirmed summary ─────────────────────────────────────────────────
+  if (confirmed && type) {
     return (
-      <button
-        type="button"
-        onClick={() => onChange?.({ ...EMPTY, enabled: true })}
-        className="mt-3 w-full px-5 py-4 flex items-center justify-center gap-2 rounded-2xl bg-[#F5F5F5] text-gray-900 hover:bg-gray-100 transition-colors"
-      >
-        <Plus className="w-4 h-4" />
-        <span className="text-base font-semibold">Add Personalization</span>
-      </button>
-    );
-  }
-
-  const remove = () => onChange?.({ ...EMPTY });
-
-  // ── B. Choosing a type ──────────────────────────────────────────────────────
-  if (!value.type) {
-    return (
-      <motion.div
-        initial={{ opacity: 0, y: 6 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="mt-3 rounded-2xl border border-gray-200 overflow-hidden"
-      >
-        <button
-          type="button"
-          onClick={remove}
-          className="w-full text-center py-3.5 text-base font-semibold text-gray-900"
+      <section className="rounded-xl border p-4" style={{ borderColor: HAIRLINE }}>
+        <p
+          className="text-[11px] font-medium tracking-[0.04em]"
+          style={{ color: LABEL }}
         >
-          – Remove Personalization
-        </button>
+          ADD PERSONALIZATION
+        </p>
 
-        <div className="divide-y divide-gray-100 border-t border-gray-100">
-          {types.map((t) => (
-            <div
-              key={t.name}
-              className="flex items-center justify-between gap-3 px-5 py-4"
-            >
-              <div className="min-w-0">
-                <p className="text-base text-gray-900">{t.name}</p>
-                <p className="text-[13px] text-gray-400 mt-0.5">
-                  Incurs an extra ₦{t.extraPrice.toLocaleString()}
-                </p>
-              </div>
-              <button
-                type="button"
-                onClick={() => set({ type: t.name, extraPrice: t.extraPrice })}
-                className="shrink-0 rounded-full bg-[#FFF1EC] text-[#F85826] text-sm font-semibold px-5 py-2 hover:bg-[#FFE7DF] transition-colors"
-              >
-                Select
-              </button>
-            </div>
-          ))}
+        <div className="mt-3 flex items-center gap-2.5">
+          <span
+            className="h-4 w-4 shrink-0 rounded-full"
+            style={{ backgroundColor: "#D9D9D9" }}
+          />
+          <p className="min-w-0 flex-1 truncate text-[13px]" style={{ color: INK }}>
+            {type}: &ldquo;{text}&rdquo;
+          </p>
+          <button
+            type="button"
+            onClick={() => {
+              setDraft(text);
+              set({ confirmed: false });
+            }}
+            className="shrink-0 text-[13px]"
+            style={{ color: BRAND }}
+          >
+            Edit
+          </button>
         </div>
-      </motion.div>
+      </section>
     );
   }
-
-  // ── C. Summary / inline edit ────────────────────────────────────────────────
-  const rowClass =
-    "flex items-center justify-between gap-3 py-4 border-b border-gray-100";
-  const valueInputClass =
-    "min-w-0 flex-1 text-right bg-transparent text-base text-gray-900 placeholder:text-gray-300 focus:outline-none";
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 6 }}
-      animate={{ opacity: 1, y: 0 }}
-      className="mt-3"
-    >
-      <h3 className="text-xl font-bold text-gray-900 mb-1">Personalization</h3>
+    <section className="rounded-xl border p-4" style={{ borderColor: HAIRLINE }}>
+      <p
+        className="text-[11px] font-medium tracking-[0.04em]"
+        style={{ color: LABEL }}
+      >
+        ADD PERSONALIZATION
+      </p>
 
-      {/* Text — free input */}
-      <div className={rowClass}>
-        <span className="text-base text-gray-500 shrink-0">Text</span>
-        <input
-          type="text"
-          value={value.text}
-          onChange={(e) => set({ text: e.target.value })}
-          placeholder="Enter text"
-          className={valueInputClass}
-        />
+      {/* Type pills */}
+      <div className="mt-2.5 flex flex-wrap gap-2">
+        {types.map((t) => {
+          const active = t.name === type;
+          return (
+            <button
+              key={t.name}
+              type="button"
+              onClick={() => {
+                // Tapping the active type clears it, back to state 1.
+                setDraft("");
+                set({ type: active ? null : t.name, text: "", confirmed: false });
+              }}
+              className="h-9 rounded-lg border px-3 text-[12px] transition-colors"
+              style={
+                active
+                  ? { backgroundColor: BRAND, borderColor: BRAND, color: "#FFFFFF" }
+                  : { borderColor: HAIRLINE, color: INK }
+              }
+            >
+              {t.name}
+            </button>
+          );
+        })}
       </div>
 
-      {/* Text Color — inline select */}
-      <div className={rowClass}>
-        <span className="text-base text-gray-500 shrink-0">Text Color</span>
-        <select
-          value={value.textColor}
-          onChange={(e) => set({ textColor: e.target.value })}
-          className="appearance-none bg-transparent text-right text-base text-gray-900 pr-1 cursor-pointer focus:outline-none"
-        >
-          {colors.map((c) => (
-            <option key={c} value={c}>
-              {c}
-            </option>
-          ))}
-        </select>
-      </div>
+      {/* ── 2 & 3. Input + confirm, only once a type is picked ─────────────── */}
+      {type && (
+        <>
+          <input
+            type="text"
+            value={draft}
+            onChange={(e) => setDraft(e.target.value)}
+            placeholder="Type something here"
+            aria-label={`${type} text`}
+            className={`mt-3 h-11 w-full rounded-lg border bg-white px-3 text-[13px] placeholder:text-[#6E6659] focus:border-[#D85A30] focus:outline-none ${
+              canConfirm ? "border-[#D85A30]" : "border-transparent"
+            }`}
+            style={{ color: INK }}
+          />
 
-      {/* Type — the selected personalization */}
-      <div className={rowClass}>
-        <span className="text-base text-gray-500 shrink-0">Type</span>
-        <span className="text-base text-gray-900">{value.type}</span>
-      </div>
+          {selected?.extraDays > 0 && (
+            <p className="mt-3 text-[11px]" style={{ color: MUTED }}>
+              {type} adds {selected.extraDays} day
+              {selected.extraDays === 1 ? "" : "s"} to delivery
+            </p>
+          )}
 
-      {/* Update — back to the chooser to change type or remove */}
-      <div className="flex justify-center pt-5">
-        <button
-          type="button"
-          onClick={() => set({ type: null })}
-          className="rounded-full bg-[#FFF1EC] text-[#F85826] text-base font-semibold px-8 py-3 hover:bg-[#FFE7DF] transition-colors"
-        >
-          Update Personalization
-        </button>
-      </div>
-    </motion.div>
+          <button
+            type="button"
+            disabled={!canConfirm}
+            onClick={() => set({ text: draft.trim(), confirmed: true })}
+            className="mt-3 h-11 w-full rounded-lg text-[13px] transition-colors"
+            style={
+              canConfirm
+                ? { backgroundColor: BRAND, color: "#FFFFFF" }
+                : { backgroundColor: "#FFFFFF", color: MUTED }
+            }
+          >
+            Confirm
+          </button>
+        </>
+      )}
+    </section>
   );
 }

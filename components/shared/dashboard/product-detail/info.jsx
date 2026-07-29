@@ -1,24 +1,38 @@
 "use client";
 
+/** KEY INFO — uppercase label over label/value rows split by a hairline. */
+const HAIRLINE = "#EBE5E0";
+const INK = "#24201C";
+const MUTED = "#6E6659";
+
 export default function ProductKeyInfo({ keyInfo }) {
   if (!keyInfo || keyInfo.length === 0) return null;
 
   return (
-    <div className="py-4">
-      <h2 className="text-lg font-bold text-gray-900 mb-3">Key Info</h2>
-      <div className="space-y-2">
+    <div>
+      <p
+        className="text-[11px] font-medium tracking-[0.04em]"
+        style={{ color: MUTED }}
+      >
+        KEY INFO
+      </p>
+
+      <dl className="mt-3">
         {keyInfo.map((info, index) => (
           <div
             key={index}
-            className="flex justify-between items-center border-b border-gray-200 py-1.5"
+            className="flex items-center justify-between gap-4 border-b py-2.5"
+            style={{ borderColor: HAIRLINE }}
           >
-            <span className="text-sm text-gray-600">{info.label}</span>
-            <span className="text-sm font-medium text-gray-900">
+            <dt className="text-[13px]" style={{ color: INK }}>
+              {info.label}
+            </dt>
+            <dd className="text-right text-[13px]" style={{ color: INK }}>
               {info.value}
-            </span>
+            </dd>
           </div>
         ))}
-      </div>
+      </dl>
     </div>
   );
 }

@@ -1,14 +1,11 @@
 import Navbar from "@/components/common/navbar";
 import CategoryGridSkeleton from "./_components/category-grid-skeleton";
+import { HERO_GRADIENT } from "./_components/hero-gradient";
 
 export default function CategoryLoading() {
   return (
     <div className="min-h-screen font-sans bg-white">
-      <div
-        style={{
-          background: "linear-gradient(180deg, #EEE5F3 0%, #FFFFFF 100%)",
-        }}
-      >
+      <div style={{ background: HERO_GRADIENT }}>
         <Navbar />
 
         <div className="max-w-7xl mx-auto mt-5">

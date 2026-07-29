@@ -25,8 +25,11 @@ export function hasAuthToken() {
 // Response: { success, data: { id, email, firstName, lastName, phone,
 //             profilePicture, dateOfBirth, role, address, memberSince } }
 // ─────────────────────────────────────────────────────────────────────────────
+// Unwraps the { success, data } envelope so consumers read `user.firstName`
+// rather than `user.data.firstName`.
 async function fetchMe() {
-  return apiGet("profile");
+  const res = await apiGet("profile");
+  return res?.data ?? res;
 }
 
 export function useMe() {
@@ -96,10 +99,11 @@ export function useUpdateProfile() {
     mutationFn: updateProfileApi,
     onSuccess: (responseData) => {
       // Optimistic cache update, then re-fetch to confirm server state
-      queryClient.setQueryData(profileKeys.me, (old) => {
-        if (!old) return responseData;
-        return { ...old, data: { ...old.data, ...responseData?.data } };
-      });
+      // Cache holds the unwrapped user, so merge flat — not into `.data`.
+      const updated = responseData?.data ?? responseData;
+      queryClient.setQueryData(profileKeys.me, (old) =>
+        old ? { ...old, ...updated } : updated,
+      );
       queryClient.invalidateQueries({ queryKey: profileKeys.me });
     },
   });

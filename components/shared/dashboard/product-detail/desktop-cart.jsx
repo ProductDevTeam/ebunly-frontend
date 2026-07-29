@@ -1,9 +1,20 @@
 "use client";
 
-import { motion, AnimatePresence } from "framer-motion";
-import { Truck, Plus, Minus } from "lucide-react";
+import { ChevronDown, Gift, Heart, Truck } from "lucide-react";
 import { useCart } from "@/hooks/use-cart";
+import { useWishlist } from "@/hooks/use-wishlist";
 import { useNotification } from "@/components/common/notification-provider";
+
+/*
+ * Buy row from the product exports: quantity select + Add to Cart, then the
+ * Save to favorites / Add to Wishlist pair, then the delivery estimate.
+ * The estimate gains a second date once personalization is confirmed:
+ *   "Est. delivery Jul 16, or Jul 18 with personalization"
+ */
+const BRAND = "#D85A30";
+const HAIRLINE = "#EBE5E0";
+const INK = "#24201C";
+const MUTED = "#6E6659";
 
 export default function AddToCartDesktop({
   product,
@@ -11,10 +22,12 @@ export default function AddToCartDesktop({
   personalization,
   onOptionChange,
   deliveryDate,
+  personalizedDeliveryDate,
+  onOpenWishlist,
 }) {
-  const { addItem, increment, decrement, getCartItem, hydrated } = useCart();
+  const { addItem } = useCart();
+  const { toggle: toggleFavorite, has, hydrated } = useWishlist();
   const { notify } = useNotification();
-  const mounted = hydrated;
 
   if (!product) return null;
 
@@ -22,85 +35,99 @@ export default function AddToCartDesktop({
     Object.entries(selectedOptions ?? {}).filter(([k]) => k !== "quantity"),
   );
 
-  // Before mount, always null to match server render (no localStorage on server)
-  const cartItem =
-    mounted && product?._id ? getCartItem(product._id, variants) : null;
-  const quantity = cartItem?.quantity ?? 0;
+  const minQuantity = product.minQuantity ?? 1;
+  const maxQuantity = Math.max(product.maxQuantity ?? minQuantity, minQuantity);
+  const quantityOptions = Array.from(
+    { length: Math.max(1, Math.min(maxQuantity - minQuantity + 1, 10)) },
+    (_, i) => i + minQuantity,
+  );
+
+  const saved = hydrated && has(product._id ?? product.id);
 
   const handleAdd = () => {
-    const qty = selectedOptions?.quantity ?? product.minQuantity ?? 1;
+    const qty = selectedOptions?.quantity ?? minQuantity;
     addItem(product, qty, variants, personalization);
     notify({ type: "cart", product, quantity: qty, duration: 4000 });
   };
 
-  const handleIncrement = () => {
-    if (!cartItem) return;
-    increment(cartItem.cartItemId);
-    const newQty = quantity + 1;
-    onOptionChange?.("quantity", newQty);
-    notify({ type: "cart", product, quantity: newQty, duration: 2500 });
-  };
-
-  const handleDecrement = () => {
-    if (!cartItem) return;
-    decrement(cartItem.cartItemId);
-    const newQty = Math.max(product.minQuantity ?? 1, quantity - 1);
-    onOptionChange?.("quantity", newQty);
-  };
-
   return (
-    <div className="hidden lg:block w-full">
-      <AnimatePresence mode="wait">
-        {!cartItem ? (
-          <motion.button
-            key="add"
-            onClick={handleAdd}
-            whileTap={{ scale: 0.98 }}
-            initial={{ opacity: 0, y: 6 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: 6 }}
-            transition={{ duration: 0.15 }}
-            className="w-full flex items-center justify-center gap-2 bg-primary text-white py-3 px-5 rounded-lg transition-colors shadow-orange-600/20 text-base cursor-pointer hover:bg-orange-600"
+    <div className="w-full">
+      {/* Quantity + Add to Cart */}
+      <div className="flex items-stretch gap-3">
+        <div className="relative shrink-0">
+          <select
+            value={selectedOptions?.quantity ?? minQuantity}
+            onChange={(e) => onOptionChange?.("quantity", Number(e.target.value))}
+            aria-label="Quantity"
+            className="h-11 w-[74px] appearance-none rounded-lg border bg-transparent pl-4 pr-8 text-[14px] focus:outline-none"
+            style={{ borderColor: HAIRLINE, color: INK }}
           >
-            Add To Basket
-          </motion.button>
-        ) : (
-          <motion.div
-            key="stepper"
-            initial={{ opacity: 0, y: 6 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: 6 }}
-            transition={{ duration: 0.15 }}
-            className="flex items-center bg-orange-600 rounded-2xl overflow-hidden shadow-lg shadow-orange-600/20 w-full"
-          >
-            <button
-              onClick={handleDecrement}
-              className="px-5 py-4 text-white hover:bg-orange-700 transition-colors"
-            >
-              <Minus className="w-5 h-5" />
-            </button>
-            <span className="flex-1 text-center text-white font-bold text-base">
-              {quantity} in basket
-            </span>
-            <button
-              onClick={handleIncrement}
-              disabled={quantity >= (product.maxQuantity ?? 1000)}
-              className="px-5 py-4 text-white hover:bg-orange-700 disabled:opacity-50 transition-colors"
-            >
-              <Plus className="w-5 h-5" />
-            </button>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      {deliveryDate && (
-        <div className="flex items-center justify-center gap-1.5 mt-3 text-sm text-gray-500">
-          <Truck className="w-4 h-4" />
-          <span>
-            Est. Delivery Date:{" "}
-            <span className="font-semibold text-gray-700">{deliveryDate}</span>
-          </span>
+            {quantityOptions.map((qty) => (
+              <option key={qty} value={qty}>
+                {qty}
+              </option>
+            ))}
+          </select>
+          <ChevronDown
+            size={16}
+            strokeWidth={1.5}
+            className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2"
+            style={{ color: INK }}
+          />
         </div>
+
+        <button
+          type="button"
+          onClick={handleAdd}
+          className="h-11 flex-1 rounded-lg text-[14px] text-white transition-opacity hover:opacity-90"
+          style={{ backgroundColor: BRAND }}
+        >
+          Add to Cart
+        </button>
+      </div>
+
+      {/* Favorites / wishlist */}
+      <div className="mt-4 flex items-center gap-6">
+        <button
+          type="button"
+          onClick={() => toggleFavorite(product)}
+          className="inline-flex items-center gap-2 text-[13px]"
+          style={{ color: INK }}
+        >
+          <Heart
+            size={16}
+            strokeWidth={1.5}
+            className={saved ? "fill-current" : ""}
+            style={{ color: saved ? BRAND : INK }}
+          />
+          {saved ? "Saved to favorites" : "Save to favorites"}
+        </button>
+
+        <button
+          type="button"
+          onClick={onOpenWishlist}
+          className="inline-flex items-center gap-2 text-[13px]"
+          style={{ color: INK }}
+        >
+          <Gift size={16} strokeWidth={1.5} />
+          Add to Wishlist
+        </button>
+      </div>
+
+      {/* Delivery estimate */}
+      {deliveryDate && (
+        <p
+          className="mt-4 inline-flex items-center gap-2 text-[13px]"
+          style={{ color: MUTED }}
+        >
+          <Truck size={16} strokeWidth={1.5} className="shrink-0" />
+          <span>
+            Est. delivery {deliveryDate}
+            {personalizedDeliveryDate
+              ? `, or ${personalizedDeliveryDate} with personalization`
+              : ""}
+          </span>
+        </p>
       )}
     </div>
   );
