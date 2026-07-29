@@ -4,58 +4,46 @@ import { useState, useEffect } from "react";
 import { ChevronDown, X, SlidersHorizontal } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
-const FILTER_CONFIG = [
-  {
-    label: "Occasion",
-    key: "occasions",
-    multi: true,
-    options: [
-      { label: "Birthday", value: "Birthday" },
-      { label: "Wedding", value: "Wedding" },
-      { label: "Anniversary", value: "Anniversary" },
-      { label: "Valentine", value: "Valentine" },
-      { label: "Christmas", value: "Christmas" },
-      { label: "Corporate", value: "Cooperate" },
-    ],
-  },
-  {
-    label: "Gift Type",
-    key: "giftTypes",
-    multi: true,
-    options: [
-      { label: "For Him", value: "For_Him" },
-      { label: "For Her", value: "For_Her" },
-      { label: "For Kids", value: "For_Kids" },
-      { label: "Boxes & Hampers", value: "Boxes_Hampers" },
-      { label: "Beauty & Grooming", value: "Beauty_Grooming" },
-      { label: "Accessories", value: "Accessories" },
-      { label: "Home & Decor", value: "Home_Decor" },
-      { label: "Personalised Gifts", value: "Personalised" },
-      { label: "Flowers & Cards", value: "Flowers_Cards" },
-      { label: "Corporate", value: "Cooperate" },
-    ],
-  },
-  {
-    label: "Price",
-    key: "price",
-    multi: false,
-    options: [
-      { label: "Under ₦10,000", minPrice: 0, maxPrice: 10000 },
-      { label: "₦10,000 – ₦25,000", minPrice: 10000, maxPrice: 25000 },
-      { label: "₦25,000 – ₦50,000", minPrice: 25000, maxPrice: 50000 },
-      { label: "Above ₦50,000", minPrice: 50000, maxPrice: undefined },
-    ],
-  },
+import { useTaxonomy } from "@/hooks/use-taxonomy";
+
+/*
+ * The tag facets are the ones GET /products actually filters on, and their
+ * vocabularies come from GET /products/taxonomy — the values are the labels,
+ * so there is no mapping table to drift.
+ *
+ * The former "Gift Type" group is gone: its values (For_Him, Boxes_Hampers, …)
+ * matched nothing, because that concept was split into `recipients` and
+ * `coreCategory` when the taxonomy landed.
+ */
+export const TAG_FACETS = [
+  { label: "Occasion", key: "occasionTags", source: "occasions" },
+  { label: "Recipient", key: "recipients", source: "recipients" },
+  { label: "Style", key: "styleTags", source: "styleTags" },
 ];
+
+const TAG_KEYS = TAG_FACETS.map((f) => f.key);
+
+const PRICE_FACET = {
+  label: "Price",
+  key: "price",
+  multi: false,
+  options: [
+    { label: "Under ₦10,000", minPrice: 0, maxPrice: 10000 },
+    { label: "₦10,000 – ₦25,000", minPrice: 10000, maxPrice: 25000 },
+    { label: "₦25,000 – ₦50,000", minPrice: 25000, maxPrice: 50000 },
+    { label: "Above ₦50,000", minPrice: 50000, maxPrice: undefined },
+  ],
+};
 
 const QUICK_FILTERS = [
   { label: "Discounts", key: "discounts", emoji: "🏷️" },
   { label: "Made In Naija", key: "madeInNigeria", emoji: "🇳🇬" },
 ];
 
-const EMPTY_FILTERS = {
-  occasions: [],
-  giftTypes: [],
+export const EMPTY_FILTERS = {
+  occasionTags: [],
+  recipients: [],
+  styleTags: [],
   minPrice: undefined,
   maxPrice: undefined,
   minDiscount: undefined,
@@ -63,7 +51,7 @@ const EMPTY_FILTERS = {
 };
 
 // Resolves a human-readable label for a chip from filter key + value
-function getChipLabel(key, value, allOptions) {
+function getChipLabel(key, value) {
   if (key === "madeInNigeria") return "🇳🇬 Made In Naija";
   if (key === "minDiscount") return `🏷️ ${value}%+ off`;
   if (key === "price") {
@@ -72,28 +60,44 @@ function getChipLabel(key, value, allOptions) {
     if (minPrice === 0) return `Under ₦${maxPrice.toLocaleString()}`;
     return `₦${minPrice.toLocaleString()} – ₦${maxPrice.toLocaleString()}`;
   }
-  // For multi-select (occasions, giftTypes) — find label from config
-  for (const group of allOptions) {
-    const found = group.options?.find((o) => o.value === value);
-    if (found) return found.label;
-  }
+  // Tag facets carry the taxonomy string itself.
   return value;
+}
+
+/** Pull only the keys this bar owns out of a wider filter object. */
+export function pickBarFilters(filters) {
+  const picked = { ...EMPTY_FILTERS };
+  TAG_KEYS.forEach((key) => {
+    picked[key] = filters?.[key] || [];
+  });
+  picked.minPrice = filters?.minPrice;
+  picked.maxPrice = filters?.maxPrice;
+  picked.minDiscount = filters?.minDiscount;
+  picked.madeInNigeria = filters?.madeInNigeria;
+  return picked;
 }
 
 export default function FilterBar({ onFilterChange, externalFilters }) {
   const [selected, setSelected] = useState(EMPTY_FILTERS);
+  const taxonomy = useTaxonomy();
+
+  const filterConfig = [
+    ...TAG_FACETS.map((facet) => ({
+      label: facet.label,
+      key: facet.key,
+      multi: true,
+      options: (taxonomy[facet.source] ?? []).map((value) => ({
+        label: value,
+        value,
+      })),
+    })),
+    PRICE_FACET,
+  ];
 
   // Sync when filters are restored from search history
   useEffect(() => {
     if (!externalFilters) return;
-    setSelected({
-      occasions: externalFilters.occasions || [],
-      giftTypes: externalFilters.giftTypes || [],
-      minPrice: externalFilters.minPrice,
-      maxPrice: externalFilters.maxPrice,
-      minDiscount: externalFilters.minDiscount,
-      madeInNigeria: externalFilters.madeInNigeria,
-    });
+    setSelected(pickBarFilters(externalFilters));
   }, [externalFilters]);
 
   const emit = (next) => {
@@ -137,20 +141,11 @@ export default function FilterBar({ onFilterChange, externalFilters }) {
 
   // Build flat chip list from current selections
   const chips = [];
-  (selected.occasions || []).forEach((v) =>
-    chips.push({
-      key: "occasions",
-      value: v,
-      label: getChipLabel("occasions", v, FILTER_CONFIG),
-    }),
-  );
-  (selected.giftTypes || []).forEach((v) =>
-    chips.push({
-      key: "giftTypes",
-      value: v,
-      label: getChipLabel("giftTypes", v, FILTER_CONFIG),
-    }),
-  );
+  TAG_KEYS.forEach((key) => {
+    (selected[key] || []).forEach((v) =>
+      chips.push({ key, value: v, label: getChipLabel(key, v) }),
+    );
+  });
   if (selected.minPrice !== undefined || selected.maxPrice !== undefined) {
     chips.push({
       key: "price",
@@ -178,7 +173,7 @@ export default function FilterBar({ onFilterChange, externalFilters }) {
 
   const removeChip = (chip) => {
     const next = { ...selected };
-    if (chip.key === "occasions" || chip.key === "giftTypes") {
+    if (TAG_KEYS.includes(chip.key)) {
       next[chip.key] = next[chip.key].filter((v) => v !== chip.value);
     } else if (chip.key === "price") {
       next.minPrice = undefined;
@@ -201,7 +196,7 @@ export default function FilterBar({ onFilterChange, externalFilters }) {
         <SlidersHorizontal className="w-4 h-4 text-gray-400 mr-1 flex-shrink-0" />
 
         {/* Dropdown filters */}
-        {FILTER_CONFIG.map((filter) => {
+        {filterConfig.map((filter) => {
           const activeCount =
             filter.key === "price"
               ? selected.minPrice !== undefined
@@ -233,7 +228,8 @@ export default function FilterBar({ onFilterChange, externalFilters }) {
               </button>
 
               {/* Dropdown */}
-              <div className="absolute top-full left-0 mt-2 w-52 bg-white border border-gray-100 rounded-2xl shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-30 py-1.5 overflow-hidden">
+              {/* Occasion alone has 28 entries, so the menu scrolls. */}
+              <div className="absolute top-full left-0 mt-2 w-52 max-h-80 overflow-y-auto bg-white border border-gray-100 rounded-2xl shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-30 py-1.5">
                 {filter.options.map((option) => {
                   const isOptionActive =
                     filter.key === "price"

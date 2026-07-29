@@ -7,7 +7,7 @@ const MAX_HISTORY = 3;
 
 /**
  * Builds a human-readable label from a filters object
- * e.g. { search: "cake", occasions: ["Birthday"], minPrice: 5000 }
+ * e.g. { search: "cake", occasionTags: ["Birthday"], minPrice: 5000 }
  *   → "cake · Birthday · From ₦5,000"
  */
 export function buildFilterSummary(filters = {}) {
@@ -15,12 +15,12 @@ export function buildFilterSummary(filters = {}) {
 
   if (filters.search) parts.push(filters.search);
 
-  if (filters.occasions?.length) {
-    parts.push(filters.occasions.join(", "));
+  if (filters.occasionTags?.length) {
+    parts.push(filters.occasionTags.join(", "));
   }
 
-  if (filters.giftTypes?.length) {
-    parts.push(filters.giftTypes.map((g) => g.replace(/_/g, " ")).join(", "));
+  if (filters.styleTags?.length) {
+    parts.push(filters.styleTags.join(", "));
   }
 
   if (filters.minPrice !== undefined && filters.maxPrice !== undefined) {
@@ -46,8 +46,9 @@ export function buildFilterSummary(filters = {}) {
 function hasActiveFilters(filters = {}) {
   return !!(
     filters.search ||
-    filters.occasions?.length ||
-    filters.giftTypes?.length ||
+    filters.occasionTags?.length ||
+    filters.styleTags?.length ||
+    filters.recipients?.length ||
     filters.minPrice !== undefined ||
     filters.maxPrice !== undefined ||
     filters.madeInNigeria ||

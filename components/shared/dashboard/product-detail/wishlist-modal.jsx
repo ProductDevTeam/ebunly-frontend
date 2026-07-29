@@ -5,6 +5,12 @@ import { AnimatePresence, motion } from "framer-motion";
 import { X } from "lucide-react";
 
 import { useScrollLock } from "@/hooks/use-scroll-lock";
+import { useNotification } from "@/components/common/notification-provider";
+import {
+  useWishlists,
+  useCreateWishlist,
+  useAddWishlistItem,
+} from "@/hooks/use-wishlists";
 
 /*
  * "Add to wishlist" — section 4 of the personalization key-info sheet.
@@ -15,6 +21,12 @@ import { useScrollLock } from "@/hooks/use-scroll-lock";
  *
  * The rule under a list row is drawn whenever something follows it, which
  * includes the create field but not the "+ Create new wishlist" link.
+ *
+ * Lists come from GET /wishlists and both actions write straight through, so a
+ * host only has to say which product is being saved. Creating a list from here
+ * also puts the product in it — that is the whole point of the flow, and the
+ * API needs the two calls. `wishlists` stays as a prop so the states harness
+ * can render the dialog without a session.
  */
 const BRAND = "#D85A30";
 const PEACH_BORDER = "#993C1D";
@@ -28,7 +40,8 @@ const TITLE = "#000000";
 
 export default function WishlistModal({
   open,
-  wishlists = [],
+  productId,
+  wishlists: wishlistsProp,
   onClose,
   onAdd,
   onCreate,
@@ -38,7 +51,14 @@ export default function WishlistModal({
   const [name, setName] = useState("");
   const [toast, setToast] = useState(null);
 
+  const { error: notifyError } = useNotification();
+  const { data: fetched } = useWishlists({ enabled: open && !wishlistsProp });
+  const createList = useCreateWishlist();
+  const addItem = useAddWishlistItem();
+
+  const wishlists = wishlistsProp ?? fetched ?? [];
   const isEmpty = wishlists.length === 0;
+  const busy = createList.isPending || addItem.isPending;
 
   useScrollLock(open);
 
@@ -62,20 +82,36 @@ export default function WishlistModal({
     return () => clearTimeout(t);
   }, [toast]);
 
-  const handleAdd = (list) => {
-    onAdd?.(list);
-    setToast(`Added to ${list.name}`);
-    onClose();
+  const handleAdd = async (list) => {
+    if (busy) return;
+    try {
+      if (productId) {
+        await addItem.mutateAsync({ wishlistId: list.id, productId });
+      }
+      onAdd?.(list);
+      setToast(`Added to ${list.name}`);
+      onClose();
+    } catch (err) {
+      notifyError(err.message, "Could not add to wishlist");
+    }
   };
 
-  const handleCreate = () => {
+  const handleCreate = async () => {
     const trimmed = name.trim();
-    if (!trimmed) return;
-    onCreate?.(trimmed);
-    setToast(`Added to ${trimmed}`);
-    setName("");
-    setCreating(false);
-    onClose();
+    if (!trimmed || busy) return;
+    try {
+      const created = await createList.mutateAsync({ name: trimmed });
+      if (productId && created?.id) {
+        await addItem.mutateAsync({ wishlistId: created.id, productId });
+      }
+      onCreate?.(created ?? trimmed);
+      setToast(`Added to ${trimmed}`);
+      setName("");
+      setCreating(false);
+      onClose();
+    } catch (err) {
+      notifyError(err.message, "Could not create wishlist");
+    }
   };
 
   // The create field is always shown when there are no lists to pick from.
@@ -130,6 +166,7 @@ export default function WishlistModal({
               <button
                 type="button"
                 onClick={() => handleAdd(list)}
+                disabled={busy}
                 className="h-7 shrink-0 rounded-full border px-4 text-[12px]"
                 style={{ borderColor: PEACH_BORDER, color: PEACH_INK }}
               >
@@ -166,7 +203,7 @@ export default function WishlistModal({
           <button
             type="button"
             onClick={handleCreate}
-            disabled={!name.trim()}
+            disabled={!name.trim() || busy}
             className="mt-3 h-11 w-full rounded-lg text-[13px] text-white"
             style={{ backgroundColor: BRAND }}
           >

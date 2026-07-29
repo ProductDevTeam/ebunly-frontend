@@ -197,9 +197,10 @@ export default function ProductDetailClient({ product, breadcrumb = [] }) {
         <RelatedProducts products={product.relatedProducts} />
       )}
 
+      {/* The dialog loads the user's lists itself; it only needs the product. */}
       <WishlistModal
         open={wishlistOpen}
-        wishlists={product.wishlists ?? []}
+        productId={product._id ?? product.id}
         onClose={() => setWishlistOpen(false)}
       />
     </div>

@@ -3,37 +3,17 @@
 import { motion, AnimatePresence } from "framer-motion";
 import { useEffect, useRef, useState } from "react";
 
-const FILTER_CONFIG = {
-  occasion: {
-    label: "Occasion",
-    filterKey: "occasions",
-    multi: true,
-    options: [
-      { label: "Birthday", value: "Birthday" },
-      { label: "Wedding", value: "Wedding" },
-      { label: "Anniversary", value: "Anniversary" },
-      { label: "Valentine", value: "Valentine" },
-      { label: "Christmas", value: "Christmas" },
-      { label: "Corporate", value: "Cooperate" },
-    ],
-  },
-  giftType: {
-    label: "Gift Type",
-    filterKey: "giftTypes",
-    multi: true,
-    options: [
-      { label: "For Him", value: "For_Him" },
-      { label: "For Her", value: "For_Her" },
-      { label: "For Kids", value: "For_Kids" },
-      { label: "Boxes & Hampers", value: "Boxes_Hampers" },
-      { label: "Beauty & Grooming", value: "Beauty_Grooming" },
-      { label: "Accessories", value: "Accessories" },
-      { label: "Home & Decor", value: "Home_Decor" },
-      { label: "Personalised Gifts", value: "Personalised" },
-      { label: "Flowers & Cards", value: "Flowers_Cards" },
-      { label: "Corporate", value: "Cooperate" },
-    ],
-  },
+import { useTaxonomy } from "@/hooks/use-taxonomy";
+import { TAG_FACETS } from "./filterbar";
+
+/*
+ * Keyed by the GET /products parameter name, so there is no second mapping
+ * between what the sheet shows and what the query sends. The tag facets get
+ * their options from the taxonomy; the rest are fixed buckets.
+ */
+const TAG_KEYS = TAG_FACETS.map((f) => f.key);
+
+const STATIC_CONFIG = {
   price: {
     label: "Price",
     filterKey: "price",
@@ -45,7 +25,7 @@ const FILTER_CONFIG = {
       { label: "Above ₦50,000", minPrice: 50000, maxPrice: undefined },
     ],
   },
-  discounts: {
+  minDiscount: {
     label: "Discounts & More",
     filterKey: "minDiscount",
     multi: false,
@@ -66,25 +46,39 @@ export default function MobileFilterSheet({
 }) {
   const sheetRef = useRef(null);
   const [selected, setSelected] = useState([]);
+  const taxonomy = useTaxonomy();
 
-  // Pre-populate from currentFilters when sheet opens
+  const config = { ...STATIC_CONFIG };
+  TAG_FACETS.forEach((facet) => {
+    config[facet.key] = {
+      label: facet.label,
+      filterKey: facet.key,
+      multi: true,
+      options: (taxonomy[facet.source] ?? []).map((value) => ({
+        label: value,
+        value,
+      })),
+    };
+  });
+
+  const isTagFacet = (key) => TAG_KEYS.includes(key);
+
+  // Pre-populate from currentFilters when the sheet opens. Every config key is
+  // also its filter key, so this reads `activeFilter` rather than the built
+  // config — the effect must not depend on something rebuilt every render.
   useEffect(() => {
     if (!activeFilter) return;
-    const filter = FILTER_CONFIG[activeFilter];
-    if (!filter) return;
 
-    if (filter.filterKey === "occasions") {
-      setSelected(currentFilters.occasions || []);
-    } else if (filter.filterKey === "giftTypes") {
-      setSelected(currentFilters.giftTypes || []);
-    } else if (filter.filterKey === "price") {
-      const match = filter.options.find(
+    if (TAG_KEYS.includes(activeFilter)) {
+      setSelected(currentFilters[activeFilter] || []);
+    } else if (activeFilter === "price") {
+      const match = STATIC_CONFIG.price.options.find(
         (o) =>
           o.minPrice === currentFilters.minPrice &&
           o.maxPrice === currentFilters.maxPrice,
       );
       setSelected(match ? [match] : []);
-    } else if (filter.filterKey === "minDiscount") {
+    } else if (activeFilter === "minDiscount") {
       const pre = [];
       if (currentFilters.minDiscount !== undefined)
         pre.push(currentFilters.minDiscount);
@@ -103,7 +97,7 @@ export default function MobileFilterSheet({
   }, [activeFilter, onClose]);
 
   if (!activeFilter) return null;
-  const filter = FILTER_CONFIG[activeFilter];
+  const filter = config[activeFilter];
   if (!filter) return null;
 
   const toggleOption = (option) => {
@@ -140,7 +134,7 @@ export default function MobileFilterSheet({
     const { filterKey } = filter;
     let payload = {};
 
-    if (filterKey === "occasions" || filterKey === "giftTypes") {
+    if (isTagFacet(filterKey)) {
       payload[filterKey] = selected;
     } else if (filterKey === "price") {
       payload.minPrice = selected[0]?.minPrice;
@@ -162,8 +156,7 @@ export default function MobileFilterSheet({
     setSelected([]);
     const { filterKey } = filter;
     let payload = {};
-    if (filterKey === "occasions") payload.occasions = [];
-    else if (filterKey === "giftTypes") payload.giftTypes = [];
+    if (isTagFacet(filterKey)) payload[filterKey] = [];
     else if (filterKey === "price") {
       payload.minPrice = undefined;
       payload.maxPrice = undefined;
@@ -200,7 +193,7 @@ export default function MobileFilterSheet({
         </h3>
 
         {/* Options */}
-        <div className="flex flex-wrap gap-2">
+        <div className="flex max-h-[50vh] flex-wrap gap-2 overflow-y-auto">
           {filter.options.map((option, idx) => {
             const label =
               typeof option === "object" && option.label

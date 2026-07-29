@@ -11,6 +11,7 @@ import {
   addToCart as apiAddToCart,
   updateCartItem as apiUpdateCartItem,
   removeCartItem as apiRemoveCartItem,
+  clearCart as apiClearCart,
 } from "@/lib/cart";
 
 export const cartKeys = { all: ["cart"] };
@@ -76,6 +77,8 @@ function normalizeServerItem(item) {
     compareAtPrice: product.compareAtPrice,
     images: product.images,
     slug: product.slug,
+    // Kept for the delivery quote, which is priced per distinct vendor.
+    vendor: product.vendor ?? item.vendor,
     quantity: item.quantity ?? 1,
     minQuantity: product.minQuantity ?? 1,
     maxQuantity: product.maxQuantity ?? 1000,
@@ -138,6 +141,10 @@ export function useCart() {
   });
   const removeMutation = useMutation({
     mutationFn: (itemId) => apiRemoveCartItem(itemId),
+    onSuccess: invalidate,
+  });
+  const clearMutation = useMutation({
+    mutationFn: apiClearCart,
     onSuccess: invalidate,
   });
 
@@ -210,8 +217,7 @@ export function useCart() {
 
   const removeItem = (cartItemId) => removeMutation.mutate(cartItemId);
 
-  const clearCart = () =>
-    serverItems.forEach((i) => removeMutation.mutate(i.cartItemId));
+  const clearCart = () => clearMutation.mutate();
 
   const getCartItem = (productId, variants = {}) =>
     serverItems.find(

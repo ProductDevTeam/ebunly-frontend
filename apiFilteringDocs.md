@@ -1,82 +1,71 @@
-# Product Filtering API Documentation
+# Product Filtering API
 
-The `GET /api/v1/products` and `GET /api/v1/admin/products` endpoints now support advanced server-side filtering. Instead of downloading all products and filtering them on the frontend, you should pass these query parameters to the backend to get a paginated, filtered list of products.
+`GET /api/v1/products` (public) and `GET /api/v1/admin/products` (admin) filter
+server-side. Pass query parameters rather than downloading the catalogue and
+filtering in the browser.
 
-## Endpoint Overview
+> **The authority is the live spec**, not this file: `/api-docs.json` on the API
+> host (Swagger UI at `/api-docs`). This page is a summary of the parameters the
+> storefront uses, kept next to the code that builds them —
+> [lib/products.js](lib/products.js).
+>
+> **Unknown parameters are ignored, not rejected.** A misspelt or retired filter
+> name returns the full unfiltered list with a `200`, so a broken facet looks
+> like a working one. Check a filtered `meta.total` against the unfiltered one
+> when adding a parameter.
 
-**Endpoint**: `GET /api/v1/products` (Public) or `GET /api/v1/admin/products` (Admin)
+## Query parameters
 
-### Supported Query Parameters
+| Parameter | Type | Notes |
+| :--- | :--- | :--- |
+| `page` | Number | Default 1 |
+| `limit` | Number | Default 10 |
+| `search` | String | Substring match on name or description |
+| `coreCategory` | Enum | One of the eight taxonomy categories |
+| `subcategory` | String | A subcategory or type name from the taxonomy |
+| `recipients` | Array | Women, Men, Couples, Kids, Babies, Mothers, Fathers, Friends, Colleagues |
+| `occasionTags` | Array | Birthday, Wedding, Graduation, … (28 values) |
+| `styleTags` | Array | Luxury, Budget-Friendly, Wellness, Eco-Friendly, Funny, Romantic, Minimalist, Bold, Traditional, Modern |
+| `budgetTier` | Enum | `₦3k & Under` … `₦50k+` |
+| `minPrice` / `maxPrice` | Number | Base price bounds |
+| `minDiscount` | Number | Percentage, e.g. `20` for 20 %+ |
+| `madeInNigeria` | Boolean | |
+| `maxDeliveryDays` | Number | |
+| `featured` | Boolean | |
+| `vendor` | String | Vendor ID |
+| `sortBy` | Enum | `createdAt`, `basePrice`, `discountPercentage` |
+| `sortOrder` | Enum | `asc`, `desc` |
 
-| Parameter | Type | Description | Example |
-| :--- | :--- | :--- | :--- |
-| `page` | Number | Page number for pagination (default: 1) | `?page=2` |
-| `limit` | Number | Items per page (default: 10) | `?limit=12` |
-| `search` | String | Substring search on product name or description | `?search=cake` |
-| `vendor` | String | Filter products by a specific Vendor ID | `?vendor=64a2c4...` |
-| `category` | String | Filter products by Category ID | `?category=64a2c4...` |
-| `minPrice` | Number | Minimum base price threshold | `?minPrice=5000` |
-| `maxPrice` | Number | Maximum base price threshold | `?maxPrice=25000` |
-| `minDiscount` | Number | Minimum discount percentage (e.g., 20 for 20%+) | `?minDiscount=20` |
-| `madeInNigeria` | Boolean | Filter explicitly by Made in Nigeria status | `?madeInNigeria=true` |
-| `maxDeliveryDays` | Number | Maximum allowed estimated delivery days | `?maxDeliveryDays=3` |
+Array parameters accept repeats (`?recipients=Women&recipients=Men`).
 
-### Array Parameters (Multiple Values)
+### Retired names
 
-For filters that allow multiple selections (like Checkboxes), you can send them as repeated query parameters, or as a single comma-separated string.
+`occasions`, `giftTypes` and the `For_Him` / `Boxes_Hampers` style values date
+from before the taxonomy landed. They match the legacy scalar `occasion` and
+`giftType` fields, which are empty on current products, so they return **zero
+results** rather than erroring. `occasions` → `occasionTags`; the "gift type"
+concept was split into `recipients` and `coreCategory`; `styleTags` is new.
 
-| Parameter | Type | Description | Example |
-| :--- | :--- | :--- | :--- |
-| `occasions` | Array | Filter by one or more occasions | `?occasions=Birthday&occasions=Wedding` <br> _or_ <br> `?occasions=Birthday,Wedding` |
-| `giftTypes` | Array | Filter by one or more gift types | `?giftTypes=For_Him&giftTypes=Cooperate` |
+`/discover` still accepts the old names in its URL and maps them across, so old
+links keep working.
 
-## Example Frontend Implementation (React / Axios / Fetch)
+## Vocabularies
 
-Here is a recommended way to build the query from a frontend state using `URLSearchParams`:
+`GET /products/taxonomy` returns every facet's allowed values —
+`categories` (with `subcategories[].types[]`), `recipients`, `occasions`,
+`styleTags`, `budgetTiers`. The filter UI reads it through
+[hooks/use-taxonomy.js](hooks/use-taxonomy.js) instead of hardcoding options, so
+a tag the backend adds appears without a deploy.
 
-```typescript
-async function fetchProducts(filters: any) {
-  const queryParams = new URLSearchParams();
-  
-  // Basic pagination & search
-  if (filters.page) queryParams.append('page', filters.page.toString());
-  if (filters.limit) queryParams.append('limit', filters.limit.toString());
-  if (filters.search) queryParams.append('search', filters.search);
-  
-  // Single-value filters
-  if (filters.minPrice) queryParams.append('minPrice', filters.minPrice.toString());
-  if (filters.maxPrice) queryParams.append('maxPrice', filters.maxPrice.toString());
-  if (filters.madeInNigeria !== undefined) queryParams.append('madeInNigeria', filters.madeInNigeria.toString());
-  
-  // Array filters (Checkboxes)
-  if (filters.occasions && filters.occasions.length > 0) {
-    filters.occasions.forEach(occ => queryParams.append('occasions', occ));
-  }
-  
-  const response = await fetch(`/api/v1/products?${queryParams.toString()}`);
-  const data = await response.json();
-  
-  return data;
-}
-```
-
-## Response Format
-
-The API returns a paginated response. Be sure to use `meta.totalPages` to build your pagination controls.
+## Response
 
 ```json
 {
   "success": true,
   "message": "Success",
-  "data": [
-    { /* Product 1 */ },
-    { /* Product 2 */ }
-  ],
-  "meta": {
-    "page": 1,
-    "limit": 12,
-    "total": 45,
-    "totalPages": 4
-  }
+  "data": [ /* products */ ],
+  "meta": { "page": 1, "limit": 12, "total": 45, "totalPages": 4 }
 }
 ```
+
+Use `meta.totalPages` for pagination controls.

@@ -9,12 +9,13 @@ import MobileFilterBar from "@/components/shared/dashboard/mobile-filter";
 import { useProducts } from "@/hooks/use-products";
 import { useSearchHistory } from "@/hooks/use-search-history";
 
+// Keys match GET /products exactly — see lib/products.js.
 const DEFAULT_FILTERS = {
   category: "",
   search: "",
-  occasions: [],
+  occasionTags: [],
   recipients: [],
-  giftTypes: [],
+  styleTags: [],
   minPrice: undefined,
   maxPrice: undefined,
   minDiscount: undefined,
@@ -26,6 +27,8 @@ const DEFAULT_FILTERS = {
 
 // Build the initial filter set from the URL, so links like
 // /discover?recipients=Women or /discover?maxPrice=3000 land pre-filtered.
+// `occasions`/`giftTypes` are the pre-taxonomy names some older links still
+// carry; map them onto the parameters the API understands.
 function filtersFromSearchParams(searchParams) {
   const num = (key) => {
     const raw = searchParams.get(key);
@@ -38,9 +41,15 @@ function filtersFromSearchParams(searchParams) {
     ...DEFAULT_FILTERS,
     category: searchParams.get("category") ?? "",
     search: searchParams.get("search") ?? "",
-    occasions: searchParams.getAll("occasions"),
+    occasionTags: [
+      ...searchParams.getAll("occasionTags"),
+      ...searchParams.getAll("occasions"),
+    ],
     recipients: searchParams.getAll("recipients"),
-    giftTypes: searchParams.getAll("giftTypes"),
+    styleTags: [
+      ...searchParams.getAll("styleTags"),
+      ...searchParams.getAll("giftTypes"),
+    ],
     minPrice: num("minPrice"),
     maxPrice: num("maxPrice"),
   };

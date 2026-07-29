@@ -21,12 +21,14 @@ function useHydrated() {
 }
 
 /**
- * Wishlist facade — a **logged-in only** feature.
+ * Favourites facade — the heart on a product card — and **logged-in only**.
  *
- * Storage is local (persisted Zustand) until the backend ships a wishlist
- * endpoint; swap the internals here (read/write server + merge on login) and
- * no consumer changes. Guests can't use it: `toggle` bounces them to /login and
- * reads report empty, so hearts/badges only reflect a real session.
+ * Not the same thing as a wishlist: named lists live on the server under
+ * /wishlists (see use-wishlists.js), while favourites have no endpoint at all,
+ * so storage here stays local (persisted Zustand). If one lands, swap the
+ * internals here and no consumer changes. Guests can't use it: `toggle` bounces
+ * them to /login and reads report empty, so hearts and badges only ever reflect
+ * a real session.
  */
 export function useWishlist() {
   const hydrated = useHydrated();

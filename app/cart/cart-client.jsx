@@ -6,6 +6,7 @@ import Link from "next/link";
 import { ShoppingBag } from "lucide-react";
 
 import { useCart } from "@/hooks/use-cart";
+import { countVendors } from "@/hooks/use-deliveries";
 import CheckoutModal from "@/components/cart/checkout-modal";
 import { useState } from "react";
 
@@ -286,9 +287,13 @@ export default function CartClient({ mockItems = null }) {
 
       <CheckoutModal
         open={checkoutOpen}
+        subtotal={total}
+        vendorCount={countVendors(items)}
         onClose={() => setCheckoutOpen(false)}
         onSuccess={() => {
           setCheckoutOpen(false);
+          // Paystack may take over the tab from here; if it does not, the
+          // customer lands on their orders with the new one at the top.
           router.push("/profile/orders");
         }}
       />

@@ -114,10 +114,21 @@ export function useCancelOrder() {
 }
 
 // ── POST /orders/checkout — create an order from the cart ───────────────────
+// Resolves to the created order, because the caller has to hand its id straight
+// to POST /payments/initialize.
 export function useCheckout() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (body) => apiPost("orders/checkout", body),
+    mutationFn: async (body) => {
+      const res = await apiPost("orders/checkout", body);
+      const data = res?.data ?? res;
+      const order = data?.order ?? data;
+      return {
+        id: order?._id ?? order?.id,
+        orderNumber: order?.orderNumber ?? order?.orderNo ?? order?.number,
+        raw: order,
+      };
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: orderKeys.all });
       queryClient.invalidateQueries({ queryKey: ["cart"] });
