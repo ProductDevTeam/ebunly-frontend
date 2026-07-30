@@ -8,7 +8,7 @@ export const metadata = {
 
 export default function OrdersPage() {
   return (
-    <div className="min-h-screen font-sans bg-white">
+    <div className="min-h-screen font-sans bg-[#FDFBF9]">
       <NavbarServer showMobileSearch={false} />
       <OrdersClient />
       <Footer />

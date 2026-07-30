@@ -27,13 +27,15 @@ export default function FavoriteButton({
         toggle(product);
       }}
       className={`p-1.5 shrink-0 ${className}`}
-      aria-label={ariaLabel ?? (active ? "Remove from favorites" : "Save to favorites")}
+      aria-label={
+        ariaLabel ?? (active ? "Remove from favorites" : "Save to favorites")
+      }
       aria-pressed={active}
     >
       {active ? (
         <Heart
           style={{ width: size, height: size }}
-          className="text-[#F85826] fill-[#F85826]"
+          className="text-[#D85A30] fill-[#D85A30]"
         />
       ) : (
         <Image

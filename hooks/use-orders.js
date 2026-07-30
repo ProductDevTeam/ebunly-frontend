@@ -7,6 +7,7 @@ import { hasAuthToken } from "@/hooks/use-profile";
 export const orderKeys = {
   all: ["orders"],
   list: (params) => ["orders", "list", params],
+  detail: (id) => ["orders", "detail", id],
 };
 
 const CANCELLABLE = new Set(["pending", "in progress", "processing"]);
@@ -35,8 +36,19 @@ function normalizeOrder(order) {
     firstItem.color ||
     "—";
 
+  const id = order._id ?? order.id;
+
   return {
-    id: order._id ?? order.id,
+    id,
+    // The Orders list is keyed by order number and placed date, not product.
+    number: order.orderNumber ?? order.number ?? String(id ?? "").slice(-6).toUpperCase(),
+    placedAt: created
+      ? new Date(created).toLocaleDateString("en-US", {
+          month: "short",
+          day: "numeric",
+          year: "numeric",
+        })
+      : "",
     name: product.name ?? firstItem.name ?? "Order",
     color: variantText,
     personalization: firstItem.personalization?.text ? "Custom" : "None",
@@ -73,6 +85,24 @@ export function useOrders(params = {}) {
   });
 }
 
+// ── GET /orders/:id ─────────────────────────────────────────────────────────
+// The detail screen needs the line items, address and totals, which the list
+// normaliser flattens away — so keep the raw payload alongside the summary.
+export function useOrder(id) {
+  return useQuery({
+    queryKey: orderKeys.detail(id),
+    queryFn: async () => {
+      const res = await apiGet(`orders/${id}`);
+      const raw = res?.data?.order ?? res?.data ?? res?.order ?? res;
+      if (!raw || typeof raw !== "object") return null;
+      return { ...normalizeOrder(raw), raw };
+    },
+    enabled: Boolean(id) && hasAuthToken(),
+    staleTime: 60 * 1000,
+    retry: false,
+  });
+}
+
 // ── POST /orders/:id/cancel ─────────────────────────────────────────────────
 export function useCancelOrder() {
   const queryClient = useQueryClient();
@@ -84,10 +114,21 @@ export function useCancelOrder() {
 }
 
 // ── POST /orders/checkout — create an order from the cart ───────────────────
+// Resolves to the created order, because the caller has to hand its id straight
+// to POST /payments/initialize.
 export function useCheckout() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (body) => apiPost("orders/checkout", body),
+    mutationFn: async (body) => {
+      const res = await apiPost("orders/checkout", body);
+      const data = res?.data ?? res;
+      const order = data?.order ?? data;
+      return {
+        id: order?._id ?? order?.id,
+        orderNumber: order?.orderNumber ?? order?.orderNo ?? order?.number,
+        raw: order,
+      };
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: orderKeys.all });
       queryClient.invalidateQueries({ queryKey: ["cart"] });

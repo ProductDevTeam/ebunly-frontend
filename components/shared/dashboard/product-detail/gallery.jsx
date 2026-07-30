@@ -2,14 +2,10 @@
 
 import { useState, useRef } from "react";
 import Image from "next/image";
-import { Heart, ChevronLeft, ChevronRight } from "lucide-react";
-import { useWishlist } from "@/hooks/use-wishlist";
 
-export default function ImageGallery({ images, product }) {
+export default function ImageGallery({ images }) {
   const [activeIndex, setActiveIndex] = useState(0);
   const scrollRef = useRef(null);
-  const { hydrated, has, toggle } = useWishlist();
-  const liked = hydrated && has(product?.id ?? product?._id);
 
   const handleScroll = () => {
     if (scrollRef.current) {
@@ -30,9 +26,6 @@ export default function ImageGallery({ images, product }) {
       setActiveIndex(index);
     }
   };
-
-  const goPrev = () => scrollToIndex(Math.max(0, activeIndex - 1));
-  const goNext = () => scrollToIndex(Math.min(images.length - 1, activeIndex + 1));
 
   // When there's only one image, pad the thumbnail rail with duplicates so the
   // desktop two-column gallery layout doesn't break. Purely visual — the main
@@ -90,7 +83,7 @@ export default function ImageGallery({ images, product }) {
             {images.map((image, index) => (
               <div
                 key={index}
-                className="shrink-0 w-[95%] md:w-full snap-center relative aspect-square md:aspect-8/7"
+                className="shrink-0 w-full snap-center relative aspect-square"
               >
                 <Image
                   src={image}
@@ -98,43 +91,18 @@ export default function ImageGallery({ images, product }) {
                   fill
                   unoptimized
                   sizes="(max-width: 1024px) 100vw, 50vw"
-                  className="object-cover md:rounded-2xl"
+                  className="object-cover rounded-2xl"
                   priority={index === 0}
                 />
               </div>
             ))}
           </div>
 
-          {/* Favorite button */}
-          <button
-            onClick={() => toggle(product)}
-            aria-label={liked ? "Remove from favorites" : "Add to favorites"}
-            className="absolute right-3 top-3 z-10 flex h-10 w-10 items-center justify-center rounded-full bg-white shadow-md transition-transform hover:scale-105"
-          >
-            <Heart
-              className={`h-5 w-5 ${liked ? "fill-primary text-primary" : "text-gray-700"}`}
-            />
-          </button>
-
-          {/* Prev / Next arrows */}
-          {images.length > 1 && (
-            <>
-              <button
-                onClick={goPrev}
-                aria-label="Previous image"
-                className="absolute left-3 top-1/2 z-10 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full bg-white text-gray-700 shadow-md transition-transform hover:scale-105"
-              >
-                <ChevronLeft className="h-5 w-5" />
-              </button>
-              <button
-                onClick={goNext}
-                aria-label="Next image"
-                className="absolute right-3 top-1/2 z-10 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full bg-white text-gray-700 shadow-md transition-transform hover:scale-105"
-              >
-                <ChevronRight className="h-5 w-5" />
-              </button>
-            </>
-          )}
+          {/*
+           * Neither export draws a heart or prev/next arrows over the main
+           * image — both frames navigate via the thumbnail rail, and
+           * favouriting lives in "Save to favorites" under the buy row.
+           */}
         </div>
       </div>
 

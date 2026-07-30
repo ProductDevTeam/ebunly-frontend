@@ -1,283 +1,247 @@
 "use client";
 
-import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { motion, AnimatePresence } from "framer-motion";
-import {
-  Trash2,
-  Plus,
-  Minus,
-  ChevronLeft,
-  ShoppingBag,
-  Truck,
-  Tag,
-  ChevronRight,
-  X,
-} from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
+import { ShoppingBag } from "lucide-react";
+
 import { useCart } from "@/hooks/use-cart";
+import { countVendors } from "@/hooks/use-deliveries";
 import CheckoutModal from "@/components/cart/checkout-modal";
+import { useState } from "react";
 
-function CartItem({ item, onIncrement, onDecrement, onRemove }) {
-  const imageUrl = item.images?.[0]?.url ?? item.images?.[0] ?? "/product.png";
-  const discountPct =
-    item.compareAtPrice > item.basePrice
-      ? Math.round(
-          ((item.compareAtPrice - item.basePrice) / item.compareAtPrice) * 100,
-        )
-      : 0;
+/*
+ * Cart, from "Desktop - Cart.png" and "Mobile - Cart.png".
+ *
+ * The 1200 container splits 660 / 200 / 340: items column, gutter, summary
+ * card. Below 768px the summary drops under the items at full width and loses
+ * the estimated-delivery line, which only the desktop frame draws.
+ */
+const INK = "#24201C";
+const MUTED = "#6E6659";
+const HAIRLINE = "#F2EDE8";
+const BRAND = "#D85A30";
+const REMOVE_RED = "#D90101";
+const BULLET = "#D9D9D9";
 
+/** The grey-dot lines under an item: personalization, then add-ons, then variants. */
+function itemDetails(item) {
+  const out = [];
+
+  const p = item.personalization;
+  if (p?.text) {
+    out.push(`${p.type ?? "Personalization"}: "${p.text}"`);
+  }
+
+  for (const addOn of item.addOns ?? []) {
+    const name = addOn?.name ?? addOn;
+    if (!name) continue;
+    out.push(addOn?.message ? `${name}: "${addOn.message}"` : String(name));
+  }
+
+  for (const [key, value] of Object.entries(item.variants ?? {})) {
+    if (value) out.push(`${key}: ${value}`);
+  }
+
+  return out;
+}
+
+function QuantitySelect({ value, max, onChange }) {
+  const cap = Math.min(max ?? 10, 10);
   return (
-    <motion.div
-      layout
-      initial={{ opacity: 0, y: 12 }}
-      animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, x: -20 }}
-      transition={{ duration: 0.2 }}
-      className="flex gap-3 bg-white rounded-2xl p-3 shadow-sm border border-gray-100"
+    <select
+      value={value}
+      onChange={(e) => onChange(Number(e.target.value))}
+      aria-label="Quantity"
+      className="h-11.5 w-20 rounded-lg border bg-transparent px-3 text-[14px] md:h-10.5 md:w-22.5"
+      style={{ borderColor: HAIRLINE, color: INK }}
     >
-      <div className="relative w-24 h-24 rounded-xl overflow-hidden flex-shrink-0 bg-gray-100">
-        <Image src={imageUrl} alt={item.name} fill className="object-cover" />
-        {discountPct > 0 && (
-          <span className="absolute top-1 left-1 bg-orange-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-md">
-            -{discountPct}%
-          </span>
-        )}
-      </div>
-
-      <div className="flex-1 min-w-0">
-        <div className="flex justify-between items-start gap-2">
-          <h3 className="text-sm font-semibold text-gray-900 leading-tight line-clamp-2">
-            {item.name}
-          </h3>
-          <button
-            onClick={() => onRemove(item.cartItemId)}
-            className="text-gray-400 hover:text-red-500 transition-colors flex-shrink-0 p-0.5"
-          >
-            <X className="w-4 h-4" />
-          </button>
-        </div>
-
-        {item.variants &&
-          Object.entries(item.variants)
-            .filter(([, v]) => v)
-            .map(([k, v]) => (
-              <span key={k} className="text-xs text-gray-500 capitalize mr-2">
-                {k}: <span className="text-gray-700 font-medium">{v}</span>
-              </span>
-            ))}
-
-        {item.personalization && (
-          <span className="inline-block mt-1 text-[10px] bg-orange-50 text-orange-600 font-medium px-2 py-0.5 rounded-full border border-orange-100">
-            Personalized
-          </span>
-        )}
-
-        <div className="flex items-center justify-between mt-2">
-          <div className="flex items-baseline gap-1.5">
-            <span className="text-base font-bold text-gray-900">
-              ₦{(item.basePrice * item.quantity).toLocaleString()}
-            </span>
-            {discountPct > 0 && (
-              <span className="text-xs text-gray-400 line-through">
-                ₦{(item.compareAtPrice * item.quantity).toLocaleString()}
-              </span>
-            )}
-          </div>
-
-          <div className="flex items-center bg-gray-100 rounded-xl overflow-hidden">
-            <button
-              onClick={() => onDecrement(item.cartItemId)}
-              className="px-2.5 py-1.5 text-gray-600 hover:text-gray-900 hover:bg-gray-200 transition-colors"
-            >
-              <Minus className="w-3.5 h-3.5" />
-            </button>
-            <span className="w-7 text-sm font-semibold text-gray-900 text-center">
-              {item.quantity}
-            </span>
-            <button
-              onClick={() => onIncrement(item.cartItemId)}
-              disabled={item.quantity >= (item.maxQuantity ?? 1000)}
-              className="px-2.5 py-1.5 text-gray-600 hover:text-gray-900 hover:bg-gray-200 disabled:opacity-40 transition-colors"
-            >
-              <Plus className="w-3.5 h-3.5" />
-            </button>
-          </div>
-        </div>
-      </div>
-    </motion.div>
+      {Array.from({ length: cap }, (_, i) => i + 1).map((n) => (
+        <option key={n} value={n}>
+          {n}
+        </option>
+      ))}
+    </select>
   );
 }
 
-function PromoCode({ onApply, applied, onRemove }) {
-  const [code, setCode] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
-
-  const handleApply = async () => {
-    if (!code.trim()) return;
-    setLoading(true);
-    setError("");
-    await new Promise((r) => setTimeout(r, 600));
-    if (code.toUpperCase() === "EBUNLY10") {
-      onApply({ code: code.toUpperCase(), discount: 10, type: "percent" });
-    } else {
-      setError("Invalid or expired promo code.");
-    }
-    setLoading(false);
-  };
-
-  if (applied) {
-    return (
-      <div className="flex items-center justify-between bg-green-50 border border-green-200 rounded-xl px-4 py-3">
-        <div className="flex items-center gap-2">
-          <Tag className="w-4 h-4 text-green-600" />
-          <span className="text-sm font-semibold text-green-700">
-            {applied.code}
-          </span>
-          <span className="text-xs text-green-600">
-            -{applied.discount}% off
-          </span>
-        </div>
-        <button
-          onClick={onRemove}
-          className="text-green-500 hover:text-red-500 transition-colors"
-        >
-          <X className="w-4 h-4" />
-        </button>
-      </div>
-    );
-  }
+function CartRow({ item, onSetQuantity, onRemove }) {
+  const image = item.images?.[0]?.url ?? item.images?.[0] ?? "/product.png";
+  const details = itemDetails(item);
 
   return (
-    <div className="space-y-1">
-      <div className="flex gap-2">
-        <div className="relative flex-1">
-          <Tag className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-          <input
-            type="text"
-            placeholder="Promo code"
-            value={code}
-            onChange={(e) => {
-              setCode(e.target.value);
-              setError("");
-            }}
-            onKeyDown={(e) => e.key === "Enter" && handleApply()}
-            className="w-full pl-9 pr-3 py-2.5 text-sm border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-500/30 focus:border-orange-400 bg-gray-50"
-          />
+    <div
+      className="flex gap-3 pt-8 pb-4 md:gap-4 md:pt-10 md:pb-5"
+      style={{ borderBottom: `1px solid ${HAIRLINE}` }}
+    >
+      <span className="relative h-16 w-16 shrink-0 overflow-hidden rounded-lg bg-[#FAECE7] md:h-20 md:w-20">
+        <Image
+          src={image}
+          alt={item.name}
+          fill
+          className="object-cover"
+          sizes="80px"
+        />
+      </span>
+
+      <div className="min-w-0 flex-1">
+        {/* Mobile pushes the price to the right edge; desktop sets it beside the name. */}
+        <div className="flex items-start justify-between gap-4 md:justify-start md:gap-3">
+          <p className="text-[15px] leading-5" style={{ color: INK }}>
+            {item.name}
+          </p>
+          <p
+            className="shrink-0 text-[15px] leading-5 whitespace-nowrap"
+            style={{ color: INK }}
+          >
+            ₦{(item.basePrice * item.quantity).toLocaleString()}
+          </p>
         </div>
-        <button
-          onClick={handleApply}
-          disabled={loading || !code.trim()}
-          className="px-4 py-2.5 bg-gray-900 text-white text-sm font-semibold rounded-xl hover:bg-gray-700 disabled:opacity-40 transition-colors"
-        >
-          {loading ? "..." : "Apply"}
-        </button>
+
+        {details.length > 0 && (
+          <ul className="mt-2 space-y-1">
+            {details.map((detail) => (
+              <li key={detail} className="flex items-center gap-1.5">
+                <span
+                  className="h-3 w-3 shrink-0 rounded-full"
+                  style={{ backgroundColor: BULLET }}
+                />
+                <span className="text-[13px] leading-4.5" style={{ color: MUTED }}>
+                  {detail}
+                </span>
+              </li>
+            ))}
+          </ul>
+        )}
+
+        <div className="mt-2.5 flex items-center justify-between gap-4 md:mt-4 md:justify-start md:gap-28">
+          <QuantitySelect
+            value={item.quantity}
+            max={item.maxQuantity}
+            onChange={(q) => onSetQuantity(item.cartItemId, q)}
+          />
+          <button
+            type="button"
+            onClick={() => onRemove(item.cartItemId)}
+            className="text-[13px] font-medium"
+            style={{ color: REMOVE_RED }}
+          >
+            Remove
+          </button>
+        </div>
       </div>
-      {error && <p className="text-xs text-red-500 pl-1">{error}</p>}
     </div>
   );
 }
 
-function OrderSummary({ subtotal, promoCode, onCheckout }) {
-  const discount = promoCode
-    ? promoCode.type === "percent"
-      ? Math.round(subtotal * (promoCode.discount / 100))
-      : promoCode.discount
-    : 0;
-  const deliveryFee = subtotal >= 50000 ? 0 : 2500;
-  const total = subtotal - discount + deliveryFee;
-
+function SummaryRow({ label, value, muted }) {
   return (
-    <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 space-y-3">
-      <h3 className="font-bold text-gray-900">Order Summary</h3>
-      <div className="space-y-2 text-sm">
-        <div className="flex justify-between text-gray-600">
-          <span>Subtotal</span>
-          <span className="font-medium text-gray-900">
-            ₦{subtotal.toLocaleString()}
-          </span>
-        </div>
-        {discount > 0 && (
-          <div className="flex justify-between text-green-600">
-            <span>Discount ({promoCode.code})</span>
-            <span className="font-medium">-₦{discount.toLocaleString()}</span>
-          </div>
-        )}
-        <div className="flex justify-between text-gray-600">
-          <span className="flex items-center gap-1">
-            <Truck className="w-3.5 h-3.5" /> Delivery
-          </span>
-          <span
-            className={`font-medium ${deliveryFee === 0 ? "text-green-600" : "text-gray-900"}`}
-          >
-            {deliveryFee === 0 ? "Free" : `₦${deliveryFee.toLocaleString()}`}
-          </span>
-        </div>
-        {deliveryFee > 0 && (
-          <p className="text-[11px] text-gray-400">
-            Free delivery on orders above ₦50,000
-          </p>
-        )}
+    <div className="flex items-baseline justify-between gap-4">
+      <span className="text-[14px] leading-5" style={{ color: INK }}>
+        {label}
+      </span>
+      <span
+        className="text-[14px] leading-5"
+        style={{ color: muted ? MUTED : INK }}
+      >
+        {value}
+      </span>
+    </div>
+  );
+}
+
+function OrderSummary({ subtotal, estimatedDelivery, onCheckout }) {
+  return (
+    <div className="rounded-xl bg-white p-5">
+      <p className="text-[16px] leading-6 font-medium" style={{ color: INK }}>
+        Order summary
+      </p>
+
+      <div className="mt-2 space-y-2">
+        <SummaryRow label="Subtotal" value={`₦${subtotal.toLocaleString()}`} />
+        <SummaryRow label="Delivery" value="Calculated at checkout" muted />
       </div>
-      <div className="border-t border-gray-100 pt-3 flex justify-between items-center">
-        <span className="font-bold text-gray-900">Total</span>
-        <span className="text-xl font-bold text-gray-900">
-          ₦{total.toLocaleString()}
+
+      <div
+        className="mt-3 flex items-baseline justify-between gap-4 pt-3"
+        style={{ borderTop: `1px solid ${HAIRLINE}` }}
+      >
+        <span className="text-[14px] leading-5 font-medium" style={{ color: INK }}>
+          Total
+        </span>
+        <span className="text-[14px] leading-5 font-medium" style={{ color: INK }}>
+          ₦{subtotal.toLocaleString()}
         </span>
       </div>
-      <motion.button
-        whileTap={{ scale: 0.98 }}
+
+      {/* Only the desktop frame carries the lead-time line. */}
+      {estimatedDelivery && (
+        <p
+          className="mt-3 hidden text-[11px] leading-4 md:block"
+          style={{ color: MUTED }}
+        >
+          Est. delivery {estimatedDelivery}, based on the longest item lead time
+        </p>
+      )}
+
+      <button
+        type="button"
         onClick={onCheckout}
-        className="w-full bg-orange-600 hover:bg-orange-700 text-white font-bold py-3.5 rounded-xl transition-colors shadow-lg shadow-orange-600/20 flex items-center justify-center gap-2"
+        className="mt-5 h-12 w-full rounded-lg text-[15px] text-white md:mt-4 md:h-11.5"
+        style={{ backgroundColor: BRAND }}
       >
-        Proceed to Checkout <ChevronRight className="w-4 h-4" />
-      </motion.button>
+        Go to checkout
+      </button>
     </div>
   );
 }
 
 function EmptyCart() {
   return (
-    <motion.div
-      initial={{ opacity: 0, scale: 0.95 }}
-      animate={{ opacity: 1, scale: 1 }}
-      className="flex flex-col items-center justify-center py-20 text-center px-6"
-    >
-      <div className="w-20 h-20 bg-orange-50 rounded-full flex items-center justify-center mb-4">
-        <ShoppingBag className="w-9 h-9 text-orange-400" />
-      </div>
-      <h2 className="text-xl font-bold text-gray-900 mb-1">
+    <div className="flex flex-col items-center justify-center py-20 text-center">
+      <span className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-[#FAECE7]">
+        <ShoppingBag className="h-7 w-7" style={{ color: BRAND }} />
+      </span>
+      <p className="text-[15px] font-medium" style={{ color: INK }}>
         Your cart is empty
-      </h2>
-      <p className="text-sm text-gray-500 mb-6">
+      </p>
+      <p className="mt-1 text-[13px]" style={{ color: MUTED }}>
         Add items to your cart to get started
       </p>
       <Link
         href="/"
-        className="bg-orange-600 text-white font-semibold px-6 py-3 rounded-xl hover:bg-orange-700 transition-colors"
+        className="mt-6 h-11.5 rounded-lg px-6 text-[14px] leading-11.5 text-white"
+        style={{ backgroundColor: BRAND }}
       >
         Start Shopping
       </Link>
-    </motion.div>
+    </div>
   );
 }
 
-export default function CartClient() {
+/** Longest lead time across the cart, formatted the way the summary reads. */
+function estimatedDeliveryLabel(items) {
+  const days = items.reduce(
+    (max, item) => Math.max(max, item.estimatedDeliveryDays ?? 0),
+    0,
+  );
+  if (!days) return null;
+  const date = new Date();
+  date.setDate(date.getDate() + days);
+  return date.toLocaleDateString("en-GB", { month: "short", day: "numeric" });
+}
+
+/** `mockItems` is for the UI harness at /test/ui/cart — unused in the app. */
+export default function CartClient({ mockItems = null }) {
   const router = useRouter();
-  const {
-    items,
-    clearCart,
-    subtotal,
-    increment,
-    decrement,
-    removeItem,
-    isLoggedIn,
-  } = useCart();
-  const [promoCode, setPromoCode] = useState(null);
+  const cart = useCart();
   const [checkoutOpen, setCheckoutOpen] = useState(false);
-  const total = subtotal();
+
+  const { setQuantity, removeItem, isLoggedIn } = cart;
+  const items = mockItems ?? cart.items;
+  const total = mockItems
+    ? mockItems.reduce((sum, i) => sum + i.basePrice * i.quantity, 0)
+    : cart.subtotal();
 
   const handleCheckout = () => {
     if (!isLoggedIn) {
@@ -287,111 +251,52 @@ export default function CartClient() {
     setCheckoutOpen(true);
   };
 
-  const handleCheckoutSuccess = () => {
-    setCheckoutOpen(false);
-    router.push("/profile/orders");
-  };
-
   return (
-    <div className="font-sans">
-      {/* Page heading — aligned with the header container + vertical padding */}
-      <div className="max-w-7xl mx-auto px-4 md:px-6 pt-6">
-        <div className="flex items-center gap-2">
-          <Link
-            href="/"
-            className="p-1.5 -ml-1.5 rounded-xl hover:bg-gray-100 transition-colors"
-            aria-label="Back"
-          >
-            <ChevronLeft className="w-5 h-5 text-gray-700" />
-          </Link>
-          <h1 className="font-bold text-gray-900 text-xl">
-            My Cart{" "}
-            {items.length > 0 && (
-              <span className="text-gray-400 font-normal text-base">
-                ({items.length} {items.length === 1 ? "item" : "items"})
-              </span>
-            )}
-          </h1>
-        </div>
-      </div>
+    <main className="max-w-308 mx-auto px-4 pt-6 pb-16">
+      <h1
+        className="text-[19px] leading-7 font-medium md:text-[22px]"
+        style={{ color: INK }}
+      >
+        Your cart
+      </h1>
 
       {items.length === 0 ? (
         <EmptyCart />
       ) : (
-        <main className="max-w-7xl mx-auto px-4 md:px-6 py-6 lg:grid lg:grid-cols-[1fr_380px] lg:gap-8 lg:items-start pb-12">
-          <div className="space-y-3">
-            <AnimatePresence mode="popLayout">
-              {items.map((item) => (
-                <CartItem
-                  key={item.cartItemId}
-                  item={item}
-                  onIncrement={increment}
-                  onDecrement={decrement}
-                  onRemove={removeItem}
-                />
-              ))}
-            </AnimatePresence>
-            <button
-              onClick={clearCart}
-              className="flex items-center gap-1.5 text-sm text-red-400 hover:text-red-600 transition-colors py-1"
-            >
-              <Trash2 className="w-4 h-4" /> Clear cart
-            </button>
+        <div className="md:flex md:items-start md:gap-50">
+          <div className="md:w-165 md:shrink-0">
+            {items.map((item) => (
+              <CartRow
+                key={item.cartItemId}
+                item={item}
+                onSetQuantity={setQuantity}
+                onRemove={removeItem}
+              />
+            ))}
           </div>
 
-          <div className="mt-6 lg:mt-0 space-y-3 lg:sticky lg:top-20">
-            <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4">
-              <h3 className="font-bold text-gray-900 mb-3 text-sm">
-                Promo Code
-              </h3>
-              <PromoCode
-                applied={promoCode}
-                onApply={setPromoCode}
-                onRemove={() => setPromoCode(null)}
-              />
-            </div>
+          <div className="mt-10 md:mt-0 md:w-85 md:shrink-0">
             <OrderSummary
               subtotal={total}
-              promoCode={promoCode}
+              estimatedDelivery={estimatedDeliveryLabel(items)}
               onCheckout={handleCheckout}
             />
-            <div className="flex items-start gap-2.5 bg-orange-50 border border-orange-100 rounded-2xl p-4">
-              <Truck className="w-4 h-4 text-orange-500 mt-0.5 flex-shrink-0" />
-              <p className="text-xs text-orange-700 leading-relaxed">
-                Estimated delivery in <strong>4–5 business days</strong>. Free
-                delivery on orders above <strong>₦50,000</strong>.
-              </p>
-            </div>
           </div>
-        </main>
-      )}
-
-      {items.length > 0 && (
-        <div className="sticky bottom-0 left-0 right-0 bg-white border-t border-gray-200 shadow-lg z-40 lg:hidden px-4 py-3">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-xs text-gray-500">Total</p>
-              <p className="text-lg font-bold text-gray-900">
-                ₦{total.toLocaleString()}
-              </p>
-            </div>
-            <motion.button
-              whileTap={{ scale: 0.97 }}
-              onClick={handleCheckout}
-              className="bg-orange-600 hover:bg-orange-700 text-white font-bold py-3 px-6 rounded-xl shadow-lg shadow-orange-600/20 transition-colors flex items-center gap-1.5"
-            >
-              Checkout <ChevronRight className="w-4 h-4" />
-            </motion.button>
-          </div>
-          <div style={{ height: "env(safe-area-inset-bottom)" }} />
         </div>
       )}
 
       <CheckoutModal
         open={checkoutOpen}
+        subtotal={total}
+        vendorCount={countVendors(items)}
         onClose={() => setCheckoutOpen(false)}
-        onSuccess={handleCheckoutSuccess}
+        onSuccess={() => {
+          setCheckoutOpen(false);
+          // Paystack may take over the tab from here; if it does not, the
+          // customer lands on their orders with the new one at the top.
+          router.push("/profile/orders");
+        }}
       />
-    </div>
+    </main>
   );
 }

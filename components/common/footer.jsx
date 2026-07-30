@@ -38,7 +38,7 @@ export default function Footer() {
               style={{ lineHeight: "99%", letterSpacing: 0 }}
             >
               Making memories{" "}
-              <span className="text-[#F85826] font-semibold">last.</span>
+              <span className="text-[#D85A30] font-semibold">last.</span>
             </p>
             <p
               className="text-[13px] text-white/50 "

@@ -1,37 +1,55 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { ChevronDown, ChevronLeft, ChevronRight } from "lucide-react";
-import ProductCard from "./product-card";
+import { ChevronDown } from "lucide-react";
+import ProductCard from "@/components/common/product-card";
 
 const LIMIT = 8;
 const API_URL = `${process.env.NEXT_PUBLIC_API_URL}/products`;
 
-function getPageNumbers(current, total) {
-  if (total <= 7) return Array.from({ length: total }, (_, i) => i + 1);
-  if (current <= 4) return [1, 2, 3, 4, 5, "…", total];
-  if (current >= total - 3)
-    return [1, "…", total - 4, total - 3, total - 2, total - 1, total];
-  return [1, "…", current - 1, current, current + 1, "…", total];
-}
+/*
+ * Chrome measured from the Figma exports (desktop 2160px = 1440 frame @1.5x):
+ *   container 1200px · sidebar rail at x120 · content column x400–1320
+ *   every pill/select 40px tall, rounded-full
+ *   active  → fill #FAECE7, border #993C1D, text #712B13
+ *   idle    → transparent fill, border #EBE5E0, text #24201C
+ *   hairline rule + count divider #EBE5E0
+ */
+const PEACH = "#FAECE7";
+const BRAND = "#993C1D";
+const BRAND_INK = "#712B13";
+const HAIRLINE = "#EBE5E0";
+const INK = "#24201C";
+
+const PILL_BASE =
+  "flex-none inline-flex items-center justify-center h-10 rounded-full border px-6 text-[15px] whitespace-nowrap transition-colors";
+
+const pillStyle = (active) =>
+  active
+    ? { backgroundColor: PEACH, borderColor: BRAND, color: BRAND_INK }
+    : { backgroundColor: "transparent", borderColor: HAIRLINE, color: INK };
 
 function normalizeProduct(p) {
-  let image = "/product.png";
-  if (Array.isArray(p.images) && p.images[0]) {
-    image =
-      typeof p.images[0] === "string"
-        ? p.images[0]
-        : (p.images[0].url ?? "/product.png");
-  } else if (p.image) {
-    image =
-      typeof p.image === "string" ? p.image : (p.image.url ?? "/product.png");
+  const images = Array.isArray(p.images)
+    ? p.images
+        .map((img) => (typeof img === "string" ? img : img?.url))
+        .filter(Boolean)
+    : [];
+  if (!images.length) {
+    const single =
+      typeof p.image === "string" ? p.image : (p.image?.url ?? "/product.png");
+    images.push(single);
   }
   return {
     id: p._id ?? p.id ?? "",
     name: p.name ?? "",
     slug: p.slug ?? "",
     price: p.basePrice ?? p.price ?? 0,
-    image,
+    image: images[0],
+    images,
+    personalizable: Boolean(
+      p.personalizable ?? p.isPersonalizable ?? p.personalization?.enabled,
+    ),
   };
 }
 
@@ -48,12 +66,13 @@ function parseResponse(json) {
   const total = meta.total ?? meta.totalItems ?? items.length;
   const totalPages =
     meta.totalPages ?? meta.pages ?? (Math.ceil(total / LIMIT) || 1);
-  return { products: items.map(normalizeProduct), totalPages };
+  return { products: items.map(normalizeProduct), totalPages, total };
 }
 
 export default function ProductsClient({
   initialProducts,
   initialTotalPages,
+  initialTotal,
   typeName,
   coreCategory,
   occasionTags,
@@ -67,8 +86,10 @@ export default function ProductsClient({
     page: 1,
   });
 
-  const [fetchedProducts, setFetchedProducts] = useState(null);
+  // `loaded` accumulates across "Load more"; null means "use the server data".
+  const [loaded, setLoaded] = useState(null);
   const [fetchedTotalPages, setFetchedTotalPages] = useState(null);
+  const [fetchedTotal, setFetchedTotal] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
 
   const {
@@ -85,13 +106,15 @@ export default function ProductsClient({
     !madeInNaija &&
     currentPage === 1;
 
-  // Fall back to server-provided data when no filters are active
-  const products =
-    isDefault || fetchedProducts === null ? initialProducts : fetchedProducts;
+  const products = isDefault || loaded === null ? initialProducts : loaded;
   const totalPages =
     isDefault || fetchedTotalPages === null
       ? initialTotalPages
       : fetchedTotalPages;
+  const total =
+    isDefault || fetchedTotal === null
+      ? (initialTotal ?? initialProducts.length)
+      : fetchedTotal;
 
   useEffect(() => {
     if (isDefault) return;
@@ -107,7 +130,10 @@ export default function ProductsClient({
     } else if (coreCategory && activeFilter === "all") {
       params.set("coreCategory", coreCategory);
     } else {
-      params.set("subcategory", activeFilter !== "all" ? activeFilter : typeName);
+      params.set(
+        "subcategory",
+        activeFilter !== "all" ? activeFilter : typeName,
+      );
     }
     if (priceSort) {
       params.set("sortBy", "basePrice");
@@ -123,9 +149,11 @@ export default function ProductsClient({
     })
       .then((r) => r.json())
       .then((json) => {
-        const { products: p, totalPages: t } = parseResponse(json);
-        setFetchedProducts(p);
+        const { products: p, totalPages: t, total: n } = parseResponse(json);
+        // Page 1 replaces the list, later pages append (Load more).
+        setLoaded((prev) => (currentPage === 1 || prev === null ? p : [...prev, ...p]));
         setFetchedTotalPages(t);
+        setFetchedTotal(n);
         setIsLoading(false);
       })
       .catch((e) => {
@@ -146,7 +174,6 @@ export default function ProductsClient({
     madeInNaija,
   ]);
 
-  // Compute whether the next filter object will require a fetch
   const applyFilters = (next) => {
     const nextIsDefault =
       next.activeFilter === "all" &&
@@ -158,151 +185,184 @@ export default function ProductsClient({
     setIsLoading(!nextIsDefault);
   };
 
-  const handleFilterChange = (f) =>
+  const handleFilterChange = (f) => {
+    setLoaded(null);
     applyFilters({ ...filters, activeFilter: f, page: 1 });
-
-  const handlePriceSort = () =>
-    applyFilters({
-      ...filters,
-      priceSort: !priceSort,
-      discounts: priceSort ? discounts : false,
-      page: 1,
-    });
-
-  const handleDiscounts = () =>
-    applyFilters({
-      ...filters,
-      discounts: !discounts,
-      priceSort: discounts ? priceSort : false,
-      page: 1,
-    });
-
-  const handleMadeInNaija = () =>
-    applyFilters({ ...filters, madeInNaija: !madeInNaija, page: 1 });
-
-  const goTo = (page) => {
-    applyFilters({ ...filters, page });
-    window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
-  const chipBase =
-    "flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-[13px] font-medium border transition-colors";
-  const chipOff = "bg-white text-text-dark-gray border-[#E5E7EB]";
-  const chipOn = "bg-[#0C0000] text-white border-[#0C0000]";
+  const handleDiscounts = () => {
+    setLoaded(null);
+    applyFilters({ ...filters, discounts: !discounts, page: 1 });
+  };
+
+  const handleMadeInNaija = () => {
+    setLoaded(null);
+    applyFilters({ ...filters, madeInNaija: !madeInNaija, page: 1 });
+  };
+
+  const handleSort = (e) => {
+    setLoaded(null);
+    applyFilters({ ...filters, priceSort: e.target.value === "price", page: 1 });
+  };
+
+  const loadMore = () => applyFilters({ ...filters, page: currentPage + 1 });
+
+  const filterLabels = subFilters.map((f) =>
+    typeof f === "string" ? f : f.name,
+  );
+
+  const sortSelect = (
+    <div className="relative flex-none">
+      <select
+        value={priceSort ? "price" : "default"}
+        onChange={handleSort}
+        className="h-10 appearance-none rounded-full border bg-transparent pl-5 pr-11 text-[15px] focus:outline-none"
+        style={{ borderColor: HAIRLINE, color: INK }}
+        aria-label="Sort products"
+      >
+        <option value="default">Sort by: Default</option>
+        <option value="price">Sort by: Price</option>
+      </select>
+      <ChevronDown
+        size={16}
+        strokeWidth={1.5}
+        className="pointer-events-none absolute right-5 top-1/2 -translate-y-1/2"
+        style={{ color: INK }}
+      />
+    </div>
+  );
+
+  const toggles = (
+    <>
+      <button
+        type="button"
+        onClick={handleDiscounts}
+        className={PILL_BASE}
+        style={pillStyle(discounts)}
+      >
+        Discounts
+      </button>
+      <button
+        type="button"
+        onClick={handleMadeInNaija}
+        className={PILL_BASE}
+        style={pillStyle(madeInNaija)}
+      >
+        Made in Nigeria
+      </button>
+    </>
+  );
 
   return (
-    <div className="max-w-7xl mx-auto px-4 md:px-6 py-6 md:py-10">
-      <div className="flex gap-5 lg:gap-8">
-        {/* ── Desktop Sidebar ──────────────────────────────── */}
-        <aside className="hidden md:block shrink-0" style={{ width: "200px" }}>
-          <div className="bg-white rounded-2xl pl-9 py-4 overflow-hidden shadow-[0_1px_6px_rgba(0,0,0,0.07)]">
-            <p className="text-[14px] font-normal text-[#0C0000] mb-3">
-              Categories
-            </p>
-            <ul className="space-y-2">
-              <li>
-                <button
-                  onClick={() => handleFilterChange("all")}
-                  className={`whitespace-nowrap text-center px-3 py-1.5 rounded-full text-[13px] font-medium transition-colors ${
-                    activeFilter === "all"
-                      ? "bg-[#000000] text-white"
-                      : "bg-[#F8F8F8] text-[#0C0000]"
-                  }`}
-                >
-                  All Products
-                </button>
-              </li>
-              {subFilters.map((f) => {
-                const label = typeof f === "string" ? f : f.name;
-                return (
-                  <li key={label}>
-                    <button
-                      onClick={() => handleFilterChange(label)}
-                      className={`whitespace-nowrap text-center px-3 py-1.5 rounded-full text-[13px] font-medium transition-colors ${
-                        activeFilter === label
-                          ? "bg-[#0C0000] text-white"
-                          : "bg-[#F5F5F5] text-[#0C0000]"
-                      }`}
-                    >
-                      {label}
-                    </button>
-                  </li>
-                );
-              })}
-            </ul>
+    <div className="w-full max-w-[1200px] mx-auto px-4 xl:px-0 pb-10 md:pb-16">
+      {/* ── Mobile: category rail ───────────────────────────── */}
+      <div className="md:hidden -mx-4 px-4 flex gap-2.5 overflow-x-auto scrollbar-hide">
+        <button
+          type="button"
+          onClick={() => handleFilterChange("all")}
+          className={PILL_BASE}
+          style={pillStyle(activeFilter === "all")}
+        >
+          All Products
+        </button>
+        {filterLabels.map((label) => (
+          <button
+            key={label}
+            type="button"
+            onClick={() => handleFilterChange(label)}
+            className={PILL_BASE}
+            style={pillStyle(activeFilter === label)}
+          >
+            {label}
+          </button>
+        ))}
+      </div>
+
+      {/* ── Mobile: count + sort + toggles ──────────────────── */}
+      <div className="md:hidden -mx-4 px-4 mt-4 flex items-center gap-2.5 overflow-x-auto scrollbar-hide">
+        <span
+          className="flex-none text-[13px]"
+          style={{ color: "#6E6659" }}
+        >
+          {total} found
+        </span>
+        {sortSelect}
+        {toggles}
+      </div>
+
+      {/* Sidebar rail + 80px gutter = the 280px offset to the content column */}
+      <div className="flex md:gap-20">
+        {/* ── Desktop sidebar ───────────────────────────────── */}
+        <aside className="hidden md:block shrink-0 w-[200px] pt-1">
+          <p
+            className="text-[11px] font-medium tracking-[0.02em]"
+            style={{ color: INK }}
+          >
+            CATEGORIES
+          </p>
+          <div className="mt-7 flex flex-col items-start gap-[13px]">
+            <button
+              type="button"
+              onClick={() => handleFilterChange("all")}
+              className={PILL_BASE}
+              style={pillStyle(activeFilter === "all")}
+            >
+              All Products
+            </button>
+            {filterLabels.map((label) => (
+              <button
+                key={label}
+                type="button"
+                onClick={() => handleFilterChange(label)}
+                className={PILL_BASE}
+                style={pillStyle(activeFilter === label)}
+              >
+                {label}
+              </button>
+            ))}
           </div>
         </aside>
 
-        {/* ── Main content ──────────────────────────────────── */}
+        {/* ── Main column ───────────────────────────────────── */}
         <div className="flex-1 min-w-0">
-          {/* Mobile sub-filters horizontal scroll */}
-          {subFilters.length > 0 && (
-            <div className="md:hidden flex gap-2 overflow-x-auto pb-2 mb-4 scrollbar-hide">
-              <button
-                onClick={() => handleFilterChange("all")}
-                className={`flex-none px-3.5 py-1.5 rounded-full text-[12px] font-medium border transition-colors ${
-                  activeFilter === "all" ? chipOn : chipOff
-                }`}
-              >
-                All Products
-              </button>
-              {subFilters.map((f) => {
-                const label = typeof f === "string" ? f : f.name;
-                return (
-                  <button
-                    key={label}
-                    onClick={() => handleFilterChange(label)}
-                    className={`flex-none px-3.5 py-1.5 rounded-full text-[12px] font-medium border transition-colors ${
-                      activeFilter === label ? chipOn : chipOff
-                    }`}
-                  >
-                    {label}
-                  </button>
-                );
-              })}
-            </div>
-          )}
+          {/* Desktop filter bar */}
+          <div className="hidden md:flex items-center gap-2.5">
+            {sortSelect}
+            {toggles}
 
-          {/* Filter chips row */}
-          <div className="flex flex-wrap items-center gap-2 mb-6 md:justify-end">
-            <button
-              onClick={handlePriceSort}
-              className={`${chipBase} ${priceSort ? chipOn : chipOff}`}
-            >
-              Sort By Price
-              <ChevronDown className="w-3.5 h-3.5" />
-            </button>
-            <button
-              onClick={handleDiscounts}
-              className={`${chipBase} ${discounts ? chipOn : chipOff}`}
-            >
-              🏷️ Discounts
-            </button>
-            <button
-              onClick={handleMadeInNaija}
-              className={`${chipBase} ${madeInNaija ? chipOn : chipOff}`}
-            >
-              🇳🇬 Made In Naija
-            </button>
+            <div className="ml-auto flex items-center gap-6">
+              <span
+                className="block w-px h-10"
+                style={{ backgroundColor: HAIRLINE }}
+              />
+              <span className="text-[15px]" style={{ color: "#6E6659" }}>
+                <span style={{ color: INK }}>{total}</span> gift options found
+              </span>
+            </div>
           </div>
 
-          {/* Product grid */}
           <div
-            className={`transition-opacity duration-200 ${
+            className="hidden md:block h-px mt-5 mb-4"
+            style={{ backgroundColor: HAIRLINE }}
+          />
+
+          {/* Grid */}
+          <div
+            className={`mt-5 md:mt-0 transition-opacity duration-200 ${
               isLoading ? "opacity-50 pointer-events-none" : "opacity-100"
             }`}
           >
             {products.length === 0 && !isLoading ? (
               <div className="flex flex-col items-center justify-center py-20 text-center">
-                <p className="font-medium text-[#333] text-[16px]">
+                <p className="text-[16px] font-medium" style={{ color: INK }}>
                   No products found
                 </p>
-                <p className="text-text-gray text-[14px] mt-1">
+                <p className="mt-1 text-[14px]" style={{ color: "#6E6659" }}>
                   Try adjusting your filters
                 </p>
               </div>
             ) : (
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-2 md:gap-5">
                 {products.map((product) => (
                   <ProductCard key={product.id} product={product} />
                 ))}
@@ -310,50 +370,17 @@ export default function ProductsClient({
             )}
           </div>
 
-          {/* ── Pagination ────────────────────────────────── */}
-          {totalPages > 1 && (
-            <div className="flex items-center justify-center gap-1.5 mt-10">
+          {/* Load more */}
+          {currentPage < totalPages && products.length > 0 && (
+            <div className="mt-9 flex justify-center">
               <button
-                onClick={() => goTo(currentPage - 1)}
-                disabled={currentPage === 1}
-                className="w-9 h-9 rounded-full border border-[#E5E7EB] flex items-center justify-center text-text-dark-gray disabled:opacity-30 transition-colors hover:border-[#0C0000] hover:text-[#0C0000]"
-                aria-label="Previous page"
+                type="button"
+                onClick={loadMore}
+                disabled={isLoading}
+                className="inline-flex h-8 items-center rounded-full border px-5 text-[13px] disabled:opacity-50"
+                style={{ borderColor: BRAND, color: BRAND_INK }}
               >
-                <ChevronLeft className="w-4 h-4" />
-              </button>
-
-              {getPageNumbers(currentPage, totalPages).map((p, i) =>
-                p === "…" ? (
-                  <span
-                    key={`ellipsis-${i}`}
-                    className="w-9 h-9 flex items-center justify-center text-text-gray text-[13px] select-none"
-                  >
-                    …
-                  </span>
-                ) : (
-                  <button
-                    key={p}
-                    onClick={() => goTo(p)}
-                    className={`w-9 h-9 rounded-full text-[13px] font-medium transition-colors ${
-                      currentPage === p
-                        ? "bg-[#0C0000] text-white"
-                        : "border border-[#E5E7EB] text-text-dark-gray hover:border-[#0C0000] hover:text-[#0C0000]"
-                    }`}
-                    aria-label={`Page ${p}`}
-                    aria-current={currentPage === p ? "page" : undefined}
-                  >
-                    {p}
-                  </button>
-                ),
-              )}
-
-              <button
-                onClick={() => goTo(currentPage + 1)}
-                disabled={currentPage === totalPages}
-                className="w-9 h-9 rounded-full border border-[#E5E7EB] flex items-center justify-center text-text-dark-gray disabled:opacity-30 transition-colors hover:border-[#0C0000] hover:text-[#0C0000]"
-                aria-label="Next page"
-              >
-                <ChevronRight className="w-4 h-4" />
+                {isLoading ? "Loading…" : "Load more"}
               </button>
             </div>
           )}

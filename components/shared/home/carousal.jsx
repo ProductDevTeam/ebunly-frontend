@@ -202,7 +202,7 @@ const PerfectForYouSection = ({ products = [] }) => {
                                 e.preventDefault();
                                 handleAddToCart(product);
                               }}
-                              className="w-full bg-[#F85826] text-white text-[14px] font-semibold py-3"
+                              className="w-full bg-[#D85A30] text-white text-[14px] font-semibold py-3"
                             >
                               Add to cart
                             </motion.button>

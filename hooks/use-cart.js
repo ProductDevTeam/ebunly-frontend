@@ -1,9 +1,10 @@
 "use client";
 
-import { useSyncExternalStore, useCallback } from "react";
+import { useCallback } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 
 import { useCartStore } from "@/hooks/use-cart-store";
+import { useHydrated } from "@/hooks/use-hydrated";
 import { useAuthStore } from "@/hooks/use-auth-store";
 import { hasAuthToken } from "@/hooks/use-profile";
 import {
@@ -11,6 +12,7 @@ import {
   addToCart as apiAddToCart,
   updateCartItem as apiUpdateCartItem,
   removeCartItem as apiRemoveCartItem,
+  clearCart as apiClearCart,
 } from "@/lib/cart";
 
 export const cartKeys = { all: ["cart"] };
@@ -76,6 +78,8 @@ function normalizeServerItem(item) {
     compareAtPrice: product.compareAtPrice,
     images: product.images,
     slug: product.slug,
+    // Kept for the delivery quote, which is priced per distinct vendor.
+    vendor: product.vendor ?? item.vendor,
     quantity: item.quantity ?? 1,
     minQuantity: product.minQuantity ?? 1,
     maxQuantity: product.maxQuantity ?? 1000,
@@ -86,15 +90,6 @@ function normalizeServerItem(item) {
 
 function sameVariants(a, b) {
   return JSON.stringify(a ?? {}) === JSON.stringify(b ?? {});
-}
-
-// ── Hydration flag (persisted store + cookie are client-only) ───────────────
-function useHydrated() {
-  return useSyncExternalStore(
-    () => () => {},
-    () => true,
-    () => false,
-  );
 }
 
 /**
@@ -138,6 +133,10 @@ export function useCart() {
   });
   const removeMutation = useMutation({
     mutationFn: (itemId) => apiRemoveCartItem(itemId),
+    onSuccess: invalidate,
+  });
+  const clearMutation = useMutation({
+    mutationFn: apiClearCart,
     onSuccess: invalidate,
   });
 
@@ -210,8 +209,7 @@ export function useCart() {
 
   const removeItem = (cartItemId) => removeMutation.mutate(cartItemId);
 
-  const clearCart = () =>
-    serverItems.forEach((i) => removeMutation.mutate(i.cartItemId));
+  const clearCart = () => clearMutation.mutate();
 
   const getCartItem = (productId, variants = {}) =>
     serverItems.find(

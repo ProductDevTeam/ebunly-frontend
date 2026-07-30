@@ -6,10 +6,11 @@ import { useRouter } from "next/navigation";
 import ImageGallery from "@/components/shared/dashboard/product-detail/gallery";
 import ProductOptions from "@/components/shared/dashboard/product-detail/options";
 import ProductPersonalization from "@/components/shared/dashboard/product-detail/personalization";
+import ProductAddOns from "@/components/shared/dashboard/product-detail/add-ons";
+import WishlistModal from "@/components/shared/dashboard/product-detail/wishlist-modal";
 import ProductKeyInfo from "@/components/shared/dashboard/product-detail/info";
 import ProductDescription from "@/components/shared/dashboard/product-detail/description";
 import RelatedProducts from "@/components/shared/dashboard/product-detail/related";
-import AddToCartSection from "@/components/shared/dashboard/product-detail/add-to-cart";
 import AddToCartDesktop from "@/components/shared/dashboard/product-detail/desktop-cart";
 import Breadcrumb from "@/components/common/breadcrumb";
 
@@ -33,32 +34,38 @@ export default function ProductDetailClient({ product, breadcrumb = [] }) {
   });
 
   const [personalization, setPersonalization] = useState({
-    enabled: false,
     type: null,
-    extraPrice: 0,
     text: "",
-    textColor: "Black",
+    confirmed: false,
   });
+
+  // COMPLETE THE GIFT selections, keyed by add-on (card / flowers / teddy).
+  const [addOns, setAddOns] = useState({});
+
+  const [wishlistOpen, setWishlistOpen] = useState(false);
+
+  // Category line above the title — the breadcrumb's parent entry.
+  const categoryLabel =
+    product.coreCategory ??
+    product.category ??
+    breadcrumb?.[breadcrumb.length - 2]?.label ??
+    null;
 
   const handleOptionChange = (option, value) => {
     setSelectedOptions((prev) => ({ ...prev, [option]: value }));
   };
 
-  // Personalization data passed to the cart — only once a type is selected.
+  // Personalization data passed to the cart — only once it's been confirmed.
   const personalizationData =
-    personalization.enabled && personalization.type
-      ? {
-          text: personalization.text,
-          textColor: personalization.textColor,
-          type: personalization.type,
-        }
+    personalization.confirmed && personalization.type
+      ? { text: personalization.text, type: personalization.type }
       : null;
 
-  const getDeliveryDate = () => {
+  const getDeliveryDate = (extraDays = 0) => {
     if (!product.estimatedDeliveryDays) return null;
     const days = parseInt(product.estimatedDeliveryDays.split("-")[0]);
     const deliveryDate = new Date();
-    deliveryDate.setDate(deliveryDate.getDate() + days);
+    deliveryDate.setDate(deliveryDate.getDate() + days + extraDays);
     return deliveryDate.toLocaleDateString("en-US", {
       month: "short",
       day: "numeric",
@@ -66,6 +73,16 @@ export default function ProductDetailClient({ product, breadcrumb = [] }) {
   };
 
   const deliveryDate = getDeliveryDate();
+
+  // Personalization pushes delivery out, so the estimate shows both dates.
+  const personalizationDays =
+    (personalization.confirmed &&
+      product.personalizationTypes?.find(
+        (t) => t.name === personalization.type,
+      )?.extraDays) ||
+    (personalization.confirmed ? 2 : 0);
+  const personalizedDeliveryDate =
+    personalizationDays > 0 ? getDeliveryDate(personalizationDays) : null;
 
   // Key Info — prefer backend keyInfo[]; otherwise derive from real product fields
   const keyInfoRows =
@@ -92,45 +109,33 @@ export default function ProductDetailClient({ product, breadcrumb = [] }) {
         </div>
       </div>
 
-      {/* Main Content — container aligned with the header (max-w-7xl, px-4 md:px-6) */}
-      <main className="pt-6 pb-10 flex flex-col lg:flex-row lg:items-start lg:gap-8 px-4 md:px-6 max-w-7xl mx-auto">
+      {/*
+       * Main content. The export draws a 1200px content column centered in a
+       * 1440 frame (120px margins): max-w-[1232px] + px-4 lands exactly there
+       * and keeps the 16px mobile gutter. Inside it the gallery is 763px, the
+       * info column 420px, split by a 17px gap — 763 + 17 + 420 = 1200.
+       */}
+      <main className="pt-6 pb-10 flex flex-col lg:flex-row lg:items-start lg:gap-4.25 px-4 max-w-308 mx-auto">
         {/* Image Gallery — scrolls with the page */}
-        <div className="lg:w-6/7">
+        <div className="lg:flex-1 lg:min-w-0">
           <ImageGallery images={images} product={product} />
         </div>
 
         {/* Product Info — pinned while the gallery scrolls */}
-        <div className="lg:w-1/2 bg-transparent mt-6 lg:mt-0 lg:sticky lg:top-6">
+        <div className="lg:w-105 lg:shrink-0 bg-transparent mt-6 lg:mt-0 lg:sticky lg:top-6">
           {/* Badges & Title */}
-          <div className="pt-4 pb-2">
-            {(product.discountPercentage > 0 ||
-              product.isBestSeller ||
-              product.isMadeInNigeria) && (
-              <div className="flex items-center space-x-2 mb-2">
-                {product.discountPercentage > 0 && (
-                  <span className="px-3 py-1 bg-[#0C0000] text-white text-xs font-semibold rounded-full">
-                    {product.discountPercentage}% off
-                  </span>
-                )}
-                {product.isBestSeller && (
-                  <span className="px-3 py-1 bg-[#0C0000] text-white text-xs font-semibold rounded-full">
-                    Best Seller
-                  </span>
-                )}
-                {product.isMadeInNigeria && (
-                  <span className="px-3 py-1 bg-green-100 text-green-800 text-xs font-semibold rounded-full">
-                    Made in Nigeria
-                  </span>
-                )}
-              </div>
+          <div className="pb-4">
+            {/* The export leads with the category, not promo badges. */}
+            {categoryLabel && (
+              <p className="text-[13px] text-[#6E6659]">{categoryLabel}</p>
             )}
 
-            <h1 className="text-lg font-bold text-gray-900 leading-snug">
+            <h1 className="mt-1.5 text-[20px] font-semibold leading-[130%] text-[#24201C]">
               {product.name}
             </h1>
 
             {product.basePrice != null && (
-              <p className="mt-2 text-2xl font-semibold text-gray-900">
+              <p className="mt-2 text-[18px] font-normal text-[#24201C]">
                 ₦{Number(product.basePrice).toLocaleString()}
               </p>
             )}
@@ -144,30 +149,45 @@ export default function ProductDetailClient({ product, breadcrumb = [] }) {
               onOptionChange={handleOptionChange}
             />
 
-            {product.isPersonalizable && (
-              <ProductPersonalization
-                value={personalization}
-                onChange={setPersonalization}
-              />
-            )}
+            <div className="space-y-3">
+              {product.isPersonalizable && (
+                <ProductPersonalization
+                  types={product.personalizationTypes}
+                  value={personalization}
+                  onChange={setPersonalization}
+                />
+              )}
 
-            {/* ── Desktop Add to Cart (shown before key info) ── */}
-            <div className="py-4">
+              <ProductAddOns
+                addons={product.addOns}
+                value={addOns}
+                onChange={setAddOns}
+              />
+            </div>
+
+            {/* ── Buy row ── */}
+            <div className="py-5">
               <AddToCartDesktop
                 product={product}
                 selectedOptions={selectedOptions}
                 personalization={personalizationData}
                 onOptionChange={handleOptionChange}
                 deliveryDate={deliveryDate}
+                personalizedDeliveryDate={personalizedDeliveryDate}
+                onOpenWishlist={() => setWishlistOpen(true)}
               />
             </div>
+
+            <div className="h-px bg-[#EBE5E0] mb-5" />
 
             {keyInfoRows.length > 0 && <ProductKeyInfo keyInfo={keyInfoRows} />}
 
             {(product.description || product.shortDescription) && (
-              <ProductDescription
-                description={product.description || product.shortDescription}
-              />
+              <div className="mt-4">
+                <ProductDescription
+                  description={product.description || product.shortDescription}
+                />
+              </div>
             )}
           </div>
         </div>
@@ -177,13 +197,11 @@ export default function ProductDetailClient({ product, breadcrumb = [] }) {
         <RelatedProducts products={product.relatedProducts} />
       )}
 
-      {/* Mobile-only fixed bottom bar — untouched */}
-      <AddToCartSection
-        product={product}
-        selectedOptions={selectedOptions}
-        personalization={personalizationData}
-        deliveryDate={deliveryDate}
-        onOptionChange={handleOptionChange}
+      {/* The dialog loads the user's lists itself; it only needs the product. */}
+      <WishlistModal
+        open={wishlistOpen}
+        productId={product._id ?? product.id}
+        onClose={() => setWishlistOpen(false)}
       />
     </div>
   );

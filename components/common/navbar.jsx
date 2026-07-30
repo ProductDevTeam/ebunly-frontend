@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useSyncExternalStore } from "react";
+import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
@@ -11,75 +11,10 @@ import { hasAuthToken, useMe } from "@/hooks/use-profile";
 import { useCart } from "@/hooks/use-cart";
 import { useWishlist } from "@/hooks/use-wishlist";
 import { useLogout } from "@/hooks/use-logout";
-
-function accountInitials(name) {
-  const parts = (name ?? "").trim().split(/\s+/).filter(Boolean);
-  if (!parts.length) return "?";
-  return (parts[0][0] + (parts[1]?.[0] ?? "")).toUpperCase();
-}
-
-/** Shared account dropdown — rendered on both desktop and mobile. */
-function AccountDropdown({ fullName, avatarUrl, onClose, onLogout }) {
-  return (
-    <>
-      <div className="fixed inset-0 z-10" onClick={onClose} />
-      <div className="absolute right-0 top-full mt-2 z-20 w-64 bg-white border border-gray-100 rounded-2xl shadow-xl overflow-hidden py-1.5">
-        {/* Profile header */}
-        <Link
-          href="/profile"
-          onClick={onClose}
-          className="flex items-center gap-3 px-4 py-3 hover:bg-gray-50 transition-colors"
-        >
-          <span className="relative w-10 h-10 rounded-full overflow-hidden bg-[#E4D8F7] flex items-center justify-center shrink-0">
-            {avatarUrl ? (
-              <Image
-                src={avatarUrl}
-                alt=""
-                fill
-                unoptimized
-                className="object-cover"
-              />
-            ) : (
-              <span className="text-sm font-semibold text-[#7C5DB0]">
-                {accountInitials(fullName)}
-              </span>
-            )}
-          </span>
-          <span className="min-w-0">
-            <span className="block text-sm font-bold text-gray-900 truncate">
-              {fullName}
-            </span>
-            <span className="block text-xs text-gray-500">
-              View your profile
-            </span>
-          </span>
-        </Link>
-
-        <div className="h-px bg-gray-100 my-1" />
-
-        <Link
-          href="/profile/orders"
-          onClick={onClose}
-          className="flex items-center gap-3 px-4 py-2.5 text-[15px] text-gray-800 hover:bg-gray-50 transition-colors"
-        >
-          <span className="w-9 h-9 rounded-full bg-[#FFF1EC] shrink-0" />
-          My orders
-        </Link>
-
-        <button
-          onClick={() => {
-            onClose();
-            onLogout();
-          }}
-          className="w-full flex items-center gap-3 px-4 py-2.5 text-[15px] text-gray-800 hover:bg-gray-50 transition-colors text-left"
-        >
-          <span className="w-9 h-9 rounded-full bg-[#FFF1EC] shrink-0" />
-          Sign out
-        </button>
-      </div>
-    </>
-  );
-}
+import { AccountDropdown, AccountSheet } from "./account-menu";
+import MobileMenu from "./mobile-menu";
+import SearchSuggestions from "./search-suggestions";
+import SearchOverlay from "./search-overlay";
 
 const FALLBACK_CATEGORIES = [
   { id: "fashion-accessories", label: "Fashion & Accessories" },
@@ -97,7 +32,16 @@ export default function Navbar({
   showMobileSearch = true,
 }) {
   const [search, setSearch] = useState("");
+  // Desktop shows the suggestion panel as an anchored dropdown; mobile opens
+  // the full-screen overlay the two mobile frames draw.
+  const [searchOpen, setSearchOpen] = useState(false);
+  const [mobileSearchOpen, setMobileSearchOpen] = useState(false);
+  const searchRef = useRef(null);
+  // Desktop uses an anchored dropdown, mobile a bottom sheet — separate state
+  // so the mobile sheet's scroll lock can't fire from a desktop click.
   const [accountOpen, setAccountOpen] = useState(false);
+  const [sheetOpen, setSheetOpen] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
   const pathname = usePathname();
   const logout = useLogout();
 
@@ -124,14 +68,22 @@ export default function Navbar({
   const wishlist = useWishlist();
   const wishCount = hydrated ? wishlist.count() : 0;
 
-  // Full name + avatar for the account dropdown (fetched profile).
+  // The account menus greet by first name — prefer the fetched profile, fall
+  // back to whatever the persisted auth store has.
   const { data: meData } = useMe();
-  const profile = meData?.data;
-  const fullName =
-    (profile
-      ? `${profile.firstName ?? ""} ${profile.lastName ?? ""}`.trim()
-      : "") || displayName;
-  const avatarUrl = profile?.profilePicture || null;
+  const firstName = meData?.firstName || displayName;
+
+  // Close the desktop suggestion dropdown on an outside click.
+  useEffect(() => {
+    if (!searchOpen) return undefined;
+    const onPointerDown = (e) => {
+      if (searchRef.current && !searchRef.current.contains(e.target)) {
+        setSearchOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", onPointerDown);
+    return () => document.removeEventListener("mousedown", onPointerDown);
+  }, [searchOpen]);
 
   return (
     <header className="w-full font-sans">
@@ -148,8 +100,8 @@ export default function Navbar({
 
           {/* Search + Shopping for an event */}
           <div className="flex items-center gap-5 flex-1 max-w-xl">
-            <div className="flex-1">
-              <label className="flex items-center gap-2.5 h-9.5 bg-white rounded-md px-4 cursor-text">
+            <div className="relative flex-1" ref={searchRef}>
+              <label className="flex items-center gap-2.5 h-9.5 bg-white border-[#E7E0D8] rounded-full px-4 border cursor-text">
                 <svg
                   width="20"
                   height="20"
@@ -168,11 +120,24 @@ export default function Navbar({
                   placeholder="Search for anything..."
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
-                  className="flex-1 text-sm text-gray-900 placeholder:text-gray-400 bg-transparent focus:outline-none min-w-0"
+                  onFocus={() => setSearchOpen(true)}
+                  className="flex-1 text-sm text-gray-900 placeholder:text-gray-400 
+                   bg-transparent focus:outline-none min-w-0"
                 />
               </label>
+
+              {searchOpen && (
+                <div className="absolute top-full right-0 left-0 z-50 mt-2 rounded-2xl border border-[#F2EDE8] bg-white p-5">
+                  <SearchSuggestions
+                    query={search}
+                    categories={categories}
+                    onPick={setSearch}
+                    onNavigate={() => setSearchOpen(false)}
+                  />
+                </div>
+              )}
             </div>
-            <button className="shrink-0 flex items-center gap-1.5 border border-primary text-primary rounded-[9px] px-3.5 font-sans py-1.75 bg-[#FAF5F5] text-sm font-medium tracking-[0] whitespace-nowrap hover:bg-[#FAF6F5] cursor-pointer transition-colors">
+            <button className="shrink-0 flex items-center gap-1.5 border border-[#993C1D] text-[#993C1D] rounded-full px-3.5 font-sans py-1.5 bg-[#FAF5F5] text-sm font-medium tracking-[0] whitespace-nowrap hover:bg-[#FAF6F5] cursor-pointer transition-colors **:">
               Shopping for an event?
             </button>
           </div>
@@ -198,7 +163,12 @@ export default function Navbar({
               )}
             </Link>
             <Link href="/cart" className="relative p-1.5" aria-label="Basket">
-              <Image src="/icons/shop.svg" width={24} height={24} alt="Basket" />
+              <Image
+                src="/icons/shop.svg"
+                width={24}
+                height={24}
+                alt="Basket"
+              />
               {cartCount > 0 && (
                 <span className="absolute -top-0.5 -right-0.5 min-w-[16px] h-4 px-1 rounded-full bg-primary text-white text-[10px] font-semibold leading-none flex items-center justify-center">
                   {cartCount > 99 ? "99+" : cartCount}
@@ -231,8 +201,7 @@ export default function Navbar({
 
                 {accountOpen && (
                   <AccountDropdown
-                    fullName={fullName}
-                    avatarUrl={avatarUrl}
+                    firstName={firstName}
                     onClose={() => setAccountOpen(false)}
                     onLogout={logout}
                   />
@@ -281,7 +250,12 @@ export default function Navbar({
         <div className="flex items-center justify-between h-13.5 px-4 relative">
           {/* Hamburger */}
           <div className="flex gap-2 items-center">
-            <button className="p-1.5">
+            <button
+              className="p-1.5"
+              onClick={() => setMenuOpen(true)}
+              aria-label="Open menu"
+              aria-expanded={menuOpen}
+            >
               <Image src="/icons/menu.svg" width={25} height={25} alt="Menu" />
             </button>
             {/* Logo centered */}
@@ -313,7 +287,12 @@ export default function Navbar({
               )}
             </Link>
             <Link href="/cart" className="relative p-1.5" aria-label="Basket">
-              <Image src="/icons/shop.svg" width={24} height={24} alt="Basket" />
+              <Image
+                src="/icons/shop.svg"
+                width={24}
+                height={24}
+                alt="Basket"
+              />
               {cartCount > 0 && (
                 <span className="absolute -top-0.5 -right-0.5 min-w-[16px] h-4 px-1 rounded-full bg-primary text-white text-[10px] font-semibold leading-none flex items-center justify-center">
                   {cartCount > 99 ? "99+" : cartCount}
@@ -321,30 +300,19 @@ export default function Navbar({
               )}
             </Link>
             {loggedInUser ? (
-              <div className="relative">
-                <button
-                  onClick={() => setAccountOpen((o) => !o)}
-                  className="p-1.5 flex items-center"
-                  aria-label={displayName}
-                  aria-expanded={accountOpen}
-                >
-                  <Image
-                    src="/icons/profile.svg"
-                    width={24}
-                    height={24}
-                    alt="Profile"
-                  />
-                </button>
-
-                {accountOpen && (
-                  <AccountDropdown
-                    fullName={fullName}
-                    avatarUrl={avatarUrl}
-                    onClose={() => setAccountOpen(false)}
-                    onLogout={logout}
-                  />
-                )}
-              </div>
+              <button
+                onClick={() => setSheetOpen(true)}
+                className="p-1.5 flex items-center"
+                aria-label={displayName}
+                aria-expanded={sheetOpen}
+              >
+                <Image
+                  src="/icons/profile.svg"
+                  width={24}
+                  height={24}
+                  alt="Profile"
+                />
+              </button>
             ) : (
               <Link href="/login" className="p-1.5" aria-label="Sign in">
                 <Image
@@ -361,7 +329,10 @@ export default function Navbar({
         {/* Mobile Search */}
         {showMobileSearch && (
           <div className="px-4 py-2.5 ">
-            <label className="flex items-center gap-2.5 h-9 bg-white border border-gray-200 rounded-md px-4 cursor-text">
+            <button
+              type="button"
+              onClick={() => setMobileSearchOpen(true)}
+              className="flex w-full items-center gap-2.5 h-9 bg-white border border-gray-200 rounded-md px-4 text-left">
               <svg
                 width="20"
                 height="20"
@@ -375,14 +346,31 @@ export default function Navbar({
                 <circle cx="11" cy="11" r="8" />
                 <path d="m21 21-4.35-4.35" />
               </svg>
-              <input
-                type="text"
-                placeholder="Search for anything..."
-                className="flex-1 text-sm text-gray-900 placeholder:text-gray-400 bg-transparent focus:outline-none"
-              />
-            </label>
+              <span className="flex-1 text-sm text-gray-400">
+                Search for anything...
+              </span>
+            </button>
           </div>
         )}
+
+        {/* Mobile overlays — both are `fixed`, so position here is irrelevant */}
+        {mobileSearchOpen && (
+          <SearchOverlay
+            onClose={() => setMobileSearchOpen(false)}
+            categories={categories}
+          />
+        )}
+        <AccountSheet
+          open={sheetOpen}
+          firstName={firstName}
+          onClose={() => setSheetOpen(false)}
+          onLogout={logout}
+        />
+        <MobileMenu
+          open={menuOpen}
+          categories={categories}
+          onClose={() => setMenuOpen(false)}
+        />
       </div>
     </header>
   );

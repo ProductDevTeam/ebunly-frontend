@@ -1,6 +1,6 @@
 import NavbarServer from "@/components/common/navbar-server";
 import Footer from "@/components/common/footer";
-import ProfileClient from "./profile-client";
+import ProfileEntryClient from "./profile-entry-client";
 
 export const metadata = {
   title: "My Profile | Ebunly",
@@ -8,9 +8,9 @@ export const metadata = {
 
 export default function ProfilePage() {
   return (
-    <div className="min-h-screen font-sans bg-white">
+    <div className="min-h-screen font-sans bg-[#FDFBF9]">
       <NavbarServer showMobileSearch={false} />
-      <ProfileClient />
+      <ProfileEntryClient />
       <Footer />
     </div>
   );

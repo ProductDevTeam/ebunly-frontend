@@ -8,7 +8,7 @@ import {
   useSearchHistory,
   buildFilterSummary,
 } from "@/hooks/use-search-history";
-import { useProducts } from "@/hooks/use-products";
+import { useSearch } from "@/hooks/use-search";
 
 export default function SearchBar({
   onSearch,
@@ -24,12 +24,12 @@ export default function SearchBar({
   const { history, saveToHistory, clearHistory, removeEntry } =
     useSearchHistory();
 
-  // Live suggestions: fetch when user has typed 2+ chars
-  const { data: suggestionsData } = useProducts(
-    { search: searchTerm, limit: 5 },
+  // Live suggestions from GET /search, once 2+ characters are typed.
+  const { data: suggestionsData } = useSearch(
+    { q: searchTerm, limit: 5 },
     { enabled: searchTerm.trim().length >= 2 },
   );
-  const suggestions = suggestionsData?.data ?? [];
+  const suggestions = suggestionsData?.products ?? [];
 
   // Debounced search — 200ms for snappy feel
   useEffect(() => {
@@ -196,9 +196,9 @@ export default function SearchBar({
                           <p className="text-sm text-gray-800 truncate group-hover:text-orange-700">
                             {product.name}
                           </p>
-                          {product.category?.name && (
+                          {product.subcategory && (
                             <p className="text-xs text-gray-400">
-                              {product.category.name}
+                              {product.subcategory}
                             </p>
                           )}
                         </div>

@@ -28,7 +28,7 @@ export default function GroupGiftingSection() {
           </div>
           {/* ── Text content ─────────────── */}
           <div className="flex-1 flex flex-col justify-center px-7 py-8 md:px-10 md:py-12 bg-[#FFFAEB]">
-            <p className="text-[#F85826] font-semibold text-[12px] uppercase tracking-[6%] leading-[140%] mb-3">
+            <p className="text-[#D85A30] font-semibold text-[12px] uppercase tracking-[6%] leading-[140%] mb-3">
               Group Gifting
             </p>
             <h2

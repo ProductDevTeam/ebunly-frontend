@@ -1,32 +1,24 @@
 "use client";
 
-import { useSyncExternalStore } from "react";
 import { useRouter, usePathname } from "next/navigation";
 
 import { useWishlistStore, toWishlistItem } from "@/hooks/use-wishlist-store";
+import { useHydrated } from "@/hooks/use-hydrated";
 import { useAuthStore } from "@/hooks/use-auth-store";
 import { hasAuthToken } from "@/hooks/use-profile";
 import { useNotification } from "@/components/common/notification-provider";
 
 export { toWishlistItem };
 
-// Hydration flag — the persisted store is client-only, so gate reads on it to
-// avoid an SSR/first-paint mismatch (same pattern as the cart facade).
-function useHydrated() {
-  return useSyncExternalStore(
-    () => () => {},
-    () => true,
-    () => false,
-  );
-}
-
 /**
- * Wishlist facade — a **logged-in only** feature.
+ * Favourites facade — the heart on a product card — and **logged-in only**.
  *
- * Storage is local (persisted Zustand) until the backend ships a wishlist
- * endpoint; swap the internals here (read/write server + merge on login) and
- * no consumer changes. Guests can't use it: `toggle` bounces them to /login and
- * reads report empty, so hearts/badges only reflect a real session.
+ * Not the same thing as a wishlist: named lists live on the server under
+ * /wishlists (see use-wishlists.js), while favourites have no endpoint at all,
+ * so storage here stays local (persisted Zustand). If one lands, swap the
+ * internals here and no consumer changes. Guests can't use it: `toggle` bounces
+ * them to /login and reads report empty, so hearts and badges only ever reflect
+ * a real session.
  */
 export function useWishlist() {
   const hydrated = useHydrated();

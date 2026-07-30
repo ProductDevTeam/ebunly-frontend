@@ -89,7 +89,7 @@ export default function ProductCard({ product }) {
                   e.preventDefault();
                   handleAddToCart();
                 }}
-                className="w-full bg-[#F85826] text-white text-[13px] font-semibold py-2.5"
+                className="w-full bg-[#D85A30] text-white text-[13px] font-semibold py-2.5"
               >
                 Add to cart
               </motion.button>

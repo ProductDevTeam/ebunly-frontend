@@ -5,32 +5,37 @@ import MobileFilterSheet from "./mobile-filter-sheet";
 import { ChevronDown, X, SlidersHorizontal } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
+import { EMPTY_FILTERS, TAG_FACETS, pickBarFilters } from "./filterbar";
+import { BROWSE_ONLY_FACETS } from "@/hooks/use-search";
+
+// Buttons are keyed by the GET /products parameter they set.
+const TAG_KEYS = TAG_FACETS.map((f) => f.key);
+
 const FILTER_LABELS = {
-  occasion: "Occasion",
-  giftType: "Gift Type",
+  ...Object.fromEntries(TAG_FACETS.map((f) => [f.key, f.label])),
   price: "Price",
-  discounts: "🏷️ Discounts",
+  minDiscount: "🏷️ Discounts",
 };
 
 function getActiveButtonKeys(applied) {
   const active = new Set();
-  if (applied.occasions?.length) active.add("occasion");
-  if (applied.giftTypes?.length) active.add("giftType");
+  TAG_KEYS.forEach((key) => {
+    if (applied[key]?.length) active.add(key);
+  });
   if (applied.minPrice !== undefined || applied.maxPrice !== undefined)
     active.add("price");
   if (applied.minDiscount !== undefined || applied.madeInNigeria)
-    active.add("discounts");
+    active.add("minDiscount");
   return active;
 }
 
 function buildChips(applied) {
   const chips = [];
-  (applied.occasions || []).forEach((v) =>
-    chips.push({ key: "occasions", value: v, label: v }),
-  );
-  (applied.giftTypes || []).forEach((v) =>
-    chips.push({ key: "giftTypes", value: v, label: v.replace(/_/g, " ") }),
-  );
+  TAG_KEYS.forEach((key) => {
+    (applied[key] || []).forEach((v) =>
+      chips.push({ key, value: v, label: v }),
+    );
+  });
   if (applied.minPrice !== undefined || applied.maxPrice !== undefined) {
     const { minPrice, maxPrice } = applied;
     const label =
@@ -56,32 +61,27 @@ function buildChips(applied) {
   return chips;
 }
 
-const EMPTY = {
-  occasions: [],
-  giftTypes: [],
-  minPrice: undefined,
-  maxPrice: undefined,
-  minDiscount: undefined,
-  madeInNigeria: undefined,
-};
-
-export default function MobileFilterBar({ onFilterChange, externalFilters }) {
+export default function MobileFilterBar({
+  onFilterChange,
+  externalFilters,
+  searching = false,
+}) {
   const [activeFilter, setActiveFilter] = useState(null);
-  const [applied, setApplied] = useState(EMPTY);
+  const [applied, setApplied] = useState(EMPTY_FILTERS);
 
   useEffect(() => {
     if (!externalFilters) return;
-    setApplied({
-      occasions: externalFilters.occasions || [],
-      giftTypes: externalFilters.giftTypes || [],
-      minPrice: externalFilters.minPrice,
-      maxPrice: externalFilters.maxPrice,
-      minDiscount: externalFilters.minDiscount,
-      madeInNigeria: externalFilters.madeInNigeria,
-    });
+    setApplied(pickBarFilters(externalFilters));
   }, [externalFilters]);
 
   const handleSheetApply = (newFilters) => {
+    // /search takes one tag per facet, so searching collapses multi-select.
+    if (searching) {
+      TAG_KEYS.forEach((key) => {
+        if (Array.isArray(newFilters[key]) && newFilters[key].length > 1)
+          newFilters[key] = newFilters[key].slice(0, 1);
+      });
+    }
     const next = { ...applied, ...newFilters };
     setApplied(next);
     onFilterChange?.(next);
@@ -89,7 +89,7 @@ export default function MobileFilterBar({ onFilterChange, externalFilters }) {
 
   const removeChip = (chip) => {
     const next = { ...applied };
-    if (chip.key === "occasions" || chip.key === "giftTypes") {
+    if (TAG_KEYS.includes(chip.key)) {
       next[chip.key] = next[chip.key].filter((v) => v !== chip.value);
     } else if (chip.key === "price") {
       next.minPrice = undefined;
@@ -104,8 +104,8 @@ export default function MobileFilterBar({ onFilterChange, externalFilters }) {
   };
 
   const clearAll = () => {
-    setApplied(EMPTY);
-    onFilterChange?.(EMPTY);
+    setApplied(EMPTY_FILTERS);
+    onFilterChange?.(EMPTY_FILTERS);
   };
 
   const activeButtons = getActiveButtonKeys(applied);
@@ -119,22 +119,31 @@ export default function MobileFilterBar({ onFilterChange, externalFilters }) {
           <SlidersHorizontal className="w-4 h-4 text-gray-400 flex-shrink-0" />
 
           {Object.entries(FILTER_LABELS).map(([key, label]) => {
+            // /search cannot apply these, so they close while a term is active.
+            const unavailable =
+              searching &&
+              (BROWSE_ONLY_FACETS.has(key) || key === "minDiscount");
             const isActive = activeButtons.has(key);
-            const count =
-              key === "occasion"
-                ? applied.occasions?.length
-                : key === "giftType"
-                  ? applied.giftTypes?.length
-                  : 0;
+            const count = TAG_KEYS.includes(key)
+              ? (applied[key]?.length ?? 0)
+              : 0;
 
             return (
               <button
                 key={key}
-                onClick={() => setActiveFilter(key)}
+                onClick={() => !unavailable && setActiveFilter(key)}
+                disabled={unavailable}
+                title={
+                  unavailable
+                    ? "Available when browsing, not while searching"
+                    : undefined
+                }
                 className={`whitespace-nowrap flex-shrink-0 flex items-center gap-1.5 px-3.5 py-2 rounded-full text-sm font-semibold transition-all duration-200 border ${
-                  isActive
-                    ? "bg-orange-500 text-white border-orange-500 shadow-sm shadow-orange-200"
-                    : "bg-white text-gray-700 border-gray-200"
+                  unavailable
+                    ? "cursor-not-allowed border-gray-100 bg-white text-gray-300"
+                    : isActive
+                      ? "bg-orange-500 text-white border-orange-500 shadow-sm shadow-orange-200"
+                      : "bg-white text-gray-700 border-gray-200"
                 }`}
               >
                 {label}
