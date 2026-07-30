@@ -2,10 +2,12 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import { AnimatePresence, motion } from "framer-motion";
 import { X } from "lucide-react";
 
 import { useScrollLock } from "@/hooks/use-scroll-lock";
+import { useRecentSearches } from "@/hooks/use-recent-searches";
 
 /*
  * Measured from `design screenshots/Slideout menu mobile.png` (300 × 852, 1x):
@@ -18,8 +20,22 @@ const INK = "#24201C";
 
 export default function MobileMenu({ open, categories = [], onClose }) {
   const [search, setSearch] = useState("");
+  const router = useRouter();
+  const { addRecent } = useRecentSearches();
 
   useScrollLock(open);
+
+  // The field had no submit at all, so typing here did nothing. Same target as
+  // the search overlay: remember the term and hand it to the results page.
+  const submit = (event) => {
+    event.preventDefault();
+    const q = search.trim();
+    if (!q) return;
+    addRecent(q);
+    setSearch("");
+    onClose();
+    router.push(`/discover?q=${encodeURIComponent(q)}`);
+  };
 
   useEffect(() => {
     if (!open) return;
@@ -72,7 +88,8 @@ export default function MobileMenu({ open, categories = [], onClose }) {
 
             {/* Search */}
             <div className="px-5 mt-5">
-              <label
+              <form
+                onSubmit={submit}
                 className="flex items-center gap-[15px] h-[37px] rounded-full border px-[13px] cursor-text"
                 style={{ borderColor: HAIRLINE }}
               >
@@ -91,14 +108,15 @@ export default function MobileMenu({ open, categories = [], onClose }) {
                   <path d="m21 21-4.35-4.35" />
                 </svg>
                 <input
-                  type="text"
+                  type="search"
                   placeholder="Search for anything..."
+                  aria-label="Search"
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
                   className="flex-1 min-w-0 bg-transparent text-[13px] focus:outline-none placeholder:text-[#24201C]"
                   style={{ color: INK }}
                 />
-              </label>
+              </form>
             </div>
 
             {/* Shopping for an event */}

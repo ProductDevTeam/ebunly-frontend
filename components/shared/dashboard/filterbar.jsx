@@ -5,6 +5,15 @@ import { ChevronDown, X, SlidersHorizontal } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
 import { useTaxonomy } from "@/hooks/use-taxonomy";
+import { BROWSE_ONLY_FACETS } from "@/hooks/use-search";
+
+/*
+ * While a search term is active the results come from /search, which cannot
+ * apply Style, Discounts or Made In Naija. Those controls are disabled rather
+ * than left clickable — a filter that accepts a click and changes nothing is
+ * worse than one that says it is unavailable.
+ */
+const BROWSE_ONLY_TITLE = "Available when browsing, not while searching";
 
 /*
  * The tag facets are the ones GET /products actually filters on, and their
@@ -77,7 +86,11 @@ export function pickBarFilters(filters) {
   return picked;
 }
 
-export default function FilterBar({ onFilterChange, externalFilters }) {
+export default function FilterBar({
+  onFilterChange,
+  externalFilters,
+  searching = false,
+}) {
   const [selected, setSelected] = useState(EMPTY_FILTERS);
   const taxonomy = useTaxonomy();
 
@@ -121,9 +134,12 @@ export default function FilterBar({ onFilterChange, externalFilters }) {
       }
     } else if (filter.multi) {
       const cur = next[filter.key] || [];
-      next[filter.key] = cur.includes(value)
-        ? cur.filter((v) => v !== value)
-        : [...cur, value];
+      if (cur.includes(value)) {
+        next[filter.key] = cur.filter((v) => v !== value);
+      } else {
+        // /search accepts one tag per facet, so searching is single-select.
+        next[filter.key] = searching ? [value] : [...cur, value];
+      }
     }
     emit(next);
   };
@@ -197,6 +213,7 @@ export default function FilterBar({ onFilterChange, externalFilters }) {
 
         {/* Dropdown filters */}
         {filterConfig.map((filter) => {
+          const unavailable = searching && BROWSE_ONLY_FACETS.has(filter.key);
           const activeCount =
             filter.key === "price"
               ? selected.minPrice !== undefined
@@ -204,6 +221,21 @@ export default function FilterBar({ onFilterChange, externalFilters }) {
                 : 0
               : (selected[filter.key] || []).length;
           const isActive = activeCount > 0;
+
+          if (unavailable) {
+            return (
+              <button
+                key={filter.label}
+                type="button"
+                disabled
+                title={BROWSE_ONLY_TITLE}
+                className="flex cursor-not-allowed items-center gap-1.5 rounded-full border border-gray-100 bg-white px-3 py-1.5 text-sm font-medium text-gray-300"
+              >
+                {filter.label}
+                <ChevronDown className="h-3.5 w-3.5 text-gray-200" />
+              </button>
+            );
+          }
 
           return (
             <div key={filter.label} className="relative group">
@@ -278,10 +310,14 @@ export default function FilterBar({ onFilterChange, externalFilters }) {
             <button
               key={filter.key}
               onClick={() => handleQuickFilter(filter.key)}
+              disabled={searching}
+              title={searching ? BROWSE_ONLY_TITLE : undefined}
               className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium transition-all duration-200 border ${
-                isActive
-                  ? "bg-orange-500 text-white border-orange-500 shadow-sm shadow-orange-200"
-                  : "bg-white text-gray-700 border-gray-200 hover:border-orange-300 hover:text-orange-600"
+                searching
+                  ? "cursor-not-allowed border-gray-100 bg-white text-gray-300"
+                  : isActive
+                    ? "bg-orange-500 text-white border-orange-500 shadow-sm shadow-orange-200"
+                    : "bg-white text-gray-700 border-gray-200 hover:border-orange-300 hover:text-orange-600"
               }`}
             >
               <span>{filter.emoji}</span>

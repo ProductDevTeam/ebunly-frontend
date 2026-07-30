@@ -6,12 +6,17 @@ import FilterBar from "@/components/shared/dashboard/filterbar";
 import ProductGrid from "@/components/shared/dashboard/product-grid";
 import SearchBar from "@/components/shared/dashboard/search-bar";
 import MobileFilterBar from "@/components/shared/dashboard/mobile-filter";
-import { useProducts } from "@/hooks/use-products";
+import {
+  useProductSearch,
+  isSearching,
+  stripBrowseOnlyFacets,
+} from "@/hooks/use-search";
 import { useSearchHistory } from "@/hooks/use-search-history";
 
 // Keys match GET /products exactly — see lib/products.js.
 const DEFAULT_FILTERS = {
   category: "",
+  subcategory: "",
   search: "",
   occasionTags: [],
   recipients: [],
@@ -29,6 +34,9 @@ const DEFAULT_FILTERS = {
 // /discover?recipients=Women or /discover?maxPrice=3000 land pre-filtered.
 // `occasions`/`giftTypes` are the pre-taxonomy names some older links still
 // carry; map them onto the parameters the API understands.
+//
+// The term arrives as either `q` (what the search panel and overlay link to,
+// matching GET /search) or `search` (what the older header links use).
 function filtersFromSearchParams(searchParams) {
   const num = (key) => {
     const raw = searchParams.get(key);
@@ -40,7 +48,8 @@ function filtersFromSearchParams(searchParams) {
   return {
     ...DEFAULT_FILTERS,
     category: searchParams.get("category") ?? "",
-    search: searchParams.get("search") ?? "",
+    subcategory: searchParams.get("subcategory") ?? "",
+    search: searchParams.get("q") ?? searchParams.get("search") ?? "",
     occasionTags: [
       ...searchParams.getAll("occasionTags"),
       ...searchParams.getAll("occasions"),
@@ -74,13 +83,29 @@ function DiscoverInner() {
   }
 
   const { saveToHistory } = useSearchHistory();
-  const { data, isLoading, isError, error } = useProducts(filters);
+  const {
+    products,
+    total,
+    totalPages,
+    page,
+    categorySuggestions,
+    isLoading,
+    isError,
+    error,
+  } = useProductSearch(filters);
+
+  const searching = isSearching(filters);
 
   const handleSearch = useCallback(
     (searchTerm) => {
       const next = { ...filters, search: searchTerm, page: 1 };
-      setFilters(next);
-      saveToHistory(next);
+      // Results now come from /search, which cannot apply the browse-only
+      // facets — clear them rather than leave chips that no longer bite.
+      const cleaned = isSearching(next)
+        ? { ...DEFAULT_FILTERS, ...stripBrowseOnlyFacets(next) }
+        : next;
+      setFilters(cleaned);
+      saveToHistory(cleaned);
     },
     [filters, saveToHistory],
   );
@@ -88,8 +113,11 @@ function DiscoverInner() {
   const handleFilterChange = useCallback(
     (newFilters) => {
       const merged = { ...filters, ...newFilters, page: 1 };
-      setFilters(merged);
-      saveToHistory(merged);
+      const cleaned = isSearching(merged)
+        ? { ...DEFAULT_FILTERS, ...stripBrowseOnlyFacets(merged) }
+        : merged;
+      setFilters(cleaned);
+      saveToHistory(cleaned);
     },
     [filters, saveToHistory],
   );
@@ -114,20 +142,43 @@ function DiscoverInner() {
       <MobileFilterBar
         onFilterChange={handleFilterChange}
         externalFilters={restoredFilters}
+        searching={searching}
       />
       <FilterBar
         onFilterChange={handleFilterChange}
         externalFilters={restoredFilters}
+        searching={searching}
       />
+      {/* Only /search returns these, so they appear on a term and not on a
+          filter-only browse. The API sends them when matches span named
+          categories, which is what makes them show up on a broad term and
+          stay hidden on a narrow one. */}
+      {categorySuggestions.length > 0 && (
+        <div className="flex flex-wrap items-center gap-2 px-4 pt-4 md:px-8">
+          <span className="text-xs font-medium tracking-[0.04em] text-[#707070] uppercase">
+            In categories
+          </span>
+          {categorySuggestions.map((suggestion) => (
+            <span
+              key={suggestion.name}
+              className="inline-flex h-7 items-center rounded-full border border-[#EBE5E0] px-3 text-[13px] text-[#24201C]"
+            >
+              {suggestion.name}
+              <span className="ml-1.5 text-[#6E6659]">{suggestion.count}</span>
+            </span>
+          ))}
+        </div>
+      )}
+
       <ProductGrid
-        products={data?.data || []}
+        products={products}
         isLoading={isLoading}
         isError={isError}
         error={error}
         pagination={{
-          currentPage: data?.meta?.page || 1,
-          totalPages: data?.meta?.totalPages || 1,
-          totalItems: data?.meta?.total || 0,
+          currentPage: page,
+          totalPages,
+          totalItems: total,
           onPageChange: handlePageChange,
         }}
       />

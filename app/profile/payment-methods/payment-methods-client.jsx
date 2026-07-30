@@ -17,14 +17,16 @@ import {
   useDeleteCard,
   useSetDefaultCard,
 } from "@/hooks/use-payments";
+import { useHydrated } from "@/hooks/use-hydrated";
 
-export default function PaymentMethodsClient({ mockMethods = null }) {
+export default function PaymentMethodsClient() {
   const { error: notifyError } = useNotification();
-  const { data, isLoading } = useSavedCards({ enabled: !mockMethods });
+  const hydrated = useHydrated();
+  const { data, isLoading } = useSavedCards();
   const deleteCard = useDeleteCard();
   const setDefault = useSetDefaultCard();
 
-  const methods = mockMethods ?? data ?? [];
+  const methods = data ?? [];
 
   const remove = (method) =>
     deleteCard.mutate(method.id, {
@@ -37,7 +39,7 @@ export default function PaymentMethodsClient({ mockMethods = null }) {
           is no add-card endpoint to call from here. The empty state says so. */}
       <OutlinePill className="mb-5">+ Add new payment method</OutlinePill>
 
-      {isLoading && !mockMethods ? (
+      {!hydrated || isLoading ? (
         <p className="text-[13px]" style={{ color: ACCOUNT_MUTED }}>
           Loading your cards…
         </p>

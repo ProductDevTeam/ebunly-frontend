@@ -7,6 +7,8 @@ import { X, Loader2 } from "lucide-react";
 import { useCheckout } from "@/hooks/use-orders";
 import { useInitializePayment } from "@/hooks/use-payments";
 import { useDeliveryCost } from "@/hooks/use-deliveries";
+import { useAddress } from "@/hooks/use-address";
+import { useMe } from "@/hooks/use-profile";
 import { useNotification } from "@/components/common/notification-provider";
 
 const naira = (n) => `₦${Number(n ?? 0).toLocaleString()}`;
@@ -66,6 +68,30 @@ export default function CheckoutModal({
 
   const [address, setAddress] = useState(EMPTY);
   const [notes, setNotes] = useState("");
+
+  // Prefill from the saved profile address, otherwise the Addresses screen is
+  // write-only. Done during render rather than in an effect, so it does not
+  // cascade; `prefilled` resets on close so a reopen picks up a newer address.
+  const { address: saved, exists: hasSaved } = useAddress();
+  const { data: me } = useMe();
+  const [prefilled, setPrefilled] = useState(false);
+
+  if (open && !prefilled && (hasSaved || me)) {
+    setPrefilled(true);
+    setAddress((prev) => ({
+      ...prev,
+      fullName:
+        prev.fullName ||
+        [me?.firstName, me?.lastName].filter(Boolean).join(" "),
+      phone: prev.phone || me?.phone || "",
+      street: prev.street || saved.street || "",
+      city: prev.city || saved.city || "",
+      state: prev.state || saved.state || "",
+      zipCode: prev.zipCode || saved.zipCode || "",
+      country: prev.country || saved.country || "",
+    }));
+  }
+  if (!open && prefilled) setPrefilled(false);
 
   // Quoted from the state as soon as it is typed. The endpoint is often down
   // (see use-deliveries.js), so `unavailable` is an expected state, not a bug.

@@ -1,9 +1,10 @@
 "use client";
 
-import { useSyncExternalStore, useCallback } from "react";
+import { useCallback } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 
 import { useCartStore } from "@/hooks/use-cart-store";
+import { useHydrated } from "@/hooks/use-hydrated";
 import { useAuthStore } from "@/hooks/use-auth-store";
 import { hasAuthToken } from "@/hooks/use-profile";
 import {
@@ -89,15 +90,6 @@ function normalizeServerItem(item) {
 
 function sameVariants(a, b) {
   return JSON.stringify(a ?? {}) === JSON.stringify(b ?? {});
-}
-
-// ── Hydration flag (persisted store + cookie are client-only) ───────────────
-function useHydrated() {
-  return useSyncExternalStore(
-    () => () => {},
-    () => true,
-    () => false,
-  );
 }
 
 /**

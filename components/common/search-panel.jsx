@@ -85,7 +85,9 @@ export default function SearchPanel({
               {categories.map((category) => (
                 <Pill
                   key={category.id}
-                  href={`/shop/categories/${category.id}`}
+                  // Related categories come from the search index and are named,
+                  // not ids, so the caller supplies where they point.
+                  href={category.href ?? `/shop/categories/${category.id}`}
                   onClick={onNavigate}
                 >
                   {category.label}

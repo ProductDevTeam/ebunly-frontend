@@ -6,6 +6,7 @@ import { ChevronDown, X, SlidersHorizontal } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
 import { EMPTY_FILTERS, TAG_FACETS, pickBarFilters } from "./filterbar";
+import { BROWSE_ONLY_FACETS } from "@/hooks/use-search";
 
 // Buttons are keyed by the GET /products parameter they set.
 const TAG_KEYS = TAG_FACETS.map((f) => f.key);
@@ -31,7 +32,9 @@ function getActiveButtonKeys(applied) {
 function buildChips(applied) {
   const chips = [];
   TAG_KEYS.forEach((key) => {
-    (applied[key] || []).forEach((v) => chips.push({ key, value: v, label: v }));
+    (applied[key] || []).forEach((v) =>
+      chips.push({ key, value: v, label: v }),
+    );
   });
   if (applied.minPrice !== undefined || applied.maxPrice !== undefined) {
     const { minPrice, maxPrice } = applied;
@@ -58,7 +61,11 @@ function buildChips(applied) {
   return chips;
 }
 
-export default function MobileFilterBar({ onFilterChange, externalFilters }) {
+export default function MobileFilterBar({
+  onFilterChange,
+  externalFilters,
+  searching = false,
+}) {
   const [activeFilter, setActiveFilter] = useState(null);
   const [applied, setApplied] = useState(EMPTY_FILTERS);
 
@@ -68,6 +75,13 @@ export default function MobileFilterBar({ onFilterChange, externalFilters }) {
   }, [externalFilters]);
 
   const handleSheetApply = (newFilters) => {
+    // /search takes one tag per facet, so searching collapses multi-select.
+    if (searching) {
+      TAG_KEYS.forEach((key) => {
+        if (Array.isArray(newFilters[key]) && newFilters[key].length > 1)
+          newFilters[key] = newFilters[key].slice(0, 1);
+      });
+    }
     const next = { ...applied, ...newFilters };
     setApplied(next);
     onFilterChange?.(next);
@@ -105,6 +119,10 @@ export default function MobileFilterBar({ onFilterChange, externalFilters }) {
           <SlidersHorizontal className="w-4 h-4 text-gray-400 flex-shrink-0" />
 
           {Object.entries(FILTER_LABELS).map(([key, label]) => {
+            // /search cannot apply these, so they close while a term is active.
+            const unavailable =
+              searching &&
+              (BROWSE_ONLY_FACETS.has(key) || key === "minDiscount");
             const isActive = activeButtons.has(key);
             const count = TAG_KEYS.includes(key)
               ? (applied[key]?.length ?? 0)
@@ -113,11 +131,19 @@ export default function MobileFilterBar({ onFilterChange, externalFilters }) {
             return (
               <button
                 key={key}
-                onClick={() => setActiveFilter(key)}
+                onClick={() => !unavailable && setActiveFilter(key)}
+                disabled={unavailable}
+                title={
+                  unavailable
+                    ? "Available when browsing, not while searching"
+                    : undefined
+                }
                 className={`whitespace-nowrap flex-shrink-0 flex items-center gap-1.5 px-3.5 py-2 rounded-full text-sm font-semibold transition-all duration-200 border ${
-                  isActive
-                    ? "bg-orange-500 text-white border-orange-500 shadow-sm shadow-orange-200"
-                    : "bg-white text-gray-700 border-gray-200"
+                  unavailable
+                    ? "cursor-not-allowed border-gray-100 bg-white text-gray-300"
+                    : isActive
+                      ? "bg-orange-500 text-white border-orange-500 shadow-sm shadow-orange-200"
+                      : "bg-white text-gray-700 border-gray-200"
                 }`}
               >
                 {label}

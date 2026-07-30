@@ -15,9 +15,10 @@ const POPULAR = [
   { id: "beauty-self-care", label: "Beauty & Self-care" },
 ];
 
+/* Shaped like GET /search's categorySuggestions, which is what feeds these. */
 const RELATED = [
-  { id: "jewellery-accessories", label: "Jewellery Accessories" },
-  { id: "beauty-self-care", label: "Beauty & Self-care" },
+  { id: "Jewellery Accessories", label: "Jewellery Accessories", count: 6 },
+  { id: "Beauty & Self-care", label: "Beauty & Self-care", count: 2 },
 ];
 
 const PRODUCTS = [
