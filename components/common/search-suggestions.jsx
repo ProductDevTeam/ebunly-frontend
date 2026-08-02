@@ -58,8 +58,8 @@ export default function SearchSuggestions({
         id: suggestion.name,
         label: suggestion.name,
         count: suggestion.count,
-        // A name, not an id — /discover filters by subcategory, /shop needs ids.
-        href: `/discover?subcategory=${encodeURIComponent(suggestion.name)}`,
+        // A name, not an id — /shop/categories/all filters by subcategory, /shop needs ids.
+        href: `/shop/categories/all?subcategory=${encodeURIComponent(suggestion.name)}`,
       })),
     [data],
   );

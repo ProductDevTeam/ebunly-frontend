@@ -19,6 +19,22 @@ const nextConfig = {
       },
     ],
   },
+
+  /*
+   * /discover was the old search-and-filter page; that behaviour now lives on
+   * /shop/categories/[id], with `all` as the unscoped shelf. Permanent so old
+   * links, bookmarks and anything already indexed keep working — Next carries
+   * the query string across, so /discover?q=bag lands filtered.
+   */
+  async redirects() {
+    return [
+      {
+        source: "/discover",
+        destination: "/shop/categories/all",
+        permanent: true,
+      },
+    ];
+  },
 };
 
 export default nextConfig;

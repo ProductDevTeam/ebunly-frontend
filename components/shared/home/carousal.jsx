@@ -25,11 +25,15 @@ const PerfectForYouSection = ({ products = [] }) => {
   const [activeCard, setActiveCard] = useState(null);
   const { toggle: toggleFavorite } = useWishlist();
   const { addItem } = useCart();
-  const { success: notifySuccess } = useNotification();
+  const { success: notifySuccess, error: notifyError } = useNotification();
 
-  const handleAddToCart = (product) => {
-    addItem(toCartProduct(product), 1, {}, null);
-    notifySuccess(`${product.name} added to your cart.`, "Added to cart");
+  const handleAddToCart = async (product) => {
+    try {
+      await addItem(toCartProduct(product), 1, {}, null);
+      notifySuccess(`${product.name} added to your cart.`, "Added to cart");
+    } catch (err) {
+      notifyError(err.message, "Could not add to cart");
+    }
     setActiveCard(null);
   };
 

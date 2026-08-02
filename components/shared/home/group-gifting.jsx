@@ -41,7 +41,7 @@ export default function GroupGiftingSection() {
               Not sure of the right gift for your event?
             </p>
             <Link
-              href="/discover"
+              href="/shop/categories/all"
               className="inline-flex items-center gap-2 text-black text-[14px] md:text-[15px] hover:gap-3 transition-all group leading-[140%] tracking-[-1%]"
             >
               Get Inspired

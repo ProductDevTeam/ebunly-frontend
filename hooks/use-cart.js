@@ -61,28 +61,35 @@ function toServerPersonalization(p) {
 function normalizeServerItem(item) {
   const product = item.product ?? item;
   const rawVariants = item.selectedVariants ?? product.selectedVariants ?? [];
+  // Keyed by the variant's real name, matching what the product page sends and
+  // what POST /cart expects back. It is also what the cart row displays.
   const variants = Array.isArray(rawVariants)
     ? Object.fromEntries(
-        rawVariants.map((v) => [
-          (v.variantName ?? "").toLowerCase(),
-          v.selectedOption,
-        ]),
+        rawVariants.map((v) => [v.variantName, v.selectedOption]),
       )
     : rawVariants || {};
 
   return {
     cartItemId: item._id ?? item.id ?? item.itemId,
     _id: product._id ?? product.id ?? item.productId,
-    name: product.name,
-    basePrice: product.basePrice ?? item.price ?? 0,
+    name: product.name ?? item.productName,
+    // `unitPrice` is what the line actually costs — base plus the option and
+    // variant modifiers the API applied. Using product.basePrice here would
+    // under-report any line with a priced variant and disagree with the
+    // server's own subtotal.
+    basePrice: item.unitPrice ?? product.basePrice ?? item.basePrice ?? 0,
     compareAtPrice: product.compareAtPrice,
     images: product.images,
     slug: product.slug,
     // Kept for the delivery quote, which is priced per distinct vendor.
     vendor: product.vendor ?? item.vendor,
     quantity: item.quantity ?? 1,
+    // GET /cart returns a lean product projection with no quantity bounds, so
+    // these are only present when the caller already had the full product.
+    // Undefined means "unknown", which the quantity selector caps itself —
+    // better than asserting a 1000 ceiling the product may not allow.
     minQuantity: product.minQuantity ?? 1,
-    maxQuantity: product.maxQuantity ?? 1000,
+    maxQuantity: product.maxQuantity,
     variants,
     personalization: item.personalization ?? null,
   };
@@ -165,15 +172,17 @@ export function useCart() {
   const findById = (cartItemId) =>
     serverItems.find((i) => i.cartItemId === cartItemId);
 
-  const addItem = (product, quantity = 1, variants = {}, personalization) => {
-    addMutation.mutate({
+  // Returns the request so a caller can await it and only celebrate on success —
+  // firing a toast next to a fire-and-forget mutate is what let a broken cart
+  // read look like a working add.
+  const addItem = (product, quantity = 1, variants = {}, personalization) =>
+    addMutation.mutateAsync({
       productId: product._id,
       quantity,
       selectedOptions: [],
       selectedVariants: toServerVariants(variants),
       personalization: toServerPersonalization(personalization),
     });
-  };
 
   const setQuantity = (cartItemId, quantity) => {
     const item = findById(cartItemId);
@@ -220,8 +229,7 @@ export function useCart() {
     serverCart?.subtotal ??
     serverItems.reduce((sum, i) => sum + (i.basePrice ?? 0) * i.quantity, 0);
 
-  const totalCount = () =>
-    serverItems.reduce((sum, i) => sum + i.quantity, 0);
+  const totalCount = () => serverItems.reduce((sum, i) => sum + i.quantity, 0);
 
   return {
     isLoggedIn: true,

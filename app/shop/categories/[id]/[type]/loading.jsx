@@ -4,7 +4,7 @@ import ProductsSkeleton from "./_components/products-skeleton";
 export default function TypeLoading() {
   return (
     <div className="min-h-screen font-sans bg-[#FDFBF9]">
-      <div className="bg-[#FDFBF9] md:bg-[linear-gradient(180deg,#EEE5F3_0%,#FDFBF9_100%)]">
+      <div className="bg-[#FDFBF9] md:bg-[linear-gradient(180deg,var(--category-hero-from,#EEE5F3)_0%,#FDFBF9_100%)]">
         <Navbar showMobileSearch={false} />
 
         <div className="w-full max-w-[1200px] mx-auto px-4 xl:px-0">

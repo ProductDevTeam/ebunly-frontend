@@ -68,7 +68,7 @@ export default function SearchPanel({
     return (
       <div>
         <Link
-          href={`/discover?q=${encodeURIComponent(query.trim())}`}
+          href={`/shop/categories/all?q=${encodeURIComponent(query.trim())}`}
           onClick={onNavigate}
           className="flex items-center gap-2 text-[14px] leading-5 font-medium"
           style={{ color: SEE_ALL }}

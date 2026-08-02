@@ -13,8 +13,8 @@ export default function RelatedProducts({ products = [], className = "" }) {
   if (products.length === 0) return null;
 
   return (
-    <section className={`bg-[#FDFBF9] pb-10 md:pb-14 ${className}`}>
-      <div className="max-w-308 mx-auto px-4">
+    <section className={` pb-10 md:pb-14 ${className}`}>
+      <div className="max-w-308 mx-auto px-4 py-4 md:py-10">
         <h2 className="mb-6 md:mb-8 leading-[110%]">
           <span
             className="font-playfair italic text-[26px] md:text-[36px] text-[#1A1A1A]"

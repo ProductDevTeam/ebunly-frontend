@@ -71,9 +71,12 @@ export default async function TypePage({ params }) {
     <div className="min-h-screen font-sans bg-[#FDFBF9]">
       <ScrollReveal />
 
-      {/* Hero: the desktop export carries the lilac gradient, the mobile one is
-          flat #FDFBF9 — so the gradient is applied from md up only. */}
-      <div className="bg-[#FDFBF9] md:bg-[linear-gradient(180deg,#EEE5F3_0%,#FDFBF9_100%)]">
+      {/* Hero: the desktop export carries the gradient, the mobile one is flat
+          #FDFBF9 — so it is applied from md up only. The top colour comes from
+          --category-hero-from, which the [id] layout picks once per request and
+          this route inherits, so a category and its type pages agree. It fades
+          to this page's own surface, not the [id] page's white. */}
+      <div className="bg-[#FDFBF9] md:bg-[linear-gradient(180deg,var(--category-hero-from,#EEE5F3)_0%,#FDFBF9_100%)]">
         <NavbarServer showMobileSearch={false} />
 
         <div className="relative w-full max-w-[1200px] mx-auto px-4 xl:px-0">

@@ -15,6 +15,7 @@ import {
   ACCOUNT_MUTED,
 } from "@/components/shared/account/ui";
 import { useNotification } from "@/components/common/notification-provider";
+import ConfirmDialog from "@/components/common/confirm-dialog";
 import {
   ADDRESS_FIELDS,
   EMPTY_ADDRESS,
@@ -60,14 +61,33 @@ function AddressForm({ initial, saving, onCancel, onSubmit }) {
                 <span style={{ color: ACCOUNT_BRAND }}> *</span>
               )}
             </span>
-            <input
-              name={field.name}
-              value={draft[field.name] ?? ""}
-              onChange={change}
-              placeholder={field.placeholder}
-              className="h-11 w-full rounded-lg border border-transparent bg-white px-3 text-[13px] placeholder:text-[#6E6659] focus:border-[#D85A30] focus:outline-none"
-              style={{ color: ACCOUNT_INK }}
-            />
+            {field.options ? (
+              <select
+                name={field.name}
+                value={draft[field.name] ?? ""}
+                onChange={change}
+                className="h-11 w-full appearance-none rounded-lg border border-transparent bg-white px-3 text-[13px] focus:border-[#D85A30] focus:outline-none"
+                style={{
+                  color: draft[field.name] ? ACCOUNT_INK : ACCOUNT_MUTED,
+                }}
+              >
+                <option value="">{field.placeholder}</option>
+                {field.options.map((option) => (
+                  <option key={option} value={option}>
+                    {option}
+                  </option>
+                ))}
+              </select>
+            ) : (
+              <input
+                name={field.name}
+                value={draft[field.name] ?? ""}
+                onChange={change}
+                placeholder={field.placeholder}
+                className="h-11 w-full rounded-lg border border-transparent bg-white px-3 text-[13px] placeholder:text-[#6E6659] focus:border-[#D85A30] focus:outline-none"
+                style={{ color: ACCOUNT_INK }}
+              />
+            )}
           </label>
         ))}
       </div>
@@ -98,6 +118,7 @@ export default function AddressesClient() {
   const { address, exists, isLoading, isSaving, save, clear } = useAddress();
   const { success: notifySuccess, error: notifyError } = useNotification();
   const [editing, setEditing] = useState(false);
+  const [confirmingDelete, setConfirmingDelete] = useState(false);
   // Whether there is a session is a browser-only fact, so hold the loading
   // state until hydration rather than render the signed-out branch first.
   const hydrated = useHydrated();
@@ -126,6 +147,7 @@ export default function AddressesClient() {
   const handleDelete = async () => {
     try {
       await clear();
+      setConfirmingDelete(false);
       notifySuccess("Address removed.", "Removed");
     } catch (err) {
       notifyError(err.message, "Could not remove address");
@@ -195,7 +217,7 @@ export default function AddressesClient() {
                 </button>
                 <button
                   type="button"
-                  onClick={handleDelete}
+                  onClick={() => setConfirmingDelete(true)}
                   disabled={isSaving}
                   aria-label="Delete address"
                 >
@@ -210,6 +232,16 @@ export default function AddressesClient() {
           </AccountCard>
         </AccountColumn>
       )}
+
+      <ConfirmDialog
+        open={confirmingDelete}
+        title="Delete this address?"
+        message="You will need to enter it again at checkout."
+        confirmLabel="Delete address"
+        busy={isSaving}
+        onConfirm={handleDelete}
+        onCancel={() => setConfirmingDelete(false)}
+      />
     </AccountPage>
   );
 }

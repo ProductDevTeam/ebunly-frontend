@@ -5,7 +5,7 @@ import { useCallback, useSyncExternalStore } from "react";
 /*
  * Recent search *queries* — the plain strings the search panel lists under
  * "RECENT SEARCHES". Distinct from use-search-history, which stores whole
- * filter objects for the /discover results page.
+ * filter objects for the /shop/categories results page.
  *
  * Kept as a module-level external store rather than component state: the
  * server snapshot is a stable empty list, so the navbar SSRs without a

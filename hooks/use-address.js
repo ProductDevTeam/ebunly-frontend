@@ -15,6 +15,20 @@ import { useMe, useUpdateProfile } from "@/hooks/use-profile";
  * here is real and persisted; it is just singular.
  */
 
+/**
+ * The 36 states plus the FCT, alphabetical. Delivery is quoted per state
+ * (GET /deliveries/cost?state=), so a free-text field here means a typo
+ * silently costs the customer a quote.
+ */
+export const NIGERIAN_STATES = [
+  "Abia", "Adamawa", "Akwa Ibom", "Anambra", "Bauchi", "Bayelsa", "Benue",
+  "Borno", "Cross River", "Delta", "Ebonyi", "Edo", "Ekiti", "Enugu",
+  "Federal Capital Territory", "Gombe", "Imo", "Jigawa", "Kaduna", "Kano",
+  "Katsina", "Kebbi", "Kogi", "Kwara", "Lagos", "Nasarawa", "Niger", "Ogun",
+  "Ondo", "Osun", "Oyo", "Plateau", "Rivers", "Sokoto", "Taraba", "Yobe",
+  "Zamfara",
+];
+
 export const ADDRESS_FIELDS = [
   {
     name: "street",
@@ -23,7 +37,13 @@ export const ADDRESS_FIELDS = [
     required: true,
   },
   { name: "city", label: "City", placeholder: "Ikeja", required: true },
-  { name: "state", label: "State", placeholder: "Lagos", required: true },
+  {
+    name: "state",
+    label: "State",
+    placeholder: "Select a state",
+    required: true,
+    options: NIGERIAN_STATES,
+  },
   {
     name: "zipCode",
     label: "Zip code",

@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { Trash2 } from "lucide-react";
 
 import AccountPage from "@/components/shared/account/account-page";
@@ -18,6 +19,7 @@ import {
   useSetDefaultCard,
 } from "@/hooks/use-payments";
 import { useHydrated } from "@/hooks/use-hydrated";
+import ConfirmDialog from "@/components/common/confirm-dialog";
 
 export default function PaymentMethodsClient() {
   const { error: notifyError } = useNotification();
@@ -25,11 +27,13 @@ export default function PaymentMethodsClient() {
   const { data, isLoading } = useSavedCards();
   const deleteCard = useDeleteCard();
   const setDefault = useSetDefaultCard();
+  const [pendingDelete, setPendingDelete] = useState(null);
 
   const methods = data ?? [];
 
-  const remove = (method) =>
-    deleteCard.mutate(method.id, {
+  const remove = () =>
+    deleteCard.mutate(pendingDelete.id, {
+      onSuccess: () => setPendingDelete(null),
       onError: (err) => notifyError(err.message, "Could not remove card"),
     });
 
@@ -98,7 +102,7 @@ export default function PaymentMethodsClient() {
 
                 <button
                   type="button"
-                  onClick={() => remove(method)}
+                  onClick={() => setPendingDelete(method)}
                   disabled={deleteCard.isPending}
                   aria-label={`Delete card ending ${method.last4}`}
                   className="shrink-0"
@@ -114,6 +118,20 @@ export default function PaymentMethodsClient() {
           ))}
         </AccountColumn>
       )}
+
+      <ConfirmDialog
+        open={Boolean(pendingDelete)}
+        title="Remove this card?"
+        message={
+          pendingDelete
+            ? `The card ending ${pendingDelete.last4} will no longer be saved for checkout.`
+            : ""
+        }
+        confirmLabel="Remove card"
+        busy={deleteCard.isPending}
+        onConfirm={remove}
+        onCancel={() => setPendingDelete(null)}
+      />
     </AccountPage>
   );
 }

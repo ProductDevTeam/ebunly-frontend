@@ -46,8 +46,9 @@ from before the taxonomy landed. They match the legacy scalar `occasion` and
 results** rather than erroring. `occasions` → `occasionTags`; the "gift type"
 concept was split into `recipients` and `coreCategory`; `styleTags` is new.
 
-`/discover` still accepts the old names in its URL and maps them across, so old
-links keep working.
+The results page (`/shop/categories/[id]`, with `all` as the unscoped shelf)
+still accepts the old names in its URL and maps them across, so old links keep
+working.
 
 ## Vocabularies
 

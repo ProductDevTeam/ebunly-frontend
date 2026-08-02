@@ -36,7 +36,7 @@ export default function SearchOverlay({ onClose, categories = [] }) {
     if (!q) return;
     addRecent(q);
     onClose?.();
-    router.push(`/discover?q=${encodeURIComponent(q)}`);
+    router.push(`/shop/categories/all?q=${encodeURIComponent(q)}`);
   };
 
   return (

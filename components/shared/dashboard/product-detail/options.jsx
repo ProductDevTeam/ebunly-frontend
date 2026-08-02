@@ -22,9 +22,12 @@ export default function ProductOptions({
   if (variants.length === 0) return null;
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 pb-4">
       {variants.map((variant) => {
-        const key = variant.name.toLowerCase();
+        // The exact name, not a lowercased one: POST /cart matches
+        // `variantName` case-sensitively and silently drops what it cannot
+        // match — losing theselection and its price modifier.
+        const key = variant.name;
         const current = selectedOptions[key] ?? variant.options[0];
 
         return (

@@ -5,7 +5,10 @@ import { ChevronDown } from "lucide-react";
 import ProductCard from "@/components/common/product-card";
 
 const LIMIT = 8;
-const API_URL = `${process.env.NEXT_PUBLIC_API_URL}/products`;
+// Through the proxy, not straight at the API host: this runs in the browser,
+// and a cross-origin request fails CORS preflight and empties the grid with no
+// visible error. Same reason lib/products.js picks its base per environment.
+const API_URL = "/proxy/products";
 
 /*
  * Chrome measured from the Figma exports (desktop 2160px = 1440 frame @1.5x):
