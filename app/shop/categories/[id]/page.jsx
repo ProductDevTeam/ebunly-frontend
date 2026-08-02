@@ -144,7 +144,10 @@ export default async function CategoryPage({ params, searchParams }) {
           </Suspense>
         ) : (
           <Suspense fallback={<ProductsSkeleton />}>
-            <CategoryProductsFetcher categoryName={label} />
+            <CategoryProductsFetcher
+              categoryName={label}
+              occasionTags={category?.linkedOccasionTags ?? []}
+            />
           </Suspense>
         )}
       </main>

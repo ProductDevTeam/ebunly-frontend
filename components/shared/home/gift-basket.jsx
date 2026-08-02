@@ -1,68 +1,37 @@
-import Link from "next/link";
-import Image from "next/image";
+import Link from 'next/link';
+import Image from 'next/image';
+import { getOccasions } from '@/lib/api/categories';
 
-const categories = [
-  {
-    id: 1,
-    name: "Weddings",
-    subtitle: "Gifts & Keepsakes",
-    image: "/categories/wedding.jpg",
-    icon: "/categories/wedding-icon.png",
-    cardBg: "#E4F5EF",
-    mobileBg: "#D4EFE9",
-    href: "/shop/categories/weddings",
-  },
-  {
-    id: 2,
-    name: "Conferences",
-    subtitle: "Branded & Bulk Gifting",
-    image: "/categories/conference.jpg",
-    icon: "/categories/conference-icon.png",
-    cardBg: "#FCF3E3",
-    mobileBg: "#FAD9CE",
-    href: "/shop/categories/conferences",
-  },
-  {
-    id: 3,
-    name: "Parties",
-    subtitle: "Celebrate in Style",
-    image: "/categories/parties.jpg",
-    icon: "/categories/parties-icon.png",
-    cardBg: "#F9CFDE",
-    mobileBg: "#EAD9F7",
-    href: "/shop/categories/parties",
-  },
-  {
-    id: 4,
-    name: "Birthdays",
-    subtitle: "Any age. Any budget",
-    image: "/categories/birthday.jpg",
-    icon: "/categories/birthday-icon.png",
-    cardBg: "#EEE5F3",
-    mobileBg: "#FEF0C2",
-    href: "/shop/categories/birthdays",
-  },
-  {
-    id: 5,
-    name: "Corporate Events",
-    subtitle: "Trophies, retreats, everything",
-    image: "/categories/event.jpg",
-    icon: "/categories/event-icon.png",
-    cardBg: "#DCECF7",
-    mobileBg: "#E0EAF4",
-    href: "/shop/categories/corporate-events",
-  },
-];
+const staggerDelays = ['reveal-d1', 'reveal-d2', 'reveal-d3', 'reveal-d4', 'reveal-d5'];
 
-const staggerDelays = [
-  "reveal-d1",
-  "reveal-d2",
-  "reveal-d3",
-  "reveal-d4",
-  "reveal-d5",
-];
+function IconBadge({ emoji, size = 'lg' }) {
+  const cls = size === 'lg' ? 'w-12 h-12 text-2xl' : 'w-7 h-7 text-base';
+  return (
+    <div
+      className={`${cls} bg-white rounded-full flex items-center justify-center shadow-sm shrink-0`}
+    >
+      <span className="leading-none">{emoji || '🎁'}</span>
+    </div>
+  );
+}
 
-export default function GiftBasketsSection() {
+export default async function GiftBasketsSection() {
+  const raw = await getOccasions();
+  if (raw.length === 0) return null;
+
+  const occasions = raw.map((occ) => ({
+    id: occ._id,
+    name: occ.name,
+    subtitle: occ.description || '',
+    image: occ.image?.url || null,
+    iconEmoji: occ.iconEmoji || '🎁',
+    cardBg: occ.cardBg || '#F3F4F6',
+    mobileBg: occ.mobileBg || occ.cardBg || '#F3F4F6',
+    href: `/shop/categories/${occ.slug}`,
+  }));
+
+  const colCount = Math.min(occasions.length, 5);
+
   return (
     <section className="py-10 md:py-16 px-4 md:px-6 ">
       <div className="max-w-7xl mx-auto bg-[#F5F8FA] rounded-xl px-2 md:px-8 py-8">
@@ -71,64 +40,60 @@ export default function GiftBasketsSection() {
           <h2 className="inline leading-[96%]">
             <span
               className="font-playfair italic text-[26px] md:text-[34px] text-black"
-              style={{ fontWeight: 400, letterSpacing: "-6%" }}
+              style={{ fontWeight: 400, letterSpacing: '-6%' }}
             >
-              Gift Baskets{" "}
+              Gift Baskets{' '}
             </span>
             <span
               className="font-sans font-semibold text-[26px] md:text-[34px] text-black"
-              style={{ letterSpacing: "-7%" }}
+              style={{ letterSpacing: '-7%' }}
             >
               for any <br /> event or occasion
             </span>
           </h2>
         </div>
 
-        {/* ── Desktop: 5-column grid ───────────────────── */}
-        <div className="hidden md:grid md:grid-cols-5 gap-4 lg:gap-6">
-          {categories.map((cat, i) => (
-            <div
-              key={cat.id}
-              data-reveal
-              className={`reveal ${staggerDelays[i] ?? ""}`}
-            >
-              <Link href={cat.href} className="group block">
+        {/*  Desktop: dynamic grid up to 5 cols  */}
+        <div
+          className="hidden md:grid gap-4 lg:gap-6"
+          style={{ gridTemplateColumns: `repeat(${colCount}, minmax(0, 1fr))` }}
+        >
+          {occasions.map((occ, i) => (
+            <div key={occ.id} data-reveal className={`reveal ${staggerDelays[i] ?? ''}`}>
+              <Link href={occ.href} className="group block">
                 <div
                   className="w-full rounded-2xl p-2 overflow-hidden"
-                  style={{ backgroundColor: cat.cardBg }}
+                  style={{ backgroundColor: occ.cardBg }}
                 >
-                  <div className="relative aspect-4/3 ">
-                    <Image
-                      src={cat.image}
-                      alt={cat.name}
-                      fill
-                      className="object-cover rounded-xl"
-                      sizes="(max-width: 1280px) 20vw, 256px"
-                      loading="lazy"
-                    />
-                    <div className="absolute bottom-0 left-3 translate-y-1/2 w-12 h-12 bg-white rounded-full flex items-center justify-center ">
+                  <div className="relative aspect-4/3">
+                    {occ.image ? (
                       <Image
-                        src={cat.icon}
-                        alt=""
-                        width={28}
-                        height={28}
-                        className="object-contain"
-                        unoptimized
+                        src={occ.image}
+                        alt={occ.name}
+                        fill
+                        className="object-cover rounded-xl"
+                        sizes="(max-width: 1280px) 20vw, 256px"
+                        loading="lazy"
                       />
+                    ) : (
+                      <div className="absolute inset-0 rounded-xl bg-black/5" />
+                    )}
+                    <div className="absolute bottom-0 left-3 translate-y-1/2 z-10">
+                      <IconBadge emoji={occ.iconEmoji} size="lg" />
                     </div>
                   </div>
                   <div className="pt-9 px-3 pb-4">
                     <p
                       className="font-semibold text-[16px] text-[#0C0000] leading-snug"
-                      style={{ lineHeight: "96%", letterSpacing: "-6%" }}
+                      style={{ lineHeight: '96%', letterSpacing: '-6%' }}
                     >
-                      {cat.name}
+                      {occ.name}
                     </p>
                     <p
                       className="text-[12px] text-[#000000] opacity-65 mt-1"
-                      style={{ lineHeight: "96%", letterSpacing: "-6%" }}
+                      style={{ lineHeight: '96%', letterSpacing: '-6%' }}
                     >
-                      {cat.subtitle}
+                      {occ.subtitle}
                     </p>
                   </div>
                 </div>
@@ -137,82 +102,66 @@ export default function GiftBasketsSection() {
           ))}
         </div>
 
-        {/* ── Mobile: bento layout ─────────────────────── */}
+        {/*  Mobile: bento layout  */}
         <div className="md:hidden flex flex-col gap-3">
-          {/* Weddings — full width with photo */}
+          {/* First occasion — full-width hero with image */}
           <div data-reveal className="reveal">
-            <Link href={categories[0].href} className="block">
+            <Link href={occasions[0].href} className="block">
               <div
                 className="rounded-2xl p-3 flex items-center gap-2 h-28"
-                style={{ backgroundColor: categories[0].cardBg }}
+                style={{ backgroundColor: occasions[0].cardBg }}
               >
-                <div className="flex-1">
+                <div className="flex-1 min-w-0">
                   <p className="font-bold text-[16px] text-gray-900 leading-tight">
-                    {categories[0].name}
+                    {occasions[0].name}
                   </p>
                   <p className="text-[12px] text-gray-500 mt-1 leading-tight">
-                    {categories[0].subtitle}
+                    {occasions[0].subtitle}
                   </p>
                 </div>
-                <div className="w-7 h-7 shrink-0 bg-white rounded-full flex items-center justify-center shadow-sm">
-                  <Image
-                    src={categories[0].icon}
-                    alt=""
-                    width={16}
-                    height={16}
-                    className="object-contain"
-                    unoptimized
-                  />
-                </div>
-                <div className="self-stretch w-[48%] shrink-0 rounded-2xl overflow-hidden relative -my-2 -mr-2">
-                  <Image
-                    src={categories[0].image}
-                    alt={categories[0].name}
-                    fill
-                    className="object-cover"
-                    sizes="200px"
-                  />
-                </div>
+                <IconBadge emoji={occasions[0].iconEmoji} size="sm" />
+                {occasions[0].image && (
+                  <div className="self-stretch w-[48%] shrink-0 rounded-2xl overflow-hidden relative -my-2 -mr-2">
+                    <Image
+                      src={occasions[0].image}
+                      alt={occasions[0].name}
+                      fill
+                      className="object-cover"
+                      sizes="200px"
+                    />
+                  </div>
+                )}
               </div>
             </Link>
           </div>
 
-          {/* 2×2 grid for remaining 4 */}
-          <div className="grid grid-cols-2 gap-3">
-            {categories.slice(1).map((cat, i) => (
-              <div
-                key={cat.id}
-                data-reveal
-                className={`reveal ${staggerDelays[i] ?? ""}`}
-              >
-                <Link href={cat.href} className="block h-full">
-                  <div
-                    className="rounded-2xl p-3 min-h-16 h-full flex flex-col justify-between relative"
-                    style={{ backgroundColor: cat.mobileBg }}
-                  >
-                    <div className="self-end w-7 h-7 bg-white rounded-full flex items-center justify-center shadow-sm">
-                      <Image
-                        src={cat.icon}
-                        alt=""
-                        unoptimized
-                        width={24}
-                        height={20}
-                        className="object-contain"
-                      />
+          {/* Remaining occasions — 2-column grid */}
+          {occasions.length > 1 && (
+            <div className="grid grid-cols-2 gap-3">
+              {occasions.slice(1).map((occ, i) => (
+                <div key={occ.id} data-reveal className={`reveal ${staggerDelays[i] ?? ''}`}>
+                  <Link href={occ.href} className="block h-full">
+                    <div
+                      className="rounded-2xl p-3 min-h-16 h-full flex flex-col justify-between relative"
+                      style={{ backgroundColor: occ.mobileBg }}
+                    >
+                      <div className="self-end">
+                        <IconBadge emoji={occ.iconEmoji} size="sm" />
+                      </div>
+                      <div>
+                        <p className="font-bold text-[14px] text-gray-900 leading-tight">
+                          {occ.name}
+                        </p>
+                        <p className="text-[12px] text-gray-500 mt-0.5 leading-tight">
+                          {occ.subtitle}
+                        </p>
+                      </div>
                     </div>
-                    <div>
-                      <p className="font-bold text-[14px] text-gray-900 leading-tight">
-                        {cat.name}
-                      </p>
-                      <p className="text-[12px] text-gray-500 mt-0.5 leading-tight">
-                        {cat.subtitle}
-                      </p>
-                    </div>
-                  </div>
-                </Link>
-              </div>
-            ))}
-          </div>
+                  </Link>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       </div>
     </section>
