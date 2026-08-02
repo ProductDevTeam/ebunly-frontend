@@ -1,13 +1,11 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useEffect } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { X } from "lucide-react";
 
 import { useScrollLock } from "@/hooks/use-scroll-lock";
-import { useRecentSearches } from "@/hooks/use-recent-searches";
 
 /*
  * Measured from `design screenshots/Slideout menu mobile.png` (300 × 852, 1x):
@@ -18,24 +16,13 @@ const HAIRLINE = "#F2EDE8";
 const ROW_LINE = "#F7F4F1";
 const INK = "#24201C";
 
-export default function MobileMenu({ open, categories = [], onClose }) {
-  const [search, setSearch] = useState("");
-  const router = useRouter();
-  const { addRecent } = useRecentSearches();
-
+export default function MobileMenu({
+  open,
+  categories = [],
+  onClose,
+  onOpenSearch,
+}) {
   useScrollLock(open);
-
-  // The field had no submit at all, so typing here did nothing. Same target as
-  // the search overlay: remember the term and hand it to the results page.
-  const submit = (event) => {
-    event.preventDefault();
-    const q = search.trim();
-    if (!q) return;
-    addRecent(q);
-    setSearch("");
-    onClose();
-    router.push(`/discover?q=${encodeURIComponent(q)}`);
-  };
 
   useEffect(() => {
     if (!open) return;
@@ -86,11 +73,16 @@ export default function MobileMenu({ open, categories = [], onClose }) {
               </button>
             </div>
 
-            {/* Search */}
+            {/* Search — a button, not a field. Tapping it hands off to the
+                same full-screen overlay the header opens, so recent searches,
+                popular categories and product suggestions all behave
+                identically wherever search is started from. */}
             <div className="px-5 mt-5">
-              <form
-                onSubmit={submit}
-                className="flex items-center gap-[15px] h-[37px] rounded-full border px-[13px] cursor-text"
+              <button
+                type="button"
+                onClick={onOpenSearch}
+                aria-label="Search"
+                className="flex w-full items-center gap-[15px] h-[37px] rounded-full border px-[13px] text-left"
                 style={{ borderColor: HAIRLINE }}
               >
                 <svg
@@ -107,16 +99,10 @@ export default function MobileMenu({ open, categories = [], onClose }) {
                   <circle cx="11" cy="11" r="8" />
                   <path d="m21 21-4.35-4.35" />
                 </svg>
-                <input
-                  type="search"
-                  placeholder="Search for anything..."
-                  aria-label="Search"
-                  value={search}
-                  onChange={(e) => setSearch(e.target.value)}
-                  className="flex-1 min-w-0 bg-transparent text-[13px] focus:outline-none placeholder:text-[#24201C]"
-                  style={{ color: INK }}
-                />
-              </form>
+                <span className="text-[13px]" style={{ color: INK }}>
+                  Search for anything...
+                </span>
+              </button>
             </div>
 
             {/* Shopping for an event */}

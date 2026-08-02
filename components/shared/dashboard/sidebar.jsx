@@ -38,7 +38,7 @@ export default function Sidebar({ isOpen, setIsOpen, visible = true }) {
       icon: "/icons/shop-2.svg",
       iconActive: "/icons/shop.svg",
       label: "Discover",
-      href: "/discover",
+      href: "/shop/categories/all",
     },
     {
       icon: "/icons/bag.svg",

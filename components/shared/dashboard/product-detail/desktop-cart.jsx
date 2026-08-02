@@ -27,7 +27,7 @@ export default function AddToCartDesktop({
 }) {
   const { addItem } = useCart();
   const { toggle: toggleFavorite, has, hydrated } = useWishlist();
-  const { notify } = useNotification();
+  const { notify, error: notifyError } = useNotification();
 
   if (!product) return null;
 
@@ -44,10 +44,16 @@ export default function AddToCartDesktop({
 
   const saved = hydrated && has(product._id ?? product.id);
 
-  const handleAdd = () => {
+  const handleAdd = async () => {
     const qty = selectedOptions?.quantity ?? minQuantity;
-    addItem(product, qty, variants, personalization);
-    notify({ type: "cart", product, quantity: qty, duration: 4000 });
+    try {
+      // Awaited so the toast reports what actually happened. For a guest this
+      // resolves immediately; for a signed-in customer it is the POST /cart.
+      await addItem(product, qty, variants, personalization);
+      notify({ type: "cart", product, quantity: qty, duration: 4000 });
+    } catch (err) {
+      notifyError(err.message, "Could not add to cart");
+    }
   };
 
   return (
@@ -57,7 +63,9 @@ export default function AddToCartDesktop({
         <div className="relative shrink-0">
           <select
             value={selectedOptions?.quantity ?? minQuantity}
-            onChange={(e) => onOptionChange?.("quantity", Number(e.target.value))}
+            onChange={(e) =>
+              onOptionChange?.("quantity", Number(e.target.value))
+            }
             aria-label="Quantity"
             className="h-11 w-[74px] appearance-none rounded-lg border bg-transparent pl-4 pr-8 text-[14px] focus:outline-none"
             style={{ borderColor: HAIRLINE, color: INK }}

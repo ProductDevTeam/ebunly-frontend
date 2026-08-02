@@ -24,7 +24,7 @@ export default function ProductDetailClient({ product, breadcrumb = [] }) {
   const variantDefaults = {};
   product.variants?.forEach((variant) => {
     if (variant.options?.length > 0) {
-      variantDefaults[variant.name.toLowerCase()] = variant.options[0];
+      variantDefaults[variant.name] = variant.options[0];
     }
   });
 
@@ -77,9 +77,8 @@ export default function ProductDetailClient({ product, breadcrumb = [] }) {
   // Personalization pushes delivery out, so the estimate shows both dates.
   const personalizationDays =
     (personalization.confirmed &&
-      product.personalizationTypes?.find(
-        (t) => t.name === personalization.type,
-      )?.extraDays) ||
+      product.personalizationTypes?.find((t) => t.name === personalization.type)
+        ?.extraDays) ||
     (personalization.confirmed ? 2 : 0);
   const personalizedDeliveryDate =
     personalizationDays > 0 ? getDeliveryDate(personalizationDays) : null;
@@ -116,13 +115,15 @@ export default function ProductDetailClient({ product, breadcrumb = [] }) {
        * info column 420px, split by a 17px gap — 763 + 17 + 420 = 1200.
        */}
       <main className="pt-6 pb-10 flex flex-col lg:flex-row lg:items-start lg:gap-4.25 px-4 max-w-308 mx-auto">
-        {/* Image Gallery — scrolls with the page */}
-        <div className="lg:flex-1 lg:min-w-0">
+        {/* Image gallery — pinned while the info column scrolls past it.
+            See .product-gallery-sticky in globals.css for why it is a rule
+            rather than Tailwind variants. */}
+        <div className="product-gallery-sticky lg:flex-1 lg:min-w-0">
           <ImageGallery images={images} product={product} />
         </div>
 
-        {/* Product Info — pinned while the gallery scrolls */}
-        <div className="lg:w-105 lg:shrink-0 bg-transparent mt-6 lg:mt-0 lg:sticky lg:top-6">
+        {/* Product info — the long column, and the only one that scrolls */}
+        <div className="lg:w-105 lg:shrink-0 bg-transparent mt-6 lg:mt-0">
           {/* Badges & Title */}
           <div className="pb-4">
             {/* The export leads with the category, not promo badges. */}

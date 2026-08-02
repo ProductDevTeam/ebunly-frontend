@@ -42,6 +42,25 @@ body {
   padding-top: env(safe-area-inset-top);
 }
 
+/*
+ * Product detail: pin the image gallery so only the info column scrolls.
+ * `sticky` is bounded by <main>, so it releases where the content ends and
+ * "Loved right now" begins.
+ *
+ * Gated on viewport height as well as width: the gallery is ~670px tall and
+ * sits 24px down, so it needs ~695px to show in full. In a shorter window a
+ * pinned gallery would keep its bottom permanently off screen with no way to
+ * scroll to it, so below this it just scrolls with the page as it used to.
+ * Tailwind's `lg:` cannot express a min-height query, hence a plain rule.
+ */
+@media (min-width: 1024px) and (min-height: 700px) {
+  .product-gallery-sticky {
+    position: sticky;
+    top: 1.5rem;
+    align-self: flex-start;
+  }
+}
+
 /* Ensure content doesn't get hidden behind bottom nav on mobile */
 @media (max-width: 1023px) {
   .mobile-content-padding {

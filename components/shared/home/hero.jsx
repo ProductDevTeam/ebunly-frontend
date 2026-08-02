@@ -25,7 +25,7 @@ const HeroSection = () => {
             send.
           </p>
           <Link
-            href="/discover?recipients=Women"
+            href="/shop/categories/for-her"
             className="hero-animate-cta w-fit self-center md:self-start bg-[#D85A30] text-white px-7 py-3 md:px-6.5 rounded-full font-semibold text-[15px] md:text-base shadow-md hover:shadow-lg hover:scale-[1.04] active:scale-[0.96] transition-all font-sans cursor-pointer"
           >
             Shop for her

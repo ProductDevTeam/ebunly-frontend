@@ -47,7 +47,7 @@ node .claude/skills/figma-replicate/scripts/design-status.mjs --sync   # append 
 
 | Home | home-1440.png | page | app/page.js | `/ --w 1440 --body` | done | a3f1c8d2 | |
 | Home (mobile) | home-390.png | page | app/page.js | `/ --w 390 --body` | done | 9c02ee71 | |
-| Product card | card-390.png | component | app/shop/categories/[id]/[type]/_components/product-card.jsx | `/discover --w 390 --sel "[data-card]"` | wip | 41bd0a93 | |
+| Product card | card-390.png | component | app/shop/categories/[id]/[type]/_components/product-card.jsx | `/shop/categories/all --w 390 --sel "[data-card]"` | wip | 41bd0a93 | |
 | Newsletter band | news-1440.png | section | components/shared/home/newsletter.jsx | `/ --w 1440 --sel "#newsletter"` | todo | 7e5a11c4 | |
 | Navbar v2 | nav-1440.png | chrome | components/common/navbar.jsx | `/ --w 1440 --sel "header"` | todo | b2c9f0e5 | header redesign |
 

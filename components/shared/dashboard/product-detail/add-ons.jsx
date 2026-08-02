@@ -41,9 +41,27 @@ const DEFAULT_ADDONS = [
     label: "Flowers",
     categories: ["All", "Bouqets", "Roses", "Tulips"],
     designs: [
-      { id: "f1", name: "Red roses", price: 5000, category: "Roses", image: "/product.png" },
-      { id: "f2", name: "White roses", price: 7000, category: "Roses", image: "/product.png" },
-      { id: "f3", name: "Rose bouquet", price: 15000, category: "Bouqets", image: "/product.png" },
+      {
+        id: "f1",
+        name: "Red roses",
+        price: 5000,
+        category: "Roses",
+        image: "/product.png",
+      },
+      {
+        id: "f2",
+        name: "White roses",
+        price: 7000,
+        category: "Roses",
+        image: "/product.png",
+      },
+      {
+        id: "f3",
+        name: "Rose bouquet",
+        price: 15000,
+        category: "Bouqets",
+        image: "/product.png",
+      },
     ],
   },
   {
@@ -52,9 +70,27 @@ const DEFAULT_ADDONS = [
     hasMessage: true,
     categories: ["All", "Birthday", "Valentine's", "Anniversary", "Christmas"],
     designs: [
-      { id: "c1", name: "Birthday 1", price: 5000, category: "Birthday", image: "/product.png" },
-      { id: "c2", name: "Birthday 2", price: 5000, category: "Birthday", image: "/product.png" },
-      { id: "c3", name: "Valentines 1", price: 5000, category: "Valentine's", image: "/product.png" },
+      {
+        id: "c1",
+        name: "Birthday 1",
+        price: 5000,
+        category: "Birthday",
+        image: "/product.png",
+      },
+      {
+        id: "c2",
+        name: "Birthday 2",
+        price: 5000,
+        category: "Birthday",
+        image: "/product.png",
+      },
+      {
+        id: "c3",
+        name: "Valentines 1",
+        price: 5000,
+        category: "Valentine's",
+        image: "/product.png",
+      },
     ],
   },
   {
@@ -62,9 +98,27 @@ const DEFAULT_ADDONS = [
     label: "Teddy",
     categories: ["All", "Small", "Medium", "Large"],
     designs: [
-      { id: "t1", name: "Small teddy 1", price: 5000, category: "Small", image: "/product.png" },
-      { id: "t2", name: "Small teddy 2", price: 5000, category: "Small", image: "/product.png" },
-      { id: "t3", name: "Large teddy 1", price: 25000, category: "Large", image: "/product.png" },
+      {
+        id: "t1",
+        name: "Small teddy 1",
+        price: 5000,
+        category: "Small",
+        image: "/product.png",
+      },
+      {
+        id: "t2",
+        name: "Small teddy 2",
+        price: 5000,
+        category: "Small",
+        image: "/product.png",
+      },
+      {
+        id: "t3",
+        name: "Large teddy 1",
+        price: 25000,
+        category: "Large",
+        image: "/product.png",
+      },
     ],
   },
 ];
@@ -93,9 +147,7 @@ export default function ProductAddOns({
     const existing = value[addon.key];
     setOpenKey(addon.key);
     setCategory("All");
-    setDraftDesign(
-      existing?.designId ?? addon.designs?.[0]?.id ?? null,
-    );
+    setDraftDesign(existing?.designId ?? addon.designs?.[0]?.id ?? null);
     setMessage(existing?.message ?? "");
   };
 
@@ -133,7 +185,10 @@ export default function ProductAddOns({
     ) ?? [];
 
   return (
-    <section className="rounded-xl border p-4" style={{ borderColor: HAIRLINE }}>
+    <section
+      className="rounded-xl border-[0.5px] p-4"
+      style={{ borderColor: HAIRLINE }}
+    >
       <p
         className="text-[11px] font-medium tracking-[0.04em]"
         style={{ color: LABEL }}
@@ -284,7 +339,10 @@ export default function ProductAddOns({
                     >
                       {d.name}
                     </span>
-                    <span className="block text-[12px]" style={{ color: MUTED }}>
+                    <span
+                      className="block text-[12px]"
+                      style={{ color: MUTED }}
+                    >
                       {naira(d.price)}
                     </span>
                   </button>
@@ -306,7 +364,10 @@ export default function ProductAddOns({
                   className="mt-2 block h-14 w-full resize-none rounded-lg border p-3 text-[13px] placeholder:text-[#6E6659] focus:border-[#D85A30] focus:outline-none"
                   style={{ borderColor: HAIRLINE, color: INK }}
                 />
-                <p className="mt-2 text-right text-[12px]" style={{ color: MUTED }}>
+                <p
+                  className="mt-2 text-right text-[12px]"
+                  style={{ color: MUTED }}
+                >
                   {message.length}/{MESSAGE_LIMIT}
                 </p>
               </>
@@ -324,7 +385,9 @@ export default function ProductAddOns({
 
             <button
               type="button"
-              onClick={() => (value[open.key] ? remove(open.key) : closePanel())}
+              onClick={() =>
+                value[open.key] ? remove(open.key) : closePanel()
+              }
               className="mt-2 w-full text-center text-[13px]"
               style={{ color: REMOVE_RED }}
             >

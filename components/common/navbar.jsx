@@ -370,6 +370,12 @@ export default function Navbar({
           open={menuOpen}
           categories={categories}
           onClose={() => setMenuOpen(false)}
+          // The menu's search field is the header's, not a second one: it hands
+          // back here so both open the same overlay with the same suggestions.
+          onOpenSearch={() => {
+            setMenuOpen(false);
+            setMobileSearchOpen(true);
+          }}
         />
       </div>
     </header>

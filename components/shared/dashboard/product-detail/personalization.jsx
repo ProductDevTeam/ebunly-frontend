@@ -49,7 +49,10 @@ export default function ProductPersonalization({
   // ── 4. Confirmed summary ─────────────────────────────────────────────────
   if (confirmed && type) {
     return (
-      <section className="rounded-xl border p-4" style={{ borderColor: HAIRLINE }}>
+      <section
+        className="rounded-xl border p-4"
+        style={{ borderColor: HAIRLINE }}
+      >
         <p
           className="text-[11px] font-medium tracking-[0.04em]"
           style={{ color: LABEL }}
@@ -62,7 +65,10 @@ export default function ProductPersonalization({
             className="h-4 w-4 shrink-0 rounded-full"
             style={{ backgroundColor: "#D9D9D9" }}
           />
-          <p className="min-w-0 flex-1 truncate text-[13px]" style={{ color: INK }}>
+          <p
+            className="min-w-0 flex-1 truncate text-[13px]"
+            style={{ color: INK }}
+          >
             {type}: &ldquo;{text}&rdquo;
           </p>
           <button
@@ -82,7 +88,10 @@ export default function ProductPersonalization({
   }
 
   return (
-    <section className="rounded-xl border p-4" style={{ borderColor: HAIRLINE }}>
+    <section
+      className="rounded-xl border-[0.5px] p-4"
+      style={{ borderColor: HAIRLINE }}
+    >
       <p
         className="text-[11px] font-medium tracking-[0.04em]"
         style={{ color: LABEL }}
@@ -101,12 +110,20 @@ export default function ProductPersonalization({
               onClick={() => {
                 // Tapping the active type clears it, back to state 1.
                 setDraft("");
-                set({ type: active ? null : t.name, text: "", confirmed: false });
+                set({
+                  type: active ? null : t.name,
+                  text: "",
+                  confirmed: false,
+                });
               }}
               className="h-9 rounded-lg border px-3 text-[12px] transition-colors"
               style={
                 active
-                  ? { backgroundColor: BRAND, borderColor: BRAND, color: "#FFFFFF" }
+                  ? {
+                      backgroundColor: BRAND,
+                      borderColor: BRAND,
+                      color: "#FFFFFF",
+                    }
                   : { borderColor: HAIRLINE, color: INK }
               }
             >

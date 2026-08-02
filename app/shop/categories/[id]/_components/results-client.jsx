@@ -1,11 +1,12 @@
 "use client";
 
-import { Suspense, useState, useCallback } from "react";
+import { useState, useCallback } from "react";
 import { useSearchParams } from "next/navigation";
+
 import FilterBar from "@/components/shared/dashboard/filterbar";
+import MobileFilterBar from "@/components/shared/dashboard/mobile-filter";
 import ProductGrid from "@/components/shared/dashboard/product-grid";
 import SearchBar from "@/components/shared/dashboard/search-bar";
-import MobileFilterBar from "@/components/shared/dashboard/mobile-filter";
 import {
   useProductSearch,
   isSearching,
@@ -13,7 +14,18 @@ import {
 } from "@/hooks/use-search";
 import { useSearchHistory } from "@/hooks/use-search-history";
 
-// Keys match GET /products exactly — see lib/products.js.
+/*
+ * Search results and cross-category filtering, which used to be /discover.
+ * It renders inside /shop/categories/[id] whenever the URL carries a term or a
+ * filter, so there is one browse surface instead of two.
+ *
+ * Scoping: a filter-only browse stays inside the category it was opened from
+ * (`coreCategory`), but a term search does not — GET /search has no category
+ * facet, so pretending to scope it would be a lie. `/shop/categories/all` is
+ * the unscoped shelf and passes no coreCategory at all.
+ *
+ * Keys match GET /products exactly — see lib/products.js.
+ */
 const DEFAULT_FILTERS = {
   category: "",
   subcategory: "",
@@ -30,14 +42,13 @@ const DEFAULT_FILTERS = {
   limit: 12,
 };
 
-// Build the initial filter set from the URL, so links like
-// /discover?recipients=Women or /discover?maxPrice=3000 land pre-filtered.
-// `occasions`/`giftTypes` are the pre-taxonomy names some older links still
-// carry; map them onto the parameters the API understands.
-//
-// The term arrives as either `q` (what the search panel and overlay link to,
-// matching GET /search) or `search` (what the older header links use).
-function filtersFromSearchParams(searchParams) {
+/**
+ * The term arrives as either `q` (what the search panel and overlay link to,
+ * matching GET /search) or `search` (older links). `occasions`/`giftTypes` are
+ * the pre-taxonomy names some links still carry; map them onto the parameters
+ * the API understands.
+ */
+function filtersFromSearchParams(searchParams, coreCategory) {
   const num = (key) => {
     const raw = searchParams.get(key);
     return raw !== null && raw !== "" && !isNaN(Number(raw))
@@ -47,7 +58,7 @@ function filtersFromSearchParams(searchParams) {
 
   return {
     ...DEFAULT_FILTERS,
-    category: searchParams.get("category") ?? "",
+    coreCategory: coreCategory || undefined,
     subcategory: searchParams.get("subcategory") ?? "",
     search: searchParams.get("q") ?? searchParams.get("search") ?? "",
     occasionTags: [
@@ -61,25 +72,29 @@ function filtersFromSearchParams(searchParams) {
     ],
     minPrice: num("minPrice"),
     maxPrice: num("maxPrice"),
+    minDiscount: num("minDiscount"),
+    madeInNigeria: searchParams.get("madeInNigeria") === "true" || undefined,
   };
 }
 
-function DiscoverInner() {
+export default function ResultsClient({ coreCategory = null }) {
   const searchParams = useSearchParams();
   // Stable key so we re-sync only when the query string really changes.
   const urlKey = searchParams.toString();
 
   const [filters, setFilters] = useState(() =>
-    filtersFromSearchParams(searchParams),
+    filtersFromSearchParams(searchParams, coreCategory),
   );
   const [restoredFilters, setRestoredFilters] = useState(null);
 
-  // Re-sync filters when the URL changes (set during render, not in an effect,
-  // to avoid cascading renders).
+  // Re-sync when the URL changes (set during render, not in an effect, to
+  // avoid cascading renders).
   const [seenUrlKey, setSeenUrlKey] = useState(urlKey);
   if (urlKey !== seenUrlKey) {
     setSeenUrlKey(urlKey);
-    setFilters(filtersFromSearchParams(new URLSearchParams(urlKey)));
+    setFilters(
+      filtersFromSearchParams(new URLSearchParams(urlKey), coreCategory),
+    );
   }
 
   const { saveToHistory } = useSearchHistory();
@@ -96,30 +111,28 @@ function DiscoverInner() {
 
   const searching = isSearching(filters);
 
-  const handleSearch = useCallback(
-    (searchTerm) => {
-      const next = { ...filters, search: searchTerm, page: 1 };
-      // Results now come from /search, which cannot apply the browse-only
-      // facets — clear them rather than leave chips that no longer bite.
+  const apply = useCallback(
+    (next) => {
+      // Results come from /search once a term is present, and it cannot apply
+      // the browse-only facets — clear them rather than leave chips that no
+      // longer bite.
       const cleaned = isSearching(next)
         ? { ...DEFAULT_FILTERS, ...stripBrowseOnlyFacets(next) }
-        : next;
+        : { ...next, coreCategory: coreCategory || undefined };
       setFilters(cleaned);
       saveToHistory(cleaned);
     },
-    [filters, saveToHistory],
+    [coreCategory, saveToHistory],
+  );
+
+  const handleSearch = useCallback(
+    (searchTerm) => apply({ ...filters, search: searchTerm, page: 1 }),
+    [apply, filters],
   );
 
   const handleFilterChange = useCallback(
-    (newFilters) => {
-      const merged = { ...filters, ...newFilters, page: 1 };
-      const cleaned = isSearching(merged)
-        ? { ...DEFAULT_FILTERS, ...stripBrowseOnlyFacets(merged) }
-        : merged;
-      setFilters(cleaned);
-      saveToHistory(cleaned);
-    },
-    [filters, saveToHistory],
+    (newFilters) => apply({ ...filters, ...newFilters, page: 1 }),
+    [apply, filters],
   );
 
   const handleRestoreFilters = useCallback((restored) => {
@@ -149,10 +162,11 @@ function DiscoverInner() {
         externalFilters={restoredFilters}
         searching={searching}
       />
+
       {/* Only /search returns these, so they appear on a term and not on a
           filter-only browse. The API sends them when matches span named
-          categories, which is what makes them show up on a broad term and
-          stay hidden on a narrow one. */}
+          categories, which is what makes them show up on a broad term and stay
+          hidden on a narrow one. */}
       {categorySuggestions.length > 0 && (
         <div className="flex flex-wrap items-center gap-2 px-4 pt-4 md:px-8">
           <span className="text-xs font-medium tracking-[0.04em] text-[#707070] uppercase">
@@ -183,13 +197,5 @@ function DiscoverInner() {
         }}
       />
     </>
-  );
-}
-
-export default function DiscoverPage() {
-  return (
-    <Suspense>
-      <DiscoverInner />
-    </Suspense>
   );
 }

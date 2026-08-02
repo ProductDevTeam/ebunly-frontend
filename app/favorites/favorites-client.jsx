@@ -74,11 +74,15 @@ function SkeletonGrid() {
 export default function FavoritesClient() {
   const { hydrated, items, remove } = useWishlist();
   const { addItem } = useCart();
-  const { success: notifySuccess } = useNotification();
+  const { success: notifySuccess, error: notifyError } = useNotification();
 
-  const handleAddToCart = (item) => {
-    addItem(toCartProduct(item), 1, {}, null);
-    notifySuccess(`${item.name} added to your cart.`, "Added to cart");
+  const handleAddToCart = async (item) => {
+    try {
+      await addItem(toCartProduct(item), 1, {}, null);
+      notifySuccess(`${item.name} added to your cart.`, "Added to cart");
+    } catch (err) {
+      notifyError(err.message, "Could not add to cart");
+    }
   };
 
   return (

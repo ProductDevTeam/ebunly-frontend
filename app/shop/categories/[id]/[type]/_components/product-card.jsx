@@ -14,11 +14,15 @@ export default function ProductCard({ product }) {
   const [isActive, setIsActive] = useState(false);
   const { toggle: toggleFavorite } = useWishlist();
   const { addItem } = useCart();
-  const { success: notifySuccess } = useNotification();
+  const { success: notifySuccess, error: notifyError } = useNotification();
 
-  const handleAddToCart = () => {
-    addItem(toCartProduct(product), 1, {}, null);
-    notifySuccess(`${product.name} added to your cart.`, "Added to cart");
+  const handleAddToCart = async () => {
+    try {
+      await addItem(toCartProduct(product), 1, {}, null);
+      notifySuccess(`${product.name} added to your cart.`, "Added to cart");
+    } catch (err) {
+      notifyError(err.message, "Could not add to cart");
+    }
     setIsActive(false);
   };
 
