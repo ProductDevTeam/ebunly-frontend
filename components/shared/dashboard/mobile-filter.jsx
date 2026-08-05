@@ -113,9 +113,9 @@ export default function MobileFilterBar({
 
   return (
     <>
-      <div className="lg:hidden bg-white border-b border-gray-100 font-sans">
+      <div className="border-b border-gray-100 font-sans lg:hidden">
         {/* Filter buttons row */}
-        <div className="flex items-center gap-2 px-4 py-3 overflow-x-auto scrollbar-none">
+        <div className="flex items-center gap-2 overflow-x-auto py-3 scrollbar-none">
           <SlidersHorizontal className="w-4 h-4 text-gray-400 flex-shrink-0" />
 
           {Object.entries(FILTER_LABELS).map(([key, label]) => {
@@ -179,7 +179,7 @@ export default function MobileFilterBar({
               transition={{ duration: 0.2, ease: "easeInOut" }}
               className="overflow-hidden"
             >
-              <div className="px-4 pb-3 flex flex-wrap gap-2">
+              <div className="flex flex-wrap gap-2 pb-3">
                 {chips.map((chip, i) => (
                   <motion.span
                     key={`${chip.key}-${String(chip.value)}`}

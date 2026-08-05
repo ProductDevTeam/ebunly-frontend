@@ -80,6 +80,10 @@ export default async function CategoryPage({ params, searchParams }) {
   // the URL asks for a term or a filter.
   const showingResults = id === ALL_CATEGORY_SLUG || hasResultParams(query);
 
+  // With no search field on the page, the heading is what tells you what you
+  // searched for — the navbar's field does not keep the term after navigating.
+  const term = (query?.q ?? query?.search ?? "").trim();
+
   const subcategories = showingResults ? [] : await getSubcategoriesBySlug(id);
   const hasSubcategories = subcategories.length > 0;
 
@@ -101,13 +105,15 @@ export default async function CategoryPage({ params, searchParams }) {
               className="font-semibold text-[#0C0000] text-[24px] md:text-[36px]"
               style={{ lineHeight: "96%", letterSpacing: "-5%" }}
             >
-              {label}
+              {term ? `Results for “${term}”` : label}
             </h1>
             <p
               className="text-black -tracking-[1%] text-[13px] md:text-[16px] mt-2 max-w-[440px] mx-auto"
               style={{ lineHeight: "140%" }}
             >
-              {description}
+              {term
+                ? "Sorted by relevance — refine with the filters below"
+                : description}
             </p>
           </div>
 

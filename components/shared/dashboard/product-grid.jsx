@@ -25,7 +25,7 @@ export default function ProductGrid({
 }) {
   if (isLoading) {
     return (
-      <div className="p-4 lg:p-8">
+      <div className="py-6 lg:py-8">
         <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2">
           {Array.from({ length: 8 }).map((_, i) => (
             <ProductSkeleton key={i} />
@@ -54,7 +54,7 @@ export default function ProductGrid({
   }
 
   return (
-    <div className="p-4 lg:p-8">
+    <div className="py-6 lg:py-8">
       <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2">
         {products.map((product, index) => (
           <ProductCard key={product._id} product={product} index={index} />
