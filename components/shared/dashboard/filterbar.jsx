@@ -205,9 +205,9 @@ export default function FilterBar({
   const clearAll = () => emit({ ...EMPTY_FILTERS });
 
   return (
-    <div className="bg-white hidden md:block border-b border-gray-100">
+    <div className="hidden border-b border-gray-100 md:block">
       {/* ── Filter row ── */}
-      <div className="px-8 py-3 flex flex-wrap items-center gap-1">
+      <div className="flex flex-wrap items-center gap-1 py-3">
         {/* Icon */}
         <SlidersHorizontal className="w-4 h-4 text-gray-400 mr-1 flex-shrink-0" />
 
@@ -347,7 +347,7 @@ export default function FilterBar({
             transition={{ duration: 0.2, ease: "easeInOut" }}
             className="overflow-hidden"
           >
-            <div className="px-8 pb-3 flex flex-wrap gap-2">
+            <div className="flex flex-wrap gap-2 pb-3">
               {chips.map((chip, i) => (
                 <motion.span
                   key={`${chip.key}-${chip.value}`}
