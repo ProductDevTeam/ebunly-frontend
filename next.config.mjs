@@ -33,6 +33,11 @@ const nextConfig = {
         destination: "/shop/categories/all",
         permanent: true,
       },
+      {
+        source: "/shop/categories/fashion-accessories/jewelry-accessories",
+        destination: "/shop/categories/fashion-accessories/jewellery-accessories",
+        permanent: true,
+      },
     ];
   },
 };
