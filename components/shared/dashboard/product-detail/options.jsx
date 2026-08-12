@@ -1,16 +1,13 @@
 "use client";
 
 /*
- * Variation groups (LENGTH, COLOR, …) — uppercase label over a pill row.
- * Selected pills use the peach treatment; quantity now sits beside Add to Cart.
+ * Variant dropdowns — one per variant group (Size, Colour, etc.).
+ * Label sits above the select; customer must pick a value before adding to cart.
  */
-const PEACH = "#FAECE7";
-const PEACH_BORDER = "#993C1D";
-const PEACH_INK = "#712B13";
 const HAIRLINE = "#EBE5E0";
 const INK = "#24201C";
-/* The uppercase micro-labels are a colder grey than body muted text. */
 const LABEL = "#707070";
+const BRAND = "#D85A30";
 
 export default function ProductOptions({
   product,
@@ -24,50 +21,39 @@ export default function ProductOptions({
   return (
     <div className="space-y-4 pb-4">
       {variants.map((variant) => {
-        // The exact name, not a lowercased one: POST /cart matches
-        // `variantName` case-sensitively and silently drops what it cannot
-        // match — losing theselection and its price modifier.
         const key = variant.name;
-        const current = selectedOptions[key] ?? variant.options[0];
+        const current = selectedOptions[key] ?? "";
 
         return (
           <div key={variant.name}>
             <p
-              className="text-[11px] font-medium tracking-[0.04em]"
+              className="text-[11px] font-medium tracking-[0.04em] mb-2"
               style={{ color: LABEL }}
             >
               {variant.name.toUpperCase()}
             </p>
-
-            <div className="mt-2 flex flex-wrap gap-2">
-              {variant.options.map((option) => {
-                const active = option === current;
-                return (
-                  <button
-                    key={option}
-                    type="button"
-                    onClick={() => onOptionChange(key, option)}
-                    aria-pressed={active}
-                    className="h-8 rounded-full border px-3 text-[12px] transition-colors"
-                    style={
-                      active
-                        ? {
-                            backgroundColor: PEACH,
-                            borderColor: PEACH_BORDER,
-                            color: PEACH_INK,
-                          }
-                        : {
-                            backgroundColor: "#FFFFFF",
-                            borderColor: HAIRLINE,
-                            color: INK,
-                          }
-                    }
-                  >
-                    {option}
-                  </button>
-                );
-              })}
-            </div>
+            <select
+              value={current}
+              onChange={(e) => onOptionChange(key, e.target.value)}
+              className="w-full h-11 rounded-lg border px-3 text-[13px] appearance-none bg-white focus:outline-none"
+              style={{
+                borderColor: current ? HAIRLINE : HAIRLINE,
+                color: current ? INK : LABEL,
+                backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%236E6659' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E")`,
+                backgroundRepeat: "no-repeat",
+                backgroundPosition: "right 12px center",
+                paddingRight: "36px",
+              }}
+            >
+              <option value="" disabled>
+                Select {variant.name}
+              </option>
+              {variant.options.map((option) => (
+                <option key={option} value={option}>
+                  {option}
+                </option>
+              ))}
+            </select>
           </div>
         );
       })}

@@ -23,6 +23,7 @@ export default function AddToCartDesktop({
   onOptionChange,
   deliveryDate,
   personalizedDeliveryDate,
+  deliveryRange,
   onOpenWishlist,
 }) {
   const { addItem } = useCart();
@@ -130,7 +131,11 @@ export default function AddToCartDesktop({
         >
           <Truck size={16} strokeWidth={1.5} className="shrink-0" />
           <span>
-            Est. delivery {deliveryDate}
+            {deliveryRange && /^\d+(-\d+)?$/.test(deliveryRange.trim())
+              ? `Est. delivery in ${deliveryRange} business days (by ${deliveryDate})`
+              : deliveryRange
+              ? `Est. delivery: ${deliveryRange}`
+              : `Est. delivery ${deliveryDate}`}
             {personalizedDeliveryDate
               ? `, or ${personalizedDeliveryDate} with personalization`
               : ""}
