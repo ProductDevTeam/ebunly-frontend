@@ -17,10 +17,19 @@ import Breadcrumb from "@/components/common/breadcrumb";
 export default function ProductDetailClient({ product, breadcrumb = [] }) {
   const router = useRouter();
 
+  const resolvedVideos = product.videos ?? [];
+  const mainVideo = resolvedVideos.find((v) => v.isMain);
+  const otherVideos = resolvedVideos.filter((v) => !v.isMain);
   const resolvedImages = (product.images ?? [])
     .map((img) => (typeof img === "string" ? img : img?.url))
     .filter(Boolean);
-  const images = resolvedImages.length > 0 ? resolvedImages : ["/product.png"];
+
+  const rawMedia = [
+    ...(mainVideo ? [{ type: "video", url: mainVideo.url, thumbnail: mainVideo.thumbnail || null }] : []),
+    ...resolvedImages.map((url) => ({ type: "image", url })),
+    ...otherVideos.map((v) => ({ type: "video", url: v.url, thumbnail: v.thumbnail || null })),
+  ];
+  const galleryMedia = rawMedia.length > 0 ? rawMedia : [{ type: "image", url: "/product.png" }];
   const variantDefaults = {};
   product.variants?.forEach((variant) => {
     if (variant.options?.length > 0) {
@@ -63,13 +72,15 @@ export default function ProductDetailClient({ product, breadcrumb = [] }) {
 
   const getDeliveryDate = (extraDays = 0) => {
     if (!product.estimatedDeliveryDays) return null;
-    const days = parseInt(product.estimatedDeliveryDays.split("-")[0]);
-    const deliveryDate = new Date();
-    deliveryDate.setDate(deliveryDate.getDate() + days + extraDays);
-    return deliveryDate.toLocaleDateString("en-US", {
-      month: "short",
-      day: "numeric",
-    });
+    const businessDays = parseInt(product.estimatedDeliveryDays.split("-")[0]) + extraDays;
+    const date = new Date();
+    let added = 0;
+    while (added < businessDays) {
+      date.setDate(date.getDate() + 1);
+      const dow = date.getDay();
+      if (dow !== 0 && dow !== 6) added++;
+    }
+    return date.toLocaleDateString("en-US", { month: "short", day: "numeric" });
   };
 
   const deliveryDate = getDeliveryDate();
@@ -88,11 +99,18 @@ export default function ProductDetailClient({ product, breadcrumb = [] }) {
     product.keyInfo?.length > 0
       ? product.keyInfo
       : [
-          product.weight && {
+          (product.weightValue || product.weight) && {
             label: "Weight",
-            value: String(product.weight),
+            value: product.weightValue
+              ? `${product.weightValue}${product.weightUnit || ""}`
+              : String(product.weight),
           },
-          product.color && { label: "Color", value: product.color },
+          (product.colors?.length > 0 || product.color) && {
+            label: "Color",
+            value: product.colors?.length > 0
+              ? product.colors.join(", ")
+              : product.color,
+          },
           product.materials?.length > 0 && {
             label: "Materials",
             value: product.materials.join(", "),
@@ -119,7 +137,7 @@ export default function ProductDetailClient({ product, breadcrumb = [] }) {
             See .product-gallery-sticky in globals.css for why it is a rule
             rather than Tailwind variants. */}
         <div className="product-gallery-sticky lg:flex-1 lg:min-w-0">
-          <ImageGallery images={images} product={product} />
+          <ImageGallery media={galleryMedia} />
         </div>
 
         {/* Product info — the long column, and the only one that scrolls */}
@@ -175,6 +193,7 @@ export default function ProductDetailClient({ product, breadcrumb = [] }) {
                 onOptionChange={handleOptionChange}
                 deliveryDate={deliveryDate}
                 personalizedDeliveryDate={personalizedDeliveryDate}
+                deliveryRange={product.estimatedDeliveryDays || null}
                 onOpenWishlist={() => setWishlistOpen(true)}
               />
             </div>
