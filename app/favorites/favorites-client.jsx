@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { Plus, Heart } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -72,14 +73,16 @@ function SkeletonGrid() {
 }
 
 export default function FavoritesClient() {
+  const router = useRouter();
   const { hydrated, items, remove } = useWishlist();
   const { addItem } = useCart();
-  const { success: notifySuccess, error: notifyError } = useNotification();
+  const { error: notifyError } = useNotification();
 
   const handleAddToCart = async (item) => {
     try {
       await addItem(toCartProduct(item), 1, {}, null);
-      notifySuccess(`${item.name} added to your cart.`, "Added to cart");
+      remove(item.id);
+      router.push("/cart");
     } catch (err) {
       notifyError(err.message, "Could not add to cart");
     }

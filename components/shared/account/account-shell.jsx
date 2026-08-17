@@ -7,7 +7,6 @@ import {
   Package,
   MapPin,
   CreditCard,
-  Gift,
   LogOut,
   ArrowLeft,
 } from "lucide-react";
@@ -29,7 +28,6 @@ export const ACCOUNT_NAV = [
   { label: "Orders", href: "/profile/orders", icon: Package },
   { label: "Addresses", href: "/profile/addresses", icon: MapPin },
   { label: "Payment Methods", href: "/profile/payment-methods", icon: CreditCard },
-  { label: "Wishlists", href: "/profile/wishlists", icon: Gift },
 ];
 
 function initialOf(name) {
