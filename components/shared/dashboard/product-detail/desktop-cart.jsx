@@ -45,7 +45,18 @@ export default function AddToCartDesktop({
 
   const saved = hydrated && has(product._id ?? product.id);
 
+  // Variants with real options must be explicitly chosen — selectedOptions
+  // has no pre-filled defaults, so a missing key means the customer hasn't
+  // picked one yet (see options.jsx).
+  const requiredVariants = product.variants?.filter((v) => v.options?.length > 0) ?? [];
+
   const handleAdd = async () => {
+    const missing = requiredVariants.find((v) => !selectedOptions?.[v.name]);
+    if (missing) {
+      notifyError(`Please select a ${missing.name.toLowerCase()}`, "Missing selection");
+      return;
+    }
+
     const qty = selectedOptions?.quantity ?? minQuantity;
     try {
       // Awaited so the toast reports what actually happened. For a guest this

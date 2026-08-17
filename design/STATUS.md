@@ -42,6 +42,7 @@ node .claude/skills/figma-replicate/scripts/design-status.mjs --sync   # append 
 | Profile dropdown mobile | Profile dropdown - mobile.png | component | components/common/account-menu.jsx | shoot.mjs / --w 390 --sel "[data-account-sheet]" | done | 69f4df8d |  |
 | Profile dropdown | Profile dropdown.png | component | components/common/account-menu.jsx | shoot.mjs / --w 1440 --sel "[data-account-menu]" | done | 0189ed22 |  |
 | Slideout menu mobile | Slideout menu mobile.png | component | components/common/mobile-menu.jsx | shoot.mjs / --w 390 --sel "[data-mobile-menu]" | done | 84b20cad |  |
+| Product gallery arrows + share (Etsy reference) | pasted, not saved | component | components/shared/dashboard/product-detail/gallery.jsx | shoot.mjs "/products/custom-birthstone-bracelet" --w 1440 --sel ".product-gallery-sticky" | done | n/a | reference screenshot from etsy.com used only for the interaction pattern (arrow nav + share affordance), not our own Figma export — chrome/colors follow project tokens, not Etsy's styling |
 
 <!-- Add one row per exported design. Example rows, for reference:
 

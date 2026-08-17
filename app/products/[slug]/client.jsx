@@ -30,16 +30,12 @@ export default function ProductDetailClient({ product, breadcrumb = [] }) {
     ...otherVideos.map((v) => ({ type: "video", url: v.url, thumbnail: v.thumbnail || null })),
   ];
   const galleryMedia = rawMedia.length > 0 ? rawMedia : [{ type: "image", url: "/product.png" }];
-  const variantDefaults = {};
-  product.variants?.forEach((variant) => {
-    if (variant.options?.length > 0) {
-      variantDefaults[variant.name] = variant.options[0];
-    }
-  });
 
+  // Variants start unselected — options.jsx's placeholder option and
+  // desktop-cart.jsx's pre-submit check both depend on nothing being
+  // silently pre-filled here.
   const [selectedOptions, setSelectedOptions] = useState({
     quantity: product.minQuantity || 1,
-    ...variantDefaults,
   });
 
   const [personalization, setPersonalization] = useState({
@@ -55,10 +51,15 @@ export default function ProductDetailClient({ product, breadcrumb = [] }) {
 
   // Category line above the title — the breadcrumb's parent entry.
   const categoryLabel =
-    product.coreCategory ??
-    product.category ??
+    product.subcategory ??
+    product.subcategories?.[0] ??
     breadcrumb?.[breadcrumb.length - 2]?.label ??
     null;
+
+  const hasDiscount = product.discountPercentage > 0;
+  const discountedPrice = hasDiscount
+    ? product.basePrice * (1 - product.discountPercentage / 100)
+    : product.basePrice;
 
   const handleOptionChange = (option, value) => {
     setSelectedOptions((prev) => ({ ...prev, [option]: value }));
@@ -137,7 +138,7 @@ export default function ProductDetailClient({ product, breadcrumb = [] }) {
             See .product-gallery-sticky in globals.css for why it is a rule
             rather than Tailwind variants. */}
         <div className="product-gallery-sticky lg:flex-1 lg:min-w-0">
-          <ImageGallery media={galleryMedia} />
+          <ImageGallery media={galleryMedia} product={product} />
         </div>
 
         {/* Product info — the long column, and the only one that scrolls */}
@@ -154,9 +155,21 @@ export default function ProductDetailClient({ product, breadcrumb = [] }) {
             </h1>
 
             {product.basePrice != null && (
-              <p className="mt-2 text-[18px] font-normal text-[#24201C]">
-                ₦{Number(product.basePrice).toLocaleString()}
-              </p>
+              <div className="mt-2 flex flex-wrap items-center gap-2">
+                <p className="text-[18px] font-normal text-[#24201C]">
+                  ₦{Math.round(discountedPrice).toLocaleString()}
+                </p>
+                {hasDiscount && (
+                  <>
+                    <p className="text-[14px] text-text-gray line-through">
+                      ₦{Number(product.basePrice).toLocaleString()}
+                    </p>
+                    <p className="text-[13px] font-medium text-green-600">
+                      {product.discountPercentage}% off
+                    </p>
+                  </>
+                )}
+              </div>
             )}
           </div>
 

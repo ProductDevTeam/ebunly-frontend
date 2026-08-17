@@ -2,8 +2,10 @@
 
 import { useState, useRef } from "react";
 import Image from "next/image";
+import { ChevronLeft, ChevronRight, Share } from "lucide-react";
+import { useNotification } from "@/components/common/notification-provider";
 
-export default function ImageGallery({ media = [], images = [] }) {
+export default function ImageGallery({ media = [], images = [], product = null }) {
   // Backward compat: if only images[] (URL strings) passed, convert to media format
   const items =
     media.length > 0
@@ -14,6 +16,7 @@ export default function ImageGallery({ media = [], images = [] }) {
   const [playingIndex, setPlayingIndex] = useState(null);
   const videoRefs = useRef({});
   const scrollRef = useRef(null);
+  const { success } = useNotification();
 
   const pauseVideo = (index) => {
     const el = videoRefs.current[index];
@@ -60,6 +63,33 @@ export default function ImageGallery({ media = [], images = [] }) {
     } else {
       pauseVideo(index);
       setPlayingIndex(null);
+    }
+  };
+
+  const goToPrev = () => {
+    scrollToIndex((activeIndex - 1 + items.length) % items.length);
+  };
+
+  const goToNext = () => {
+    scrollToIndex((activeIndex + 1) % items.length);
+  };
+
+  const handleShare = async () => {
+    const shareData = {
+      title: product?.name || "Check this out",
+      url: typeof window !== "undefined" ? window.location.href : "",
+    };
+    if (typeof navigator !== "undefined" && navigator.share) {
+      try {
+        await navigator.share(shareData);
+      } catch {
+        // user cancelled the native share sheet — nothing to do
+      }
+      return;
+    }
+    if (typeof navigator !== "undefined" && navigator.clipboard) {
+      await navigator.clipboard.writeText(shareData.url);
+      success("Link copied to clipboard");
     }
   };
 
@@ -118,6 +148,36 @@ export default function ImageGallery({ media = [], images = [] }) {
 
         {/* Main slider */}
         <div className="order-1 md:order-2 relative flex-1 min-w-0">
+          <button
+            type="button"
+            onClick={handleShare}
+            aria-label="Share"
+            className="absolute top-3 right-3 z-10 w-10 h-10 rounded-full bg-white shadow-md flex items-center justify-center"
+          >
+            <Share size={18} className="text-[#171717]" />
+          </button>
+
+          {items.length > 1 && (
+            <>
+              <button
+                type="button"
+                onClick={goToPrev}
+                aria-label="Previous image"
+                className="absolute left-3 top-1/2 -translate-y-1/2 z-10 w-10 h-10 rounded-full bg-white shadow-md flex items-center justify-center"
+              >
+                <ChevronLeft size={20} className="text-[#171717]" />
+              </button>
+              <button
+                type="button"
+                onClick={goToNext}
+                aria-label="Next image"
+                className="absolute right-3 top-1/2 -translate-y-1/2 z-10 w-10 h-10 rounded-full bg-white shadow-md flex items-center justify-center"
+              >
+                <ChevronRight size={20} className="text-[#171717]" />
+              </button>
+            </>
+          )}
+
           <div
             ref={scrollRef}
             onScroll={handleScroll}

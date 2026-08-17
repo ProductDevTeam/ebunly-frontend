@@ -270,7 +270,7 @@ export default function Navbar({
           {/* Hamburger */}
           <div className="flex gap-2 items-center">
             <button
-              className="p-1.5"
+              className="min-w-11 min-h-11 flex items-center justify-center"
               onClick={() => setMenuOpen(true)}
               aria-label="Open menu"
               aria-expanded={menuOpen}
@@ -290,7 +290,7 @@ export default function Navbar({
           <div className="flex items-center gap-1">
             <Link
               href="/favorites"
-              className="relative p-1.5"
+              className="relative min-w-11 min-h-11 flex items-center justify-center"
               aria-label="Favorites"
             >
               <Image
@@ -300,12 +300,16 @@ export default function Navbar({
                 alt="Favorites"
               />
               {wishCount > 0 && (
-                <span className="absolute -top-0.5 -right-0.5 min-w-[16px] h-4 px-1 rounded-full bg-primary text-white text-[10px] font-semibold leading-none flex items-center justify-center">
+                <span className="absolute top-1 right-1 min-w-[16px] h-4 px-1 rounded-full bg-primary text-white text-[10px] font-semibold leading-none flex items-center justify-center">
                   {wishCount > 99 ? "99+" : wishCount}
                 </span>
               )}
             </Link>
-            <Link href="/cart" className="relative p-1.5" aria-label="Basket">
+            <Link
+              href="/cart"
+              className="relative min-w-11 min-h-11 flex items-center justify-center"
+              aria-label="Basket"
+            >
               <Image
                 src="/icons/shop.svg"
                 width={24}
@@ -313,7 +317,7 @@ export default function Navbar({
                 alt="Basket"
               />
               {cartCount > 0 && (
-                <span className="absolute -top-0.5 -right-0.5 min-w-[16px] h-4 px-1 rounded-full bg-primary text-white text-[10px] font-semibold leading-none flex items-center justify-center">
+                <span className="absolute top-1 right-1 min-w-[16px] h-4 px-1 rounded-full bg-primary text-white text-[10px] font-semibold leading-none flex items-center justify-center">
                   {cartCount > 99 ? "99+" : cartCount}
                 </span>
               )}
@@ -321,7 +325,7 @@ export default function Navbar({
             {loggedInUser ? (
               <button
                 onClick={() => setSheetOpen(true)}
-                className="p-1.5 flex items-center"
+                className="min-w-11 min-h-11 flex items-center justify-center"
                 aria-label={displayName}
                 aria-expanded={sheetOpen}
               >
@@ -333,7 +337,11 @@ export default function Navbar({
                 />
               </button>
             ) : (
-              <Link href="/login" className="p-1.5" aria-label="Sign in">
+              <Link
+                href="/login"
+                className="min-w-11 min-h-11 flex items-center justify-center"
+                aria-label="Sign in"
+              >
                 <Image
                   src="/icons/profile.svg"
                   width={24}
