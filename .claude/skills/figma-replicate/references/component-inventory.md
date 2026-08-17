@@ -24,7 +24,7 @@ Note there are **two** `DesktopHeader`s: the top-level one above, and `component
 
 | Component | Path | Props |
 |---|---|---|
-| `ProductCard` | `app/shop/categories/[id]/[type]/_components/product-card.jsx` | `product` — card with image, favorite, and quick-add overlay |
+| `ProductCard` | `components/common/product-card.jsx` | `product`, `sizes` — the one card used across the site (homepage rail, category grids); expects `normalizeProduct`'s `{price, image, images}` shape, not raw API fields |
 | `ProductGrid` | `components/shared/dashboard/product-grid.jsx` | `products = []`, `isLoading`, `isError`, `error`, `pagination` — includes its own skeleton and empty states |
 | `RelatedProducts` | `.../product-detail/related.jsx` | `products`, `className` |
 | `ImageGallery` | `.../product-detail/gallery.jsx` | `images`, `product` |

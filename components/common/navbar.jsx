@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState, useSyncExternalStore } from "react";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import { ChevronDown } from "lucide-react";
@@ -15,6 +15,7 @@ import { AccountDropdown, AccountSheet } from "./account-menu";
 import MobileMenu from "./mobile-menu";
 import SearchSuggestions from "./search-suggestions";
 import SearchOverlay from "./search-overlay";
+import { useRecentSearches } from "@/hooks/use-recent-searches";
 
 const FALLBACK_CATEGORIES = [
   { id: "fashion-accessories", label: "Fashion & Accessories" },
@@ -35,6 +36,22 @@ export default function Navbar({
   // Desktop shows the suggestion panel as an anchored dropdown; mobile opens
   // the full-screen overlay the two mobile frames draw.
   const [searchOpen, setSearchOpen] = useState(false);
+  const router = useRouter();
+  const { addRecent } = useRecentSearches();
+
+  /*
+   * Enter on the desktop field goes to the same place the panel's "See all
+   * results" link does, and remembers the term the same way — the field had no
+   * submit at all, so pressing Enter simply did nothing.
+   */
+  const submitSearch = (event) => {
+    event.preventDefault();
+    const q = search.trim();
+    if (!q) return;
+    addRecent(q);
+    setSearchOpen(false);
+    router.push(`/shop/categories/all?q=${encodeURIComponent(q)}`);
+  };
   const [mobileSearchOpen, setMobileSearchOpen] = useState(false);
   const searchRef = useRef(null);
   // Desktop uses an anchored dropdown, mobile a bottom sheet — separate state
@@ -101,30 +118,32 @@ export default function Navbar({
           {/* Search + Shopping for an event */}
           <div className="flex items-center gap-5 flex-1 max-w-xl">
             <div className="relative flex-1" ref={searchRef}>
-              <label className="flex items-center gap-2.5 h-9.5 bg-white border-[#E7E0D8] rounded-full px-4 border cursor-text">
-                <svg
-                  width="20"
-                  height="20"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="#9CA3AF"
-                  strokeWidth="2.5"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                >
-                  <circle cx="11" cy="11" r="8" />
-                  <path d="m21 21-4.35-4.35" />
-                </svg>
-                <input
-                  type="text"
-                  placeholder="Search for anything..."
-                  value={search}
-                  onChange={(e) => setSearch(e.target.value)}
-                  onFocus={() => setSearchOpen(true)}
-                  className="flex-1 text-sm text-gray-900 placeholder:text-gray-400 
-                   bg-transparent focus:outline-none min-w-0"
-                />
-              </label>
+              <form onSubmit={submitSearch} role="search">
+                <label className="flex items-center gap-2.5 h-9.5 bg-white border-[#E7E0D8] rounded-full px-4 border cursor-text">
+                  <svg
+                    width="20"
+                    height="20"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="#9CA3AF"
+                    strokeWidth="2.5"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <circle cx="11" cy="11" r="8" />
+                    <path d="m21 21-4.35-4.35" />
+                  </svg>
+                  <input
+                    type="search"
+                    placeholder="Search for anything..."
+                    aria-label="Search"
+                    value={search}
+                    onChange={(e) => setSearch(e.target.value)}
+                    onFocus={() => setSearchOpen(true)}
+                    className="flex-1 min-w-0 bg-transparent text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none"
+                  />
+                </label>
+              </form>
 
               {searchOpen && (
                 <div className="absolute top-full right-0 left-0 z-50 mt-2 rounded-2xl border border-[#F2EDE8] bg-white p-5">
@@ -251,7 +270,7 @@ export default function Navbar({
           {/* Hamburger */}
           <div className="flex gap-2 items-center">
             <button
-              className="p-1.5"
+              className="min-w-11 min-h-11 flex items-center justify-center"
               onClick={() => setMenuOpen(true)}
               aria-label="Open menu"
               aria-expanded={menuOpen}
@@ -271,7 +290,7 @@ export default function Navbar({
           <div className="flex items-center gap-1">
             <Link
               href="/favorites"
-              className="relative p-1.5"
+              className="relative min-w-11 min-h-11 flex items-center justify-center"
               aria-label="Favorites"
             >
               <Image
@@ -281,12 +300,16 @@ export default function Navbar({
                 alt="Favorites"
               />
               {wishCount > 0 && (
-                <span className="absolute -top-0.5 -right-0.5 min-w-[16px] h-4 px-1 rounded-full bg-primary text-white text-[10px] font-semibold leading-none flex items-center justify-center">
+                <span className="absolute top-1 right-1 min-w-[16px] h-4 px-1 rounded-full bg-primary text-white text-[10px] font-semibold leading-none flex items-center justify-center">
                   {wishCount > 99 ? "99+" : wishCount}
                 </span>
               )}
             </Link>
-            <Link href="/cart" className="relative p-1.5" aria-label="Basket">
+            <Link
+              href="/cart"
+              className="relative min-w-11 min-h-11 flex items-center justify-center"
+              aria-label="Basket"
+            >
               <Image
                 src="/icons/shop.svg"
                 width={24}
@@ -294,7 +317,7 @@ export default function Navbar({
                 alt="Basket"
               />
               {cartCount > 0 && (
-                <span className="absolute -top-0.5 -right-0.5 min-w-[16px] h-4 px-1 rounded-full bg-primary text-white text-[10px] font-semibold leading-none flex items-center justify-center">
+                <span className="absolute top-1 right-1 min-w-[16px] h-4 px-1 rounded-full bg-primary text-white text-[10px] font-semibold leading-none flex items-center justify-center">
                   {cartCount > 99 ? "99+" : cartCount}
                 </span>
               )}
@@ -302,7 +325,7 @@ export default function Navbar({
             {loggedInUser ? (
               <button
                 onClick={() => setSheetOpen(true)}
-                className="p-1.5 flex items-center"
+                className="min-w-11 min-h-11 flex items-center justify-center"
                 aria-label={displayName}
                 aria-expanded={sheetOpen}
               >
@@ -314,7 +337,11 @@ export default function Navbar({
                 />
               </button>
             ) : (
-              <Link href="/login" className="p-1.5" aria-label="Sign in">
+              <Link
+                href="/login"
+                className="min-w-11 min-h-11 flex items-center justify-center"
+                aria-label="Sign in"
+              >
                 <Image
                   src="/icons/profile.svg"
                   width={24}
@@ -332,7 +359,8 @@ export default function Navbar({
             <button
               type="button"
               onClick={() => setMobileSearchOpen(true)}
-              className="flex w-full items-center gap-2.5 h-9 bg-white border border-gray-200 rounded-md px-4 text-left">
+              className="flex w-full items-center gap-2.5 h-9 bg-white border border-gray-200 rounded-md px-4 text-left"
+            >
               <svg
                 width="20"
                 height="20"

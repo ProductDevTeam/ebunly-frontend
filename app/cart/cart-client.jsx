@@ -66,12 +66,20 @@ function QuantitySelect({ value, max, onChange }) {
 }
 
 function CartRow({ item, onSetQuantity, onRemove }) {
+  const router = useRouter();
   const image = item.images?.[0]?.url ?? item.images?.[0] ?? "/product.png";
   const details = itemDetails(item);
+  const href = `/products/${item.slug}`;
 
   return (
     <div
-      className="flex gap-3 pt-8 pb-4 md:gap-4 md:pt-10 md:pb-5"
+      role="link"
+      tabIndex={0}
+      onClick={() => router.push(href)}
+      onKeyDown={(e) => {
+        if (e.key === "Enter") router.push(href);
+      }}
+      className="flex cursor-pointer gap-3 pt-8 pb-4 md:gap-4 md:pt-10 md:pb-5"
       style={{ borderBottom: `1px solid ${HAIRLINE}` }}
     >
       <span className="relative h-16 w-16 shrink-0 overflow-hidden rounded-lg bg-[#FAECE7] md:h-20 md:w-20">
@@ -114,7 +122,10 @@ function CartRow({ item, onSetQuantity, onRemove }) {
           </ul>
         )}
 
-        <div className="mt-2.5 flex items-center justify-between gap-4 md:mt-4 md:justify-start md:gap-28">
+        <div
+          className="mt-2.5 flex items-center justify-between gap-4 md:mt-4 md:justify-start md:gap-28"
+          onClick={(e) => e.stopPropagation()}
+        >
           <QuantitySelect
             value={item.quantity}
             max={item.maxQuantity}
@@ -190,7 +201,7 @@ function OrderSummary({ subtotal, estimatedDelivery, onCheckout }) {
         className="mt-5 h-12 w-full rounded-lg text-[15px] text-white md:mt-4 md:h-11.5"
         style={{ backgroundColor: BRAND }}
       >
-        Go to checkout
+        Proceed to Checkout
       </button>
     </div>
   );
