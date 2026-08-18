@@ -236,9 +236,7 @@ export default function ProductDetailClient({ product, breadcrumb = [] }) {
         </div>
       </main>
 
-      {product.relatedProducts?.length > 0 && (
-        <RelatedProducts products={product.relatedProducts} />
-      )}
+      <RelatedProducts productId={product._id ?? product.id} />
 
       <RelatedToYourSearch />
 

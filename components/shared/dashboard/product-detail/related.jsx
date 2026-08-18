@@ -1,14 +1,22 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import ProductCard from "@/components/common/product-card";
+import { apiGet } from "@/utils/api-fetch";
 
-/*
- * "More gifts like this" — real data, from product.relatedProducts.
- * Replaces the old "Loved right now" band, which the two-section export
- * (this one + related-to-search.jsx) superseded. Up to two rows (10 cards),
- * not one — the new export shows a partial second row.
- */
-export default function RelatedProducts({ products = [], className = "" }) {
+export default function RelatedProducts({ productId, className = "" }) {
+  const [products, setProducts] = useState([]);
+
+  useEffect(() => {
+    if (!productId) return;
+    apiGet(`products/${productId}/similar`)
+      .then((res) => {
+        const hits = res?.data?.hits ?? [];
+        setProducts(hits);
+      })
+      .catch(() => {});
+  }, [productId]);
+
   if (products.length === 0) return null;
 
   return (
@@ -35,7 +43,7 @@ export default function RelatedProducts({ products = [], className = "" }) {
         <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
           {products.slice(0, 10).map((product) => (
             <ProductCard
-              key={product.id ?? product._id ?? product.slug}
+              key={product.objectID ?? product._id ?? product.slug}
               product={product}
               sizes="(max-width: 768px) 45vw, 220px"
             />

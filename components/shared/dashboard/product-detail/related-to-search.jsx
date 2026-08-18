@@ -4,17 +4,15 @@ import { useEffect, useState } from "react";
 import ProductCard from "@/components/common/product-card";
 import { apiGet } from "@/utils/api-fetch";
 
-const STORAGE_KEY = "ebunly_search_history";
+const STORAGE_KEY = "ebunly:recent-searches";
 
 function getRecentQueries() {
   try {
     const stored = localStorage.getItem(STORAGE_KEY);
     if (!stored) return [];
     const history = JSON.parse(stored);
-    return history
-      .map((h) => h.filters?.search)
-      .filter(Boolean)
-      .slice(0, 3);
+    // Stored as plain string array: ["gold", "rings", ...]
+    return history.filter((q) => typeof q === "string" && q.trim()).slice(0, 3);
   } catch {
     return [];
   }
