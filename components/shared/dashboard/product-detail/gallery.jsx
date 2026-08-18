@@ -77,6 +77,7 @@ export default function ImageGallery({ media = [], images = [], product = null }
   const handleShare = async () => {
     const shareData = {
       title: product?.name || "Check this out",
+      text: `Check out ${product?.name || "this"} on Ebunly!`,
       url: typeof window !== "undefined" ? window.location.href : "",
     };
     if (typeof navigator !== "undefined" && navigator.share) {

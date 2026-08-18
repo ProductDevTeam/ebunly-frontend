@@ -3,7 +3,7 @@
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
-import { ShoppingBag } from "lucide-react";
+import { ArrowLeft, ShoppingBag } from "lucide-react";
 
 import { useCart } from "@/hooks/use-cart";
 import { countVendors } from "@/hooks/use-deliveries";
@@ -270,6 +270,17 @@ export default function CartClient({ mockItems = null }) {
       >
         Your cart
       </h1>
+
+      {items.length > 0 && (
+        <Link
+          href="/shop/categories/all"
+          className="mt-2 inline-flex items-center gap-1.5 text-[13px] font-medium"
+          style={{ color: MUTED }}
+        >
+          <ArrowLeft size={14} strokeWidth={1.75} />
+          Continue shopping
+        </Link>
+      )}
 
       {items.length === 0 ? (
         <EmptyCart />

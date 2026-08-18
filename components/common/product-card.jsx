@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import FavoriteButton from "@/components/common/favorite-button";
 
@@ -10,9 +10,16 @@ import FavoriteButton from "@/components/common/favorite-button";
  * The one product card used across the site (homepage rail, category grids).
  * Measured from the Figma exports: peach chrome #FAECE7 with #712B13 ink,
  * square image, per-image dot indicator, title over price.
+ *
+ * Multi-image cards also carry the carousel: swipe left/right on mobile,
+ * and on desktop (md: cut, 768px) the images auto-advance every 3s, pausing
+ * on hover. Either kind of manual interaction resets the autoplay timer.
  */
 export const CARD_PEACH = "#FAECE7";
 export const CARD_PEACH_INK = "#712B13";
+
+const AUTOPLAY_MS = 3000;
+const SWIPE_THRESHOLD_PX = 40;
 
 export default function ProductCard({ product, sizes }) {
   const images =
@@ -20,11 +27,70 @@ export default function ProductCard({ product, sizes }) {
       ? product.images
       : [product.image].filter(Boolean);
   const [index, setIndex] = useState(0);
+  const [paused, setPaused] = useState(false);
+  const touchStartX = useRef(null);
+  const swipedRef = useRef(false);
+
+  const hasMultiple = images.length > 1;
+
+  useEffect(() => {
+    if (!hasMultiple || paused) return;
+    if (typeof window === "undefined" || !window.matchMedia("(min-width: 768px)").matches) {
+      return;
+    }
+    const id = setInterval(() => {
+      setIndex((i) => (i + 1) % images.length);
+    }, AUTOPLAY_MS);
+    return () => clearInterval(id);
+    // `index` is intentionally a dependency: any manual change (dot click or
+    // swipe) restarts the timer so autoplay doesn't advance right after it.
+  }, [hasMultiple, paused, images.length, index]);
+
+  const goTo = (i) => setIndex((i + images.length) % images.length);
+
+  const handleTouchStart = (e) => {
+    if (!hasMultiple) return;
+    touchStartX.current = e.touches[0].clientX;
+    swipedRef.current = false;
+  };
+
+  const handleTouchMove = (e) => {
+    if (!hasMultiple || touchStartX.current === null) return;
+    const delta = e.touches[0].clientX - touchStartX.current;
+    if (Math.abs(delta) > SWIPE_THRESHOLD_PX) {
+      goTo(index + (delta < 0 ? 1 : -1));
+      swipedRef.current = true;
+      touchStartX.current = e.touches[0].clientX;
+    }
+  };
+
+  const handleTouchEnd = () => {
+    touchStartX.current = null;
+  };
+
+  const handleImageClick = (e) => {
+    // A swipe just happened on this same gesture — don't also navigate.
+    if (swipedRef.current) {
+      e.preventDefault();
+      swipedRef.current = false;
+    }
+  };
 
   return (
     <div>
-      <div className="relative w-full aspect-square rounded-2xl overflow-hidden bg-[#EFEFEF]">
-        <Link href={`/products/${product.slug}`} className="block h-full w-full">
+      <div
+        className="relative w-full aspect-square rounded-2xl overflow-hidden bg-[#EFEFEF]"
+        onMouseEnter={() => setPaused(true)}
+        onMouseLeave={() => setPaused(false)}
+        onTouchStart={handleTouchStart}
+        onTouchMove={handleTouchMove}
+        onTouchEnd={handleTouchEnd}
+      >
+        <Link
+          href={`/products/${product.slug}`}
+          className="block h-full w-full"
+          onClick={handleImageClick}
+        >
           <Image
             src={images[index] ?? "/product.png"}
             alt={product.name}

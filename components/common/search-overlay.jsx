@@ -59,7 +59,7 @@ export default function SearchOverlay({ onClose, categories = [] }) {
               onChange={(e) => setQuery(e.target.value)}
               placeholder="Search for anything..."
               aria-label="Search"
-              className="min-w-0 flex-1 bg-transparent text-[14px] focus:outline-none"
+              className="min-w-0 flex-1 bg-transparent text-[16px] focus:outline-none"
               style={{ color: INK }}
             />
           </form>
