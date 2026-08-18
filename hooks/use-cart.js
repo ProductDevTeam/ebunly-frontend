@@ -29,6 +29,7 @@ export function toCartProduct(p) {
     _id: id,
     name: p.name,
     basePrice: p.basePrice ?? p.price ?? 0,
+    discountPercentage: p.discountPercentage ?? 0,
     compareAtPrice: p.compareAtPrice,
     images,
     slug: p.slug ?? id,

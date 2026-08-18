@@ -13,6 +13,7 @@ export function toWishlistItem(p) {
     slug: p.slug ?? id,
     name: p.name,
     price: p.price ?? p.basePrice ?? 0,
+    discountPercentage: p.discountPercentage ?? 0,
     image,
   };
 }

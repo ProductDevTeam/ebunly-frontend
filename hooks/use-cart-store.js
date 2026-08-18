@@ -1,6 +1,8 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 
+import { getProductPricing } from "@/lib/pricing";
+
 export const useCartStore = create(
   persist(
     (set, get) => ({
@@ -31,6 +33,12 @@ export const useCartStore = create(
             return { items: updated };
           }
 
+          // Resolved once, here — the one place every guest-cart add funnels
+          // through, regardless of whether the caller pre-normalized via
+          // toCartProduct(). Cart items store what's actually payable, not
+          // the pre-discount basePrice.
+          const { finalPrice } = getProductPricing(product);
+
           return {
             items: [
               ...state.items,
@@ -38,7 +46,7 @@ export const useCartStore = create(
                 cartItemId: `${product._id}_${Date.now()}`,
                 _id: product._id,
                 name: product.name,
-                basePrice: product.basePrice,
+                basePrice: finalPrice,
                 compareAtPrice: product.compareAtPrice,
                 images: product.images,
                 slug: product.slug,

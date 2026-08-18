@@ -47,6 +47,7 @@ function normalizeItem(item) {
     productId: product._id ?? product.id ?? item?.productId,
     name: product.name,
     price: product.basePrice ?? product.price ?? 0,
+    discountPercentage: product.discountPercentage ?? 0,
     image:
       (typeof product.images?.[0] === "string"
         ? product.images[0]

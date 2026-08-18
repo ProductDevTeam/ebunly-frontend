@@ -4,6 +4,8 @@ import { motion } from "framer-motion";
 import Image from "next/image";
 import Link from "next/link";
 
+import { getProductPricing, formatNaira } from "@/lib/pricing";
+
 function ProductSkeleton() {
   return (
     <div className="animate-pulse font-sans">
@@ -94,6 +96,7 @@ function ProductCard({ product, index }) {
     product.images?.find((img) => img.isMain)?.url ||
     product.images?.[0]?.url ||
     "/product.png";
+  const { basePrice, hasDiscount, finalPrice } = getProductPricing(product);
 
   return (
     <Link href={`/products/${product.slug}`} className="block">
@@ -118,8 +121,13 @@ function ProductCard({ product, index }) {
           <h3 className="font-semibold text-gray-900 group-hover:text-orange-600 transition-colors truncate">
             {product.name}
           </h3>
-          <p className="text-base font-medium text-gray-900">
-            ₦{product.basePrice.toLocaleString()}
+          <p className="text-base font-medium text-gray-900 flex flex-wrap items-center gap-1.5">
+            {hasDiscount && (
+              <span className="text-sm text-gray-400 line-through">
+                {formatNaira(basePrice)}
+              </span>
+            )}
+            <span>{formatNaira(finalPrice)}</span>
           </p>
         </div>
       </motion.div>

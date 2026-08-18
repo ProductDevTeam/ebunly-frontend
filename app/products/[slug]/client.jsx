@@ -11,8 +11,10 @@ import WishlistModal from "@/components/shared/dashboard/product-detail/wishlist
 import ProductKeyInfo from "@/components/shared/dashboard/product-detail/info";
 import ProductDescription from "@/components/shared/dashboard/product-detail/description";
 import RelatedProducts from "@/components/shared/dashboard/product-detail/related";
+import RelatedToYourSearch from "@/components/shared/dashboard/product-detail/related-to-search";
 import AddToCartDesktop from "@/components/shared/dashboard/product-detail/desktop-cart";
 import Breadcrumb from "@/components/common/breadcrumb";
+import { getProductPricing, formatNaira } from "@/lib/pricing";
 
 export default function ProductDetailClient({ product, breadcrumb = [] }) {
   const router = useRouter();
@@ -25,11 +27,24 @@ export default function ProductDetailClient({ product, breadcrumb = [] }) {
     .filter(Boolean);
 
   const rawMedia = [
-    ...(mainVideo ? [{ type: "video", url: mainVideo.url, thumbnail: mainVideo.thumbnail || null }] : []),
+    ...(mainVideo
+      ? [
+          {
+            type: "video",
+            url: mainVideo.url,
+            thumbnail: mainVideo.thumbnail || null,
+          },
+        ]
+      : []),
     ...resolvedImages.map((url) => ({ type: "image", url })),
-    ...otherVideos.map((v) => ({ type: "video", url: v.url, thumbnail: v.thumbnail || null })),
+    ...otherVideos.map((v) => ({
+      type: "video",
+      url: v.url,
+      thumbnail: v.thumbnail || null,
+    })),
   ];
-  const galleryMedia = rawMedia.length > 0 ? rawMedia : [{ type: "image", url: "/product.png" }];
+  const galleryMedia =
+    rawMedia.length > 0 ? rawMedia : [{ type: "image", url: "/product.png" }];
 
   // Variants start unselected — options.jsx's placeholder option and
   // desktop-cart.jsx's pre-submit check both depend on nothing being
@@ -56,10 +71,7 @@ export default function ProductDetailClient({ product, breadcrumb = [] }) {
     breadcrumb?.[breadcrumb.length - 2]?.label ??
     null;
 
-  const hasDiscount = product.discountPercentage > 0;
-  const discountedPrice = hasDiscount
-    ? product.basePrice * (1 - product.discountPercentage / 100)
-    : product.basePrice;
+  const { basePrice, hasDiscount, finalPrice } = getProductPricing(product);
 
   const handleOptionChange = (option, value) => {
     setSelectedOptions((prev) => ({ ...prev, [option]: value }));
@@ -73,7 +85,8 @@ export default function ProductDetailClient({ product, breadcrumb = [] }) {
 
   const getDeliveryDate = (extraDays = 0) => {
     if (!product.estimatedDeliveryDays) return null;
-    const businessDays = parseInt(product.estimatedDeliveryDays.split("-")[0]) + extraDays;
+    const businessDays =
+      parseInt(product.estimatedDeliveryDays.split("-")[0]) + extraDays;
     const date = new Date();
     let added = 0;
     while (added < businessDays) {
@@ -108,9 +121,10 @@ export default function ProductDetailClient({ product, breadcrumb = [] }) {
           },
           (product.colors?.length > 0 || product.color) && {
             label: "Color",
-            value: product.colors?.length > 0
-              ? product.colors.join(", ")
-              : product.color,
+            value:
+              product.colors?.length > 0
+                ? product.colors.join(", ")
+                : product.color,
           },
           product.materials?.length > 0 && {
             label: "Materials",
@@ -150,25 +164,20 @@ export default function ProductDetailClient({ product, breadcrumb = [] }) {
               <p className="text-[13px] text-[#6E6659]">{categoryLabel}</p>
             )}
 
-            <h1 className="mt-1.5 text-[20px] font-semibold leading-[130%] text-[#24201C]">
+            <h1 className="mt-1.5 text-[20px] font-bold leading-[130%] text-[#24201C]">
               {product.name}
             </h1>
 
             {product.basePrice != null && (
               <div className="mt-2 flex flex-wrap items-center gap-2">
-                <p className="text-[18px] font-normal text-[#24201C]">
-                  ₦{Math.round(discountedPrice).toLocaleString()}
-                </p>
                 {hasDiscount && (
-                  <>
-                    <p className="text-[14px] text-text-gray line-through">
-                      ₦{Number(product.basePrice).toLocaleString()}
-                    </p>
-                    <p className="text-[13px] font-medium text-green-600">
-                      {product.discountPercentage}% off
-                    </p>
-                  </>
+                  <p className="text-[14px] text-text-gray line-through">
+                    {formatNaira(basePrice)}
+                  </p>
                 )}
+                <p className="text-[18px] font-normal text-[#993C1D]">
+                  {formatNaira(finalPrice)}
+                </p>
               </div>
             )}
           </div>
@@ -182,13 +191,14 @@ export default function ProductDetailClient({ product, breadcrumb = [] }) {
             />
 
             <div className="space-y-3">
-              {product.isPersonalizable && (
-                <ProductPersonalization
-                  types={product.personalizationTypes}
-                  value={personalization}
-                  onChange={setPersonalization}
-                />
-              )}
+              {product.isPersonalizable &&
+                product.personalizationTypes?.length !== 0 && (
+                  <ProductPersonalization
+                    types={product.personalizationTypes}
+                    value={personalization}
+                    onChange={setPersonalization}
+                  />
+                )}
 
               <ProductAddOns
                 addons={product.addOns}
@@ -229,6 +239,8 @@ export default function ProductDetailClient({ product, breadcrumb = [] }) {
       {product.relatedProducts?.length > 0 && (
         <RelatedProducts products={product.relatedProducts} />
       )}
+
+      <RelatedToYourSearch />
 
       {/* The dialog loads the user's lists itself; it only needs the product. */}
       <WishlistModal

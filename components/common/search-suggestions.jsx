@@ -47,6 +47,7 @@ export default function SearchSuggestions({
         slug: p.slug || p._id,
         name: p.name,
         price: p.basePrice,
+        discountPercentage: p.discountPercentage ?? 0,
         image: p.images?.[0]?.url ?? "/product.png",
       })),
     [data],

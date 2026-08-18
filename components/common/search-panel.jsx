@@ -4,6 +4,8 @@ import Image from "next/image";
 import Link from "next/link";
 import { Search, X } from "lucide-react";
 
+import { getProductPricing, formatNaira } from "@/lib/pricing";
+
 /*
  * The search suggestion panel, from "Components - Search.png" and the two
  * 1x mobile frames. Two states:
@@ -102,37 +104,45 @@ export default function SearchPanel({
             <Rule />
             <Label>RELATED PRODUCTS</Label>
             <div className="mt-2">
-              {products.map((product) => (
-                <Link
-                  key={product.id}
-                  href={`/products/${product.slug}`}
-                  onClick={onNavigate}
-                  className="flex items-center gap-4 py-4"
-                  style={{ borderBottom: `1px solid ${HAIRLINE}` }}
-                >
-                  <span className="relative h-9 w-9 shrink-0 overflow-hidden rounded bg-[#FAECE7]">
-                    <Image
-                      src={product.image}
-                      alt={product.name}
-                      fill
-                      className="object-cover"
-                      sizes="36px"
-                    />
-                  </span>
-                  <span
-                    className="min-w-0 flex-1 truncate text-[14px] leading-5"
-                    style={{ color: INK }}
+              {products.map((product) => {
+                const { basePrice, hasDiscount, finalPrice } =
+                  getProductPricing(product);
+                return (
+                  <Link
+                    key={product.id}
+                    href={`/products/${product.slug}`}
+                    onClick={onNavigate}
+                    className="flex items-center gap-4 py-4"
+                    style={{ borderBottom: `1px solid ${HAIRLINE}` }}
                   >
-                    {product.name}
-                  </span>
-                  <span
-                    className="shrink-0 text-[14px] leading-5"
-                    style={{ color: MUTED }}
-                  >
-                    ₦{Number(product.price).toLocaleString()}
-                  </span>
-                </Link>
-              ))}
+                    <span className="relative h-9 w-9 shrink-0 overflow-hidden rounded bg-[#FAECE7]">
+                      <Image
+                        src={product.image}
+                        alt={product.name}
+                        fill
+                        className="object-cover"
+                        sizes="36px"
+                      />
+                    </span>
+                    <span
+                      className="min-w-0 flex-1 truncate text-[14px] leading-5"
+                      style={{ color: INK }}
+                    >
+                      {product.name}
+                    </span>
+                    <span className="shrink-0 flex items-center gap-1.5 text-[14px] leading-5">
+                      {hasDiscount && (
+                        <span className="line-through" style={{ color: MUTED }}>
+                          {formatNaira(basePrice)}
+                        </span>
+                      )}
+                      <span style={{ color: MUTED }}>
+                        {formatNaira(finalPrice)}
+                      </span>
+                    </span>
+                  </Link>
+                );
+              })}
             </div>
           </>
         )}

@@ -43,7 +43,7 @@ export default function ProductDescription({ description }) {
             onClick={() => setIsExpanded(!isExpanded)}
             className="mt-3 inline-flex h-9 items-center rounded-full bg-[#FAECE7] px-4 text-[13px] font-medium text-[#D85A30]"
           >
-            {isExpanded ? "Read Less" : "Read More"}
+            {isExpanded ? "Hide Item Details" : "View Item Details"}
           </button>
         )}
       </div>

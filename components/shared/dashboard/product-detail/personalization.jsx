@@ -93,7 +93,7 @@ export default function ProductPersonalization({
       style={{ borderColor: HAIRLINE }}
     >
       <p
-        className="text-[11px] font-medium tracking-[0.04em]"
+        className="text-[12px] text-text-gray font-bold tracking-[0.04em]"
         style={{ color: LABEL }}
       >
         ADD PERSONALIZATION
