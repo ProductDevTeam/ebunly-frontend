@@ -190,7 +190,7 @@ export default function ProductAddOns({
       style={{ borderColor: HAIRLINE }}
     >
       <p
-        className="text-[11px] font-medium tracking-[0.04em]"
+        className="text-[12px] font-bold text-text-gray tracking-[0.04em]"
         style={{ color: LABEL }}
       >
         COMPLETE THE GIFT

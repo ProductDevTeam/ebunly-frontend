@@ -48,6 +48,7 @@ function normalizeProduct(p) {
     name: p.name ?? "",
     slug: p.slug ?? "",
     price: p.basePrice ?? p.price ?? 0,
+    discountPercentage: p.discountPercentage ?? 0,
     image: images[0],
     images,
     personalizable: Boolean(

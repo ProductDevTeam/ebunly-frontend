@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 
 import FavoriteButton from "@/components/common/favorite-button";
+import { getProductPricing, formatNaira } from "@/lib/pricing";
 
 /*
  * The one product card used across the site (homepage rail, category grids).
@@ -22,6 +23,7 @@ const AUTOPLAY_MS = 3000;
 const SWIPE_THRESHOLD_PX = 40;
 
 export default function ProductCard({ product, sizes }) {
+  const { basePrice, hasDiscount, finalPrice } = getProductPricing(product);
   const images =
     product.images?.length > 0
       ? product.images
@@ -138,9 +140,16 @@ export default function ProductCard({ product, sizes }) {
         <p className="mt-3.5 truncate text-[15px] md:text-[16px] font-normal leading-[120%] text-[#1A1A1A]">
           {product.name}
         </p>
-        <p className="mt-2 text-[15px] md:text-[16px] font-medium leading-[120%] text-[#1A1A1A]">
-          ₦{(product.price ?? 0).toLocaleString()}
-        </p>
+        <div className="mt-2 flex flex-wrap items-center gap-1.5">
+          {hasDiscount && (
+            <span className="text-[13px] md:text-[14px] text-text-gray line-through">
+              {formatNaira(basePrice)}
+            </span>
+          )}
+          <span className="text-[15px] md:text-[16px] font-medium leading-[120%] text-[#1A1A1A]">
+            {formatNaira(finalPrice)}
+          </span>
+        </div>
       </Link>
     </div>
   );

@@ -9,8 +9,11 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useWishlist } from "@/hooks/use-wishlist";
 import { useCart, toCartProduct } from "@/hooks/use-cart";
 import { useNotification } from "@/components/common/notification-provider";
+import { getProductPricing, formatNaira } from "@/lib/pricing";
 
 function FavoriteCard({ item, onAddToCart, onRemove }) {
+  const { basePrice, hasDiscount, finalPrice } = getProductPricing(item);
+
   return (
     <motion.div layout exit={{ opacity: 0, scale: 0.96 }} className="min-w-0">
       {/* Image */}
@@ -42,8 +45,11 @@ function FavoriteCard({ item, onAddToCart, onRemove }) {
           <p className="font-semibold text-sm md:text-[15px] text-gray-900 truncate leading-tight">
             {item.name}
           </p>
-          <p className="text-sm text-gray-500 mt-0.5">
-            ₦{Number(item.price).toLocaleString()}
+          <p className="text-sm text-gray-500 mt-0.5 flex flex-wrap items-center gap-1.5">
+            {hasDiscount && (
+              <span className="line-through">{formatNaira(basePrice)}</span>
+            )}
+            <span>{formatNaira(finalPrice)}</span>
           </p>
         </div>
         <button

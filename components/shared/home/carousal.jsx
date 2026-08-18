@@ -9,6 +9,7 @@ import FavoriteButton from "@/components/common/favorite-button";
 import { useWishlist } from "@/hooks/use-wishlist";
 import { useCart, toCartProduct } from "@/hooks/use-cart";
 import { useNotification } from "@/components/common/notification-provider";
+import { getProductPricing, formatNaira } from "@/lib/pricing";
 
 const SKELETON_COUNT = 5;
 
@@ -124,6 +125,8 @@ const PerfectForYouSection = ({ products = [] }) => {
               ))
             : products.map((product) => {
                 const isActive = activeCard === product.id;
+                const { basePrice, hasDiscount, finalPrice } =
+                  getProductPricing(product);
                 return (
                   <div
                     key={product.id}
@@ -221,8 +224,13 @@ const PerfectForYouSection = ({ products = [] }) => {
                         <p className="font-semibold text-[13px] md:text-[14px] tracking-[-1%] text-black truncate leading-tight">
                           {product.name}
                         </p>
-                        <p className="text-[13px] md:text-[14px] text-black mt-0.5 font-normal">
-                          ₦{product.price.toLocaleString()}
+                        <p className="text-[13px] md:text-[14px] text-black mt-0.5 font-normal flex flex-wrap items-center gap-1.5">
+                          {hasDiscount && (
+                            <span className="line-through text-text-gray">
+                              {formatNaira(basePrice)}
+                            </span>
+                          )}
+                          <span>{formatNaira(finalPrice)}</span>
                         </p>
                       </div>
                       <FavoriteButton product={product} size={22} />

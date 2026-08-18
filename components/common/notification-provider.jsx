@@ -18,6 +18,8 @@ import Image from "next/image";
 import Link from "next/link";
 import { ShoppingBag } from "lucide-react";
 
+import { getProductPricing } from "@/lib/pricing";
+
 const NotificationContext = createContext(null);
 
 let _id = 0;
@@ -167,7 +169,7 @@ function CartToast({
 
   const imageUrl = product?.images?.[0]?.url ?? "/product.png";
   const name = product?.name ?? "Item";
-  const price = product?.basePrice ?? 0;
+  const { finalPrice: price } = getProductPricing(product);
 
   const motionProps = isMobile
     ? {

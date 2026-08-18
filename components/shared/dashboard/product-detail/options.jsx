@@ -27,7 +27,7 @@ export default function ProductOptions({
         return (
           <div key={variant.name}>
             <p
-              className="text-[11px] font-medium tracking-[0.04em] mb-2"
+              className="text-[12px] font-bold text-text-gray tracking-[0.04em] mb-2"
               style={{ color: LABEL }}
             >
               {variant.name.toUpperCase()}
