@@ -1,33 +1,47 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import ProductCard from "@/components/common/product-card";
+import { apiGet } from "@/utils/api-fetch";
 
-/*
- * "Related to your search" — mock data. No backend field or endpoint returns
- * search-context-aware recommendations today (confirmed against the live
- * product payload and the /search paths in the OpenAPI spec); this renders
- * the same placeholder set the export itself used until one exists.
- */
-const MOCK_PRODUCTS = Array.from({ length: 9 }, (_, i) => ({
-  id: `related-to-search-${i}`,
-  name: "Engraved jewellery box",
-  price: 30000,
-  image: i % 2 === 0 ? "/product.png" : "/product2.png",
-  images: ["/product.png", "/product2.png"],
-  slug: "engraved-jewellery-box",
-  personalizable: i === 0,
-}));
+const STORAGE_KEY = "ebunly_search_history";
 
-export default function RelatedToYourSearch({
-  products = MOCK_PRODUCTS,
-  className = "",
-}) {
+function getRecentQueries() {
+  try {
+    const stored = localStorage.getItem(STORAGE_KEY);
+    if (!stored) return [];
+    const history = JSON.parse(stored);
+    return history
+      .map((h) => h.filters?.search)
+      .filter(Boolean)
+      .slice(0, 3);
+  } catch {
+    return [];
+  }
+}
+
+export default function RelatedToYourSearch({ className = "" }) {
+  const [products, setProducts] = useState([]);
+
+  useEffect(() => {
+    const queries = getRecentQueries();
+    if (!queries.length) return;
+
+    const params = queries.map((q) => `q[]=${encodeURIComponent(q)}`).join("&");
+    apiGet(`search/related-to-searches?${params}`)
+      .then((res) => {
+        const hits = res?.data?.hits ?? [];
+        setProducts(hits);
+      })
+      .catch(() => {});
+  }, []);
+
   if (products.length === 0) return null;
 
   return (
     <section
       data-section="related-to-search"
-      className={` pb-10 md:pb-14 ${className}`}
+      className={`pb-10 md:pb-14 ${className}`}
     >
       <div className="max-w-308 mx-auto px-4 py-4 md:py-10">
         <h2 className="mb-6 md:mb-8 leading-[110%]">
@@ -48,7 +62,7 @@ export default function RelatedToYourSearch({
         <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
           {products.slice(0, 10).map((product) => (
             <ProductCard
-              key={product.id ?? product._id ?? product.slug}
+              key={product.objectID ?? product._id ?? product.slug}
               product={product}
               sizes="(max-width: 768px) 45vw, 220px"
             />
