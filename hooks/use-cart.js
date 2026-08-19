@@ -32,7 +32,9 @@ export function toCartProduct(p) {
     discountPercentage: p.discountPercentage ?? 0,
     compareAtPrice: p.compareAtPrice,
     images,
-    slug: p.slug ?? id,
+    // No id fallback — the product route resolves by slug only, so an id
+    // here would just trade one broken URL for a differently-broken one.
+    slug: p.slug,
     minQuantity: p.minQuantity ?? 1,
     maxQuantity: p.maxQuantity ?? 1000,
     estimatedDeliveryDays: p.estimatedDeliveryDays,

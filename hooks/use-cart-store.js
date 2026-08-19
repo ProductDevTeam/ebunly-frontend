@@ -49,6 +49,10 @@ export const useCartStore = create(
                 basePrice: finalPrice,
                 compareAtPrice: product.compareAtPrice,
                 images: product.images,
+                // No _id fallback here — the product route only resolves by
+                // slug (getProductBySlug), so a missing slug has no valid
+                // destination at all. cart-client.jsx treats a falsy slug as
+                // non-navigable rather than building a doomed URL.
                 slug: product.slug,
                 minQuantity: product.minQuantity ?? 1,
                 maxQuantity: product.maxQuantity ?? 1000,

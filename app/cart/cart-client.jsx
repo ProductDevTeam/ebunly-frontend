@@ -9,6 +9,7 @@ import { useCart } from "@/hooks/use-cart";
 import { countVendors } from "@/hooks/use-deliveries";
 import CheckoutModal from "@/components/cart/checkout-modal";
 import { useState } from "react";
+import { getProductById } from "@/lib/products";
 
 /*
  * Cart, from "Desktop - Cart.png" and "Mobile - Cart.png".
@@ -69,17 +70,44 @@ function CartRow({ item, onSetQuantity, onRemove }) {
   const router = useRouter();
   const image = item.images?.[0]?.url ?? item.images?.[0] ?? "/product.png";
   const details = itemDetails(item);
-  const href = `/products/${item.slug}`;
+  // The server cart's lean product projection doesn't reliably carry slug —
+  // falling back to _id in the href would just trade one 404 for another,
+  // since the product route looks up by slug, not id. Instead, resolve the
+  // real slug on demand via GET /products/:id when it's missing up front.
+  const [resolving, setResolving] = useState(false);
+  const canNavigate = Boolean(item.slug || item._id);
+
+  const goToProduct = async () => {
+    if (resolving) return;
+    if (item.slug) {
+      router.push(`/products/${item.slug}`);
+      return;
+    }
+    if (!item._id) return;
+    setResolving(true);
+    try {
+      const product = await getProductById(item._id);
+      if (product?.slug) router.push(`/products/${product.slug}`);
+    } catch {
+      // No working destination — stay put rather than navigate to a 404.
+    } finally {
+      setResolving(false);
+    }
+  };
 
   return (
     <div
-      role="link"
-      tabIndex={0}
-      onClick={() => router.push(href)}
-      onKeyDown={(e) => {
-        if (e.key === "Enter") router.push(href);
-      }}
-      className="flex cursor-pointer gap-3 pt-8 pb-4 md:gap-4 md:pt-10 md:pb-5"
+      role={canNavigate ? "link" : undefined}
+      tabIndex={canNavigate ? 0 : undefined}
+      onClick={canNavigate ? goToProduct : undefined}
+      onKeyDown={
+        canNavigate
+          ? (e) => {
+              if (e.key === "Enter") goToProduct();
+            }
+          : undefined
+      }
+      className={`flex gap-3 pt-8 pb-4 md:gap-4 md:pt-10 md:pb-5 ${canNavigate ? "cursor-pointer" : ""}`}
       style={{ borderBottom: `1px solid ${HAIRLINE}` }}
     >
       <span className="relative h-16 w-16 shrink-0 overflow-hidden rounded-lg bg-[#FAECE7] md:h-20 md:w-20">

@@ -13,12 +13,16 @@ import { getProductPricing, formatNaira } from "@/lib/pricing";
 
 function FavoriteCard({ item, onAddToCart, onRemove }) {
   const { basePrice, hasDiscount, finalPrice } = getProductPricing(item);
+  // No id fallback — the product route resolves by slug only, so a missing
+  // slug has no valid destination to link to at all.
+  const ImageWrapper = item.slug ? Link : "div";
+  const imageWrapperProps = item.slug ? { href: `/products/${item.slug}` } : {};
 
   return (
     <motion.div layout exit={{ opacity: 0, scale: 0.96 }} className="min-w-0">
       {/* Image */}
       <div className="relative aspect-square rounded-2xl overflow-hidden bg-[#F5F5F5]">
-        <Link href={`/products/${item.slug ?? item.id}`}>
+        <ImageWrapper {...imageWrapperProps}>
           <Image
             src={item.image}
             alt={item.name}
@@ -27,7 +31,7 @@ function FavoriteCard({ item, onAddToCart, onRemove }) {
             sizes="(max-width: 768px) 50vw, 20vw"
             className="object-cover"
           />
-        </Link>
+        </ImageWrapper>
 
         {/* Quick add to cart — top-right on mobile, bottom-right on desktop (Figma) */}
         <button
