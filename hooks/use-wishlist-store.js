@@ -10,7 +10,9 @@ export function toWishlistItem(p) {
     p.image ?? p.images?.[0]?.url ?? p.images?.[0] ?? "/product.png";
   return {
     id,
-    slug: p.slug ?? id,
+    // No id fallback — the product route resolves by slug only, so an id
+    // here would just be a differently-broken link, not a working one.
+    slug: p.slug,
     name: p.name,
     price: p.price ?? p.basePrice ?? 0,
     discountPercentage: p.discountPercentage ?? 0,

@@ -2,6 +2,7 @@
 
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiGet, apiPutForm } from "@/utils/api-fetch";
+import { useAuthStore } from "@/hooks/use-auth-store";
 
 // ── Input sanitisation ─────────────────────────────────────────────────────
 const sanitiseText = (value) => (value ?? "").trim();
@@ -105,6 +106,14 @@ export function useUpdateProfile() {
         old ? { ...old, ...updated } : updated,
       );
       queryClient.invalidateQueries({ queryKey: profileKeys.me });
+
+      // The navbar's name pill reads useAuthStore.user, not useMe() — that
+      // store is only ever set at login, so without this the header keeps
+      // showing the pre-edit name until the next full login.
+      const currentUser = useAuthStore.getState().user;
+      if (currentUser) {
+        useAuthStore.getState().setUser({ ...currentUser, ...updated });
+      }
     },
   });
 }
