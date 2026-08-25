@@ -26,6 +26,7 @@ const INK = "#24201C";
 const MUTED = "#6E6659";
 /* The uppercase micro-labels are a colder grey than body muted text. */
 const LABEL = "#707070";
+const REMOVE_RED = "#D90101";
 
 const DEFAULT_TYPES = [
   { name: "Engraving", extraDays: 2 },
@@ -167,6 +168,18 @@ export default function ProductPersonalization({
             }
           >
             Confirm
+          </button>
+
+          <button
+            type="button"
+            onClick={() => {
+              setDraft("");
+              set({ type: null, text: "", confirmed: false });
+            }}
+            className="mt-2 w-full text-center text-[13px]"
+            style={{ color: REMOVE_RED }}
+          >
+            Remove
           </button>
         </>
       )}
