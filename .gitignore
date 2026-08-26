@@ -55,8 +55,7 @@ apiFilteringDocs.md
 README.md
 # ...but the bare pattern above matches at any depth, so re-include this one:
 !design/README.md
-.claude/commands/figma.md
-.claude/skills/figma-replicate/SKILL.md
+.claude/
 .gitignore
 .gitignore
 apiFilteringDocs.md
