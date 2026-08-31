@@ -43,8 +43,8 @@ export default function SearchSuggestions({
   const products = useMemo(
     () =>
       (data?.products ?? []).map((p) => ({
-        id: p._id,
-        slug: p.slug || p._id,
+        id: p._id ?? p.id,
+        slug: p.slug || p._id || p.id,
         name: p.name,
         price: p.basePrice,
         discountPercentage: p.discountPercentage ?? 0,

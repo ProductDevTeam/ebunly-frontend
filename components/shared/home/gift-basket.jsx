@@ -20,7 +20,7 @@ export default async function GiftBasketsSection() {
   if (raw.length === 0) return null;
 
   const occasions = raw.map((occ) => ({
-    id: occ._id,
+    id: occ._id ?? occ.id,
     name: occ.name,
     subtitle: occ.description || '',
     image: occ.image?.url || null,
